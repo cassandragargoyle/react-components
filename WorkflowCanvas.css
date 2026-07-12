@@ -1,0 +1,397 @@
+/* Layout styles for Workflow Canvas three-panel component */
+/* Follows GUI Design Principles: 4px grid, theme variables, monochrome */
+
+.workflow-canvas {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--vscode-editor-background, #1e1e1e);
+    color: var(--vscode-foreground, #cccccc);
+    font-family: var(--vscode-font-family, 'Segoe UI', sans-serif);
+    font-size: 13px;
+}
+
+/* Toolbar — matches Graph Canvas toolbar styling */
+
+.workflow-toolbar {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    min-height: 32px;
+    flex-shrink: 0;
+    padding: 0 8px;
+    gap: 8px;
+    background: var(--vscode-editorGroupHeader-tabsBackground, #252526);
+    border-bottom: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    z-index: 60;
+}
+
+.workflow-toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.workflow-toolbar-separator {
+    width: 1px;
+    height: 16px;
+    background: var(--vscode-sideBar-border, #3c3c3c);
+    margin: 0 4px;
+}
+
+.workflow-toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    padding: 0 8px;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--vscode-foreground, #cccccc);
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.workflow-toolbar-btn:hover {
+    background: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.05));
+}
+
+.workflow-toolbar-btn:active {
+    background: var(--vscode-list-activeSelectionBackground, rgba(255, 255, 255, 0.1));
+}
+
+.workflow-toolbar-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.workflow-toolbar-btn:disabled:hover {
+    background: transparent;
+}
+
+.workflow-toolbar-status {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground, #858585);
+    white-space: nowrap;
+}
+
+.workflow-find-input {
+    width: 140px;
+    height: 20px;
+    padding: 0 4px;
+    border: 1px solid var(--vscode-input-border, #3c3c3c);
+    border-radius: 2px;
+    background: var(--vscode-input-background, #3c3c3c);
+    color: var(--vscode-input-foreground, #cccccc);
+    font-size: 12px;
+    outline: none;
+}
+
+.workflow-find-input:focus {
+    border-color: var(--vscode-focusBorder, #007fd4);
+}
+
+.workflow-find-input::placeholder {
+    color: var(--vscode-input-placeholderForeground, #858585);
+}
+
+/* Main content — horizontal split: center + right panel */
+
+.workflow-content {
+    display: flex;
+    flex-direction: row;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Center column — vertical split: viewport + splitter + table */
+
+.workflow-center {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+}
+
+/* React Flow viewport — takes remaining space above splitter+table */
+
+.workflow-viewport {
+    flex: 1 1 0;
+    min-height: 80px;
+    position: relative;
+}
+
+.workflow-viewport-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--vscode-descriptionForeground, #858585);
+    font-size: 13px;
+}
+
+/* React Flow theme overrides */
+
+.workflow-reactflow {
+    flex: 1 1 0;
+    min-height: 80px;
+}
+
+.workflow-reactflow .react-flow__background {
+    background: var(--vscode-editor-background, #1e1e1e);
+}
+
+.workflow-reactflow .react-flow__controls {
+    display: none;
+}
+
+.workflow-reactflow .react-flow__minimap {
+    border: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    border-radius: 3px;
+}
+
+.workflow-reactflow .react-flow__edge-path {
+    stroke: var(--vscode-foreground, #cccccc);
+    stroke-opacity: 0.5;
+}
+
+.workflow-reactflow .react-flow__edge.selected .react-flow__edge-path {
+    stroke: var(--vscode-focusBorder, #007fd4);
+    stroke-opacity: 1;
+    stroke-width: 2;
+}
+
+/* Custom node styles */
+
+.workflow-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 2px solid var(--vscode-panel-border, #3c3c3c);
+    background: var(--vscode-editor-background, #1e1e1e);
+    color: var(--vscode-foreground, #cccccc);
+    font-size: 12px;
+    cursor: grab;
+}
+
+.workflow-node.selected {
+    border-color: var(--vscode-focusBorder, #007fd4);
+    box-shadow: 0 0 0 2px rgba(0, 127, 212, 0.3);
+}
+
+.workflow-node-icon {
+    font-size: 14px;
+    margin-bottom: 2px;
+    opacity: 0.7;
+}
+
+.workflow-node-label {
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+/* Task node — default rounded rectangle */
+
+.workflow-node-task {
+    border-color: #4a9eff;
+}
+
+.workflow-node-task.selected {
+    border-color: var(--vscode-focusBorder, #007fd4);
+}
+
+/* Trigger node — green accent */
+
+.workflow-node-trigger {
+    border-color: #4ae699;
+}
+
+.workflow-node-trigger .workflow-node-icon {
+    color: #4ae699;
+}
+
+/* Gateway node — diamond shape */
+
+.workflow-node-gateway {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+.workflow-node-diamond {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    transform: rotate(45deg);
+    border: 2px solid #e6994a;
+    background: var(--vscode-editor-background, #1e1e1e);
+}
+
+.workflow-node-gateway.selected .workflow-node-diamond {
+    border-color: var(--vscode-focusBorder, #007fd4);
+    box-shadow: 0 0 0 2px rgba(0, 127, 212, 0.3);
+}
+
+.workflow-node-diamond .workflow-node-label {
+    transform: rotate(-45deg);
+    font-size: 11px;
+    max-width: 60px;
+}
+
+/* Handles — connection points on nodes */
+
+.workflow-handle {
+    width: 8px;
+    height: 8px;
+    background: var(--vscode-panel-border, #3c3c3c);
+    border: 2px solid var(--vscode-editor-background, #1e1e1e);
+    border-radius: 50%;
+}
+
+.workflow-handle:hover {
+    background: var(--vscode-focusBorder, #007fd4);
+    width: 10px;
+    height: 10px;
+}
+
+/* Splitter between viewport and table */
+
+.workflow-resize-handle {
+    height: 5px;
+    flex: 0 0 5px;
+    cursor: ns-resize;
+    background: var(--vscode-panelSection-border, #585858);
+    position: relative;
+    z-index: 10;
+}
+
+.workflow-resize-handle::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+}
+
+.workflow-resize-handle:hover,
+.workflow-resize-handle:active {
+    background: var(--vscode-focusBorder, #007fd4);
+}
+
+/* Property panel (right sidebar) */
+
+.workflow-property-panel {
+    width: 260px;
+    flex: 0 0 260px;
+    height: 100%;
+    border-left: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    background: var(--vscode-sideBar-background, #252526);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.workflow-property-panel-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 16px;
+    color: var(--vscode-descriptionForeground, #858585);
+    font-size: 12px;
+    text-align: center;
+}
+
+.workflow-property-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.workflow-property-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.workflow-property-section {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+}
+
+.workflow-property-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--vscode-descriptionForeground, #858585);
+    margin-bottom: 4px;
+}
+
+.workflow-property-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 2px 0;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.workflow-property-key {
+    color: var(--vscode-descriptionForeground, #858585);
+    white-space: nowrap;
+    font-size: 11px;
+}
+
+.workflow-property-value {
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--vscode-foreground, #cccccc);
+}
+
+.workflow-property-connection {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 0;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.workflow-property-connection:hover {
+    color: var(--vscode-textLink-foreground, #75beff);
+}
+
+.workflow-property-connection-arrow {
+    color: var(--vscode-descriptionForeground, #858585);
+    font-size: 11px;
+}
+
+.workflow-property-connection-type {
+    color: var(--vscode-descriptionForeground, #858585);
+    font-size: 11px;
+}
+
