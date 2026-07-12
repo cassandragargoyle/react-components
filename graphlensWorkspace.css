@@ -1,0 +1,45 @@
+/*
+ *  This file is part of CassandraGargoyle Community Project
+ *  Licensed under the MIT License - see LICENSE file for details
+ */
+
+/* Split layout for the Electron GraphLens window: graph (left) + chat strip (right) */
+
+.graphlens-workspace {
+    display: flex;
+    flex-direction: row;
+    flex: 1 1 0;
+    width: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.graphlens-workspace-graph {
+    flex: 1 1 0;
+    min-width: 0;
+    position: relative;
+}
+
+/* Draggable divider between graph and chat strip */
+.graphlens-workspace-divider {
+    flex: 0 0 5px;
+    width: 5px;
+    cursor: ew-resize;
+    background: var(--vscode-panelSection-border, #585858);
+    position: relative;
+    z-index: 10;
+}
+
+.graphlens-workspace-divider:hover,
+.graphlens-workspace-divider:active {
+    background: var(--vscode-focusBorder, #007fd4);
+}
+
+.graphlens-workspace-chat {
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-left: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+}
