@@ -7,7 +7,7 @@ Interactive read/edit viewer for `*.graph.json` files, built on
 [Cytoscape.js](https://js.cytoscape.org/). It renders node-edge graphs inside a
 VS Code Custom Editor webview with a three-panel layout: graph viewport, node
 table, and property panel. See issue
-[030](../../../../../docs/issues/internal/030-graph-canvas-cytoscape-viewer.md)
+[030](../../../../../docs/issues/030-graph-canvas-cytoscape-viewer.md)
 and ADR [006](../../../../../docs/adr/006-react-flow-for-workflow-canvas.md)
 for the design rationale (Cytoscape for generic graphs, React Flow for
 editable workflows).
