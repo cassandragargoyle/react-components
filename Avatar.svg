@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" font-family="'Segoe UI', system-ui, sans-serif">
+  <!--
+    Standalone Avatar component (#100, generalized in #105)
+    Visual reference — kinds (ring cue), image vs initials fallback, popup menu
+  -->
+  <rect width="640" height="420" fill="#f6f8fb"/>
+  <text x="24" y="40" font-size="20" font-weight="700" fill="#1a2230">Avatar</text>
+  <text x="24" y="62" font-size="13" fill="#667">Domain-neutral participant chip · image or deterministic initials · click-to-open menu</text>
+
+  <!-- ===== Row 1: kind ring cue ===== -->
+  <text x="24" y="108" font-size="12" font-weight="700" fill="#667">KIND (ring colour cue)</text>
+
+  <!-- user (green ring) -->
+  <circle cx="60" cy="150" r="22" fill="hsl(210 55% 42%)" stroke="#2e7d32" stroke-width="2"/>
+  <text x="60" y="156" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">ZK</text>
+  <text x="60" y="192" font-size="12" fill="#1a2230" text-anchor="middle">user</text>
+
+  <!-- ai_agent (blue ring) -->
+  <circle cx="150" cy="150" r="22" fill="hsl(275 55% 42%)" stroke="#1565c0" stroke-width="2"/>
+  <text x="150" y="156" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">AI</text>
+  <text x="150" y="192" font-size="12" fill="#1a2230" text-anchor="middle">ai_agent</text>
+
+  <!-- system (grey ring) -->
+  <circle cx="240" cy="150" r="22" fill="hsl(145 55% 42%)" stroke="#b0bec5" stroke-width="2"/>
+  <text x="240" y="156" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">SY</text>
+  <text x="240" y="192" font-size="12" fill="#1a2230" text-anchor="middle">system</text>
+
+  <!-- ===== Row 1b: sizes ===== -->
+  <text x="340" y="108" font-size="12" font-weight="700" fill="#667">SIZE (px diameter)</text>
+  <circle cx="360" cy="150" r="11" fill="hsl(25 55% 42%)" stroke="#1565c0" stroke-width="2"/>
+  <text x="360" y="154" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">22</text>
+  <circle cx="410" cy="150" r="16" fill="hsl(25 55% 42%)" stroke="#1565c0" stroke-width="2"/>
+  <text x="410" y="155" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">32</text>
+  <circle cx="470" cy="150" r="24" fill="hsl(25 55% 42%)" stroke="#1565c0" stroke-width="2"/>
+  <text x="470" y="157" font-size="19" font-weight="700" fill="#fff" text-anchor="middle">48</text>
+  <text x="415" y="192" font-size="12" fill="#1a2230" text-anchor="middle">size = 22 / 32 / 48</text>
+
+  <!-- ===== Row 2: image vs initials fallback ===== -->
+  <text x="24" y="248" font-size="12" font-weight="700" fill="#667">IMAGE → INITIALS FALLBACK</text>
+
+  <!-- image variant -->
+  <defs>
+    <clipPath id="clip"><circle cx="60" cy="290" r="22"/></clipPath>
+    <linearGradient id="photo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4a90d9"/>
+      <stop offset="1" stop-color="#2e7d32"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="290" r="22" fill="url(#photo)" stroke="#2e7d32" stroke-width="2"/>
+  <circle cx="60" cy="282" r="7" fill="#fff" opacity="0.85" clip-path="url(#clip)"/>
+  <ellipse cx="60" cy="306" rx="13" ry="9" fill="#fff" opacity="0.85" clip-path="url(#clip)"/>
+  <text x="60" y="332" font-size="12" fill="#1a2230" text-anchor="middle">avatarUrl</text>
+
+  <!-- arrow -->
+  <text x="118" y="295" font-size="18" fill="#98a2b3" text-anchor="middle">→</text>
+  <text x="118" y="332" font-size="10" fill="#98a2b3" text-anchor="middle">onError</text>
+
+  <!-- initials fallback -->
+  <circle cx="176" cy="290" r="22" fill="hsl(210 55% 42%)" stroke="#2e7d32" stroke-width="2"/>
+  <text x="176" y="296" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">ZK</text>
+  <text x="176" y="332" font-size="12" fill="#1a2230" text-anchor="middle">initials</text>
+
+  <!-- ===== Row 2b: popup menu (open state) ===== -->
+  <text x="340" y="248" font-size="12" font-weight="700" fill="#667">POPUP MENU (on click)</text>
+  <circle cx="360" cy="290" r="22" fill="hsl(210 55% 42%)" stroke="#2e7d32" stroke-width="2"/>
+  <text x="360" y="296" font-size="17" font-weight="700" fill="#fff" text-anchor="middle">ZK</text>
+
+  <g>
+    <rect x="396" y="272" width="180" height="96" rx="8" fill="#fff" stroke="#d5dde5"/>
+    <text x="408" y="292" font-size="11" font-weight="700" fill="#667">Zdenek Kraus</text>
+    <line x1="404" y1="300" x2="568" y2="300" stroke="#e3e8ee"/>
+    <rect x="404" y="306" width="164" height="24" rx="6" fill="#f0f4f8"/>
+    <text x="412" y="322" font-size="13" fill="#1a2230">✉️  Napsat e-mail</text>
+    <text x="412" y="352" font-size="13" fill="#1a2230">@  Zkopírovat zmínku</text>
+  </g>
+</svg>
