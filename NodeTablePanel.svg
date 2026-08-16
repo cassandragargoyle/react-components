@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="560" viewBox="0 0 760 560" font-family="'Segoe UI', system-ui, sans-serif">
+  <!--
+    Shared NodeTablePanel component — bottom AG Grid table reused by all viewer node tables
+    Visual reference — expanded and collapsed states, header anatomy, composition
+  -->
+  <rect width="760" height="560" fill="#f6f8fb"/>
+  <text x="24" y="40" font-size="20" font-weight="700" fill="#1a2230">NodeTablePanel</text>
+  <text x="24" y="62" font-size="13" fill="#667">Bottom table panel · All/Selected filter · row count · external selection sync · minimize toggle</text>
+
+  <!-- ===== Expanded state ===== -->
+  <text x="24" y="98" font-size="12" font-weight="700" fill="#667">EXPANDED (height = `height` prop, caller-owned)</text>
+
+  <g transform="translate(24,110)">
+    <!-- panel background -->
+    <rect width="672" height="182" fill="#1e1e1e"/>
+
+    <!-- header bar (28px) -->
+    <rect width="672" height="26" fill="#252526"/>
+    <line x1="0" y1="26" x2="672" y2="26" stroke="#3c3c3c"/>
+    <text x="10" y="20" font-size="17" fill="#cccccc">&#9662;</text>
+    <rect x="34" y="5" width="30" height="17" rx="2" fill="#0e639c"/>
+    <text x="41" y="17" font-size="10" fill="#ffffff">All</text>
+    <text x="74" y="17" font-size="10" fill="#858585">Selected</text>
+    <text x="662" y="17" font-size="10" fill="#858585" text-anchor="end">Showing: 42 of 42 nodes</text>
+
+    <!-- grid header row (28px) -->
+    <rect y="26" width="672" height="26" fill="#2d2d2d"/>
+    <rect y="50" width="672" height="2" fill="#007fd4"/>
+    <text x="12" y="43" font-size="9" font-weight="600" letter-spacing="0.5" fill="#cccccc">ID</text>
+    <text x="122" y="43" font-size="9" font-weight="600" letter-spacing="0.5" fill="#cccccc">LABEL</text>
+    <text x="292" y="43" font-size="9" font-weight="600" letter-spacing="0.5" fill="#cccccc">TYPE</text>
+    <text x="412" y="43" font-size="9" font-weight="600" letter-spacing="0.5" fill="#cccccc">STATUS</text>
+    <text x="542" y="43" font-size="9" font-weight="600" letter-spacing="0.5" fill="#cccccc">OWNER</text>
+
+    <!-- data rows (26px each) -->
+    <g font-size="10" fill="#cccccc">
+      <line x1="0" y1="78" x2="672" y2="78" stroke="#3c3c3c"/>
+      <text x="12" y="69">n-01</text><text x="122" y="69">Ingest</text><text x="292" y="69">source</text><text x="412" y="69">ready</text><text x="542" y="69">etl</text>
+
+      <!-- selected row -->
+      <rect y="78" width="672" height="26" fill="#094771"/>
+      <line x1="0" y1="104" x2="672" y2="104" stroke="#3c3c3c"/>
+      <text x="12" y="95" fill="#ffffff">n-02</text><text x="122" y="95" fill="#ffffff">Transform</text><text x="292" y="95" fill="#ffffff">task</text><text x="412" y="95" fill="#ffffff">running</text><text x="542" y="95" fill="#ffffff">etl</text>
+
+      <!-- hovered row -->
+      <rect y="104" width="672" height="26" fill="#ffffff" opacity="0.05"/>
+      <line x1="0" y1="130" x2="672" y2="130" stroke="#3c3c3c"/>
+      <text x="12" y="121">n-03</text><text x="122" y="121">Validate</text><text x="292" y="121">task</text><text x="412" y="121">ready</text><text x="542" y="121">qa</text>
+
+      <line x1="0" y1="156" x2="672" y2="156" stroke="#3c3c3c"/>
+      <text x="12" y="147">n-04</text><text x="122" y="147">Publish</text><text x="292" y="147">sink</text><text x="412" y="147">idle</text><text x="542" y="147">ops</text>
+
+      <text x="12" y="173">n-05</text><text x="122" y="173">Archive</text><text x="292" y="173">sink</text><text x="412" y="173">idle</text><text x="542" y="173">ops</text>
+    </g>
+  </g>
+
+  <!-- annotations for the expanded panel -->
+  <g stroke="#98a2b3" stroke-width="1" fill="none">
+    <path d="M34 108 V96"/>
+    <path d="M110 108 V96"/>
+    <path d="M600 108 V96"/>
+    <path d="M420 300 V292"/>
+    <path d="M120 300 V214"/>
+  </g>
+  <g font-size="9.5" fill="#98a2b3">
+    <text x="30" y="92">minimize</text>
+    <text x="92" y="92">All / Selected filter</text>
+    <text x="560" y="92">Showing: X of Y &lt;countNoun&gt;</text>
+    <text x="384" y="314">column definitions come from the caller (ColDef[])</text>
+    <text x="126" y="216" fill="#7fb3d5">selected row — highlight driven by `selectedIds`</text>
+  </g>
+
+  <!-- ===== Collapsed state ===== -->
+  <text x="24" y="352" font-size="12" font-weight="700" fill="#667">COLLAPSED (fixed 28px strip — only the restore button remains)</text>
+
+  <g transform="translate(24,364)">
+    <rect width="672" height="26" fill="#252526"/>
+    <line x1="0" y1="26" x2="672" y2="26" stroke="#3c3c3c"/>
+    <text x="10" y="20" font-size="17" fill="#cccccc">&#9656;</text>
+    <text x="30" y="17" font-size="10" fill="#858585">42 nodes</text>
+  </g>
+  <text x="120" y="382" font-size="9.5" fill="#98a2b3">click anywhere on the button to expand · total row count stays visible</text>
+
+  <!-- ===== Composition ===== -->
+  <text x="24" y="432" font-size="12" font-weight="700" fill="#667">COMPOSITION</text>
+
+  <g font-size="10">
+    <!-- viewer -->
+    <rect x="24" y="444" width="150" height="52" rx="4" fill="#ffffff" stroke="#c8d2e0"/>
+    <text x="99" y="464" text-anchor="middle" font-weight="600" fill="#1a2230">Viewer</text>
+    <text x="99" y="480" text-anchor="middle" fill="#667">GraphCanvas · Canvas</text>
+    <text x="99" y="491" text-anchor="middle" fill="#667">WorkflowCanvas · GraphLens3D</text>
+
+    <!-- adapter -->
+    <rect x="212" y="444" width="170" height="52" rx="4" fill="#ffffff" stroke="#c8d2e0"/>
+    <text x="297" y="464" text-anchor="middle" font-weight="600" fill="#1a2230">*NodeTable adapter</text>
+    <text x="297" y="480" text-anchor="middle" fill="#667">domain nodes &#8594; flat rows</text>
+    <text x="297" y="491" text-anchor="middle" fill="#667">+ ColDef[] columns</text>
+
+    <!-- panel -->
+    <rect x="420" y="444" width="150" height="52" rx="4" fill="#eef4fb" stroke="#7fb3d5"/>
+    <text x="495" y="464" text-anchor="middle" font-weight="600" fill="#1a2230">NodeTablePanel</text>
+    <text x="495" y="480" text-anchor="middle" fill="#667">filter · count · collapse</text>
+    <text x="495" y="491" text-anchor="middle" fill="#667">selection sync</text>
+
+    <!-- ag grid -->
+    <rect x="608" y="444" width="128" height="52" rx="4" fill="#ffffff" stroke="#c8d2e0"/>
+    <text x="672" y="464" text-anchor="middle" font-weight="600" fill="#1a2230">AG Grid</text>
+    <text x="672" y="480" text-anchor="middle" fill="#667">themeQuartz</text>
+    <text x="672" y="491" text-anchor="middle" fill="#667">(dark params)</text>
+
+    <g stroke="#98a2b3" stroke-width="1.2" fill="none" marker-end="url(#arrow)">
+      <path d="M174 470 H206"/>
+      <path d="M382 470 H414"/>
+      <path d="M570 470 H602"/>
+    </g>
+  </g>
+
+  <text x="24" y="528" font-size="9.5" fill="#98a2b3">State the panel does NOT own: rows, columns, selectedIds, filter, height, collapsed — all controlled by the caller</text>
+  <text x="24" y="544" font-size="9.5" fill="#98a2b3">Colours use VS Code theme variables (--vscode-editor-background, --vscode-list-activeSelectionBackground, …) with the literal fallbacks shown above</text>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L8 4 L0 8 z" fill="#98a2b3"/>
+    </marker>
+  </defs>
+</svg>
