@@ -11,9 +11,9 @@ import { GraphLens3DViewport } from './GraphLens3DViewport';
 import { GraphLensDetailPanel } from './GraphLensDetailPanel';
 import { GraphLensNodeTable } from './GraphLensNodeTable';
 import { GraphLensToolbar, KindFilter, StatRow } from './GraphLensToolbar';
-import { ProgressPanel, ProgressPanelProps, ProgressStep } from '../Progress';
-import { useRadialMenu } from '../RadialMenu';
-import type { RadialMenuAction } from '../RadialMenu';
+import { ProgressPanel, ProgressPanelProps, ProgressStep } from '@cassandragargoyle/react-components';
+import { useRadialMenu } from '@cassandragargoyle/react-components';
+import type { RadialMenuAction } from '@cassandragargoyle/react-components';
 import { nodeIcons } from './nodeActionIcons';
 import {
     GraphLensFile,

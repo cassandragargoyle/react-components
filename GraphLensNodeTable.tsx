@@ -7,7 +7,7 @@
 
 import React, { useMemo } from 'react';
 import type { ColDef } from 'ag-grid-community';
-import { NodeTablePanel } from '../NodeTablePanel';
+import { NodeTablePanel } from '@cassandragargoyle/react-components';
 import { GraphLensNode, TableFilter, kindOf, kindColor } from './types';
 
 interface GraphLensNodeTableProps {
