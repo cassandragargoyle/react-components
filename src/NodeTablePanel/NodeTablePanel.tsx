@@ -41,7 +41,7 @@ const NODE_TABLE_THEME = themeQuartz.withParams({
     borderColor: 'transparent',
     wrapperBorder: false,
     headerBackgroundColor: '#2d2d2d',
-    headerForegroundColor: '#cccccc',
+    headerTextColor: '#cccccc',
     wrapperBorderRadius: 0,
     rowBorder: { color: '#3c3c3c' },
     columnBorder: false,

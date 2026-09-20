@@ -3,14 +3,29 @@
  *  Licensed under the MIT License - see LICENSE file for details
  */
 
-// Guards the package entry point while the library is still empty (ADR-012)
-// Proves the barrel resolves and loads, so the first migrated component starts green
+// Guards the package entry point against a component going missing from the barrel
+// These names are the contract portunix-vscode's pilot-ui re-exports depend on
 
 import { describe, expect, it } from 'vitest';
 
+import * as api from './index';
+
+const EXPECTED = [
+    'Avatar',
+    'Carousel',
+    'NodeTablePanel',
+    'ProgressPanel',
+    'RadialMenu',
+    'useRadialMenu',
+] as const;
+
 describe('package entry point', () => {
-    it('loads', async () => {
-        const entry = await import('./index');
-        expect(entry).toBeTypeOf('object');
+    it.each(EXPECTED)('exports %s', (name) => {
+        expect(api).toHaveProperty(name);
+        expect(api[name]).toBeTypeOf('function');
+    });
+
+    it('exports nothing beyond the declared surface', () => {
+        expect(Object.keys(api).sort()).toEqual([...EXPECTED].sort());
     });
 });

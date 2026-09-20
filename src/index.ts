@@ -4,6 +4,30 @@
  */
 
 // Public entry point of @cassandragargoyle/react-components (ADR-012)
-// Components are added here as they migrate; see issue 125 in portunix-vscode
+// Components migrate here from portunix-vscode; see its issue 125
 
-export {};
+export { Avatar } from './Avatar';
+export type { AvatarProps, AvatarKind } from './Avatar';
+
+export { Carousel } from './Carousel';
+export type { CarouselItem, CarouselProps } from './Carousel';
+
+export { NodeTablePanel } from './NodeTablePanel';
+export type { TableFilter, NodeTableRow } from './NodeTablePanel';
+
+export { ProgressPanel } from './Progress';
+export type {
+    ProgressPanelProps,
+    ProgressStep,
+    ProgressStepState,
+    ProgressField,
+    ProgressSpinnerVariant,
+} from './Progress';
+
+export { RadialMenu, useRadialMenu } from './RadialMenu';
+export type {
+    RadialMenuAction,
+    RadialMenuOptions,
+    RadialMenuActive,
+    UseRadialMenu,
+} from './RadialMenu';
