@@ -1,0 +1,71 @@
+/*
+ *  This file is part of CassandraGargoyle Community Project
+ *  Licensed under the MIT License - see LICENSE file for details
+ */
+
+/* Standalone avatar (#100, generalized in #105): image or deterministic initials
+   chip with a click-to-open popup menu. Ring/menu colours fall back to literals so
+   the component renders correctly outside the venture theme */
+
+.avatar-wrap { position: relative; display: inline-flex; }
+.avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    overflow: hidden;
+    color: #fff;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+.avatar:focus-visible { outline: 2px solid var(--opp-blue, #1565c0); outline-offset: 2px; }
+.avatar-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.avatar-initials { user-select: none; }
+/* kind cue: a colored ring distinguishes user / ai_agent / system */
+.avatar-user { box-shadow: 0 0 0 2px var(--opp-green, #2e7d32); }
+.avatar-ai_agent { box-shadow: 0 0 0 2px var(--opp-blue, #1565c0); }
+.avatar-system { box-shadow: 0 0 0 2px var(--opp-faint, #b0bec5); }
+
+/* avatar popup menu (#100): actor actions (Mail to, @ mention) */
+.avatar-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    min-width: 168px;
+    padding: 4px;
+    border: 1px solid var(--opp-border, #d5dde5);
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+}
+.avatar-menu-name {
+    padding: 4px 8px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--opp-muted, #667);
+    border-bottom: 1px solid var(--opp-card-border, #e3e8ee);
+    margin-bottom: 4px;
+}
+.avatar-menu-item {
+    display: block;
+    width: 100%;
+    padding: 6px 8px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    text-decoration: none;
+    color: var(--opp-ink, #1a2230);
+    cursor: pointer;
+}
+.avatar-menu-item:hover { background: #f0f4f8; }
