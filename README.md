@@ -5,8 +5,9 @@ A growing collection of reusable and extensible React components for modern web 
 ## Overview
 
 **Repository**: `react-components`
-**Language**: TypeScript (React 18+, Node 18+)
-**Status**: Early — the library is being set up; no components have been published yet.
+**Language**: TypeScript (React 19, Node 24+)
+**Status**: Early — the build, tests and publishing workflow are in place; no components
+have migrated yet.
 
 This repository is the shared component library of the CassandraGargoyle ecosystem.
 It collects UI building blocks that are used across several projects, so that look,
@@ -26,7 +27,8 @@ particular application framework or router.
 
 ## Getting Started
 
-The package is not published yet. Once the build is in place:
+The package is not published yet — the first release is cut from a `v*` tag, which runs
+the publish workflow against GitHub Packages.
 
 ```bash
 npm install @cassandragargoyle/react-components
@@ -55,10 +57,15 @@ npm test
 
 ```text
 react-components/
-├── src/            # Component sources, one directory per component
-├── docs/           # Contributing guides and component documentation
-└── README.md
+├── src/                # Component sources, one directory per component
+│   └── index.ts        # Public entry point — every exported component
+├── vite.config.ts      # Library build (ESM + .d.ts tree)
+├── vitest.config.ts    # jsdom test environment
+└── .github/workflows/  # Publish to GitHub Packages on a v* tag
 ```
+
+Components arrive here from `portunix-vscode`; the migration and the admission bar are
+recorded in that repository's **ADR-012** and issue **125**.
 
 ## Contributing
 
