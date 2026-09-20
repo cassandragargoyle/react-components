@@ -1,0 +1,221 @@
+/*
+ *  This file is part of CassandraGargoyle Community Project
+ *  Licensed under the MIT License - see LICENSE file for details
+ */
+
+/* Shared node table panel styles (AG Grid overrides live here, once) */
+/* Follows GUI Design Principles: 4px grid, theme variables, monochrome */
+
+.node-table-panel {
+    flex: 0 0 auto;
+    background: var(--vscode-editor-background, #1e1e1e);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.node-table-panel--collapsed {
+    height: 28px;
+}
+
+.node-table-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 28px;
+    flex: 0 0 28px;
+    padding: 0 8px;
+    background: var(--vscode-editorWidget-background, #252526);
+    border-bottom: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    font-size: 11px;
+}
+
+/* Minimize / restore toggle — anchored at the top-left of the header */
+
+.node-table-panel-minimize {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 6px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    background: transparent;
+    color: var(--vscode-foreground, #cccccc);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.node-table-panel-minimize:hover {
+    background: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.05));
+}
+
+.node-table-panel-chevron {
+    font-size: 22px;
+    line-height: 1;
+}
+
+.node-table-panel-filter-btn {
+    padding: 2px 8px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    background: transparent;
+    color: var(--vscode-descriptionForeground, #858585);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.node-table-panel-filter-btn:hover {
+    background: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.05));
+}
+
+.node-table-panel-filter-btn.active {
+    background: var(--vscode-button-background, #0e639c);
+    color: var(--vscode-button-foreground, #ffffff);
+}
+
+.node-table-panel-count {
+    color: var(--vscode-descriptionForeground, #858585);
+    margin-left: auto;
+}
+
+/* Collapsed header keeps the count next to the button, not pushed right */
+.node-table-panel--collapsed .node-table-panel-count {
+    margin-left: 0;
+}
+
+/* AG Grid container */
+
+.node-table-panel-grid {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+    width: 100%;
+}
+
+.node-table-panel-grid .ag-root-wrapper,
+.node-table-panel-grid .ag-root,
+.node-table-panel-grid .ag-body-viewport {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* AG Grid theme overrides */
+
+.node-table-panel-grid .ag-root-wrapper {
+    border: none !important;
+    border-radius: 0 !important;
+    background: var(--vscode-editor-background, #1e1e1e) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.node-table-panel-grid .ag-root-wrapper-body {
+    height: 100% !important;
+}
+
+.node-table-panel-grid .ag-root {
+    border: none !important;
+}
+
+.node-table-panel-grid .ag-body-viewport {
+    background: var(--vscode-editor-background, #1e1e1e) !important;
+}
+
+.node-table-panel-grid .ag-paging-panel,
+.node-table-panel-grid .ag-status-bar,
+.node-table-panel-grid .ag-overlay {
+    background: var(--vscode-editor-background, #1e1e1e) !important;
+}
+
+/* Header */
+
+.node-table-panel-grid .ag-header {
+    background: var(--vscode-editorWidget-background, #2d2d2d) !important;
+    color: var(--vscode-foreground, #cccccc) !important;
+    border-bottom: 2px solid var(--vscode-focusBorder, #007fd4) !important;
+}
+
+.node-table-panel-grid .ag-header-cell {
+    color: var(--vscode-foreground, #cccccc) !important;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.node-table-panel-grid .ag-header-cell:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.node-table-panel-grid .ag-header-cell-resize {
+    opacity: 0.3;
+}
+
+.node-table-panel-grid .ag-header-cell-resize:hover {
+    opacity: 1;
+}
+
+.node-table-panel-grid .ag-sort-indicator-icon {
+    color: var(--vscode-foreground, #cccccc) !important;
+}
+
+/* Square corners everywhere */
+
+.node-table-panel-grid .ag-root-wrapper,
+.node-table-panel-grid .ag-header,
+.node-table-panel-grid .ag-header-row,
+.node-table-panel-grid .ag-header-cell,
+.node-table-panel-grid .ag-body-viewport,
+.node-table-panel-grid .ag-row,
+.node-table-panel-grid .ag-ltr,
+.node-table-panel-grid .ag-body,
+.node-table-panel-grid .ag-center-cols-viewport {
+    border-radius: 0 !important;
+}
+
+/* Data rows */
+
+.node-table-panel-grid .ag-row {
+    background: var(--vscode-editor-background, #1e1e1e) !important;
+    color: var(--vscode-foreground, #cccccc) !important;
+    cursor: pointer;
+    font-size: 12px;
+    border-bottom: 1px solid var(--vscode-sideBar-border, #3c3c3c) !important;
+}
+
+.node-table-panel-grid .ag-row:hover {
+    background: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.05)) !important;
+}
+
+.node-table-panel-grid .ag-row-selected {
+    background: var(--vscode-list-activeSelectionBackground, #094771) !important;
+    color: #ffffff !important;
+}
+
+.node-table-panel-grid .ag-row-selected .ag-cell {
+    color: #ffffff !important;
+}
+
+.node-table-panel-grid .ag-cell {
+    border: none !important;
+}
+
+/* Scrollbar — match the themed scrollbar used elsewhere (e.g. Explorer) instead of the browser default */
+
+.node-table-panel-grid ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.node-table-panel-grid ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.node-table-panel-grid ::-webkit-scrollbar-thumb {
+    background-color: var(--vscode-scrollbarSlider-background, rgba(121, 121, 121, 0.4));
+    border-radius: 5px;
+}
+
+.node-table-panel-grid ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--vscode-scrollbarSlider-hoverBackground, rgba(100, 100, 100, 0.7));
+}
