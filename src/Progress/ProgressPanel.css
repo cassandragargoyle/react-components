@@ -1,0 +1,223 @@
+/*
+ *  This file is part of CassandraGargoyle Community Project
+ *  Licensed under the MIT License - see LICENSE file for details
+ */
+
+/* Reusable async-progress panel — theme variables, 4px grid, monochrome */
+
+.progress-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 24px;
+    box-sizing: border-box;
+    font-family: var(--vscode-font-family, 'Segoe UI', sans-serif);
+}
+
+.progress-panel-card {
+    width: 100%;
+    max-width: 380px;
+    padding: 20px;
+    border: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    border-radius: 6px;
+    background: var(--vscode-sideBar-background, #252526);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+.progress-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+/* Variant 1 — the rotating braille "snake" (npm/ora-style spinner) */
+.progress-panel-spinner {
+    font-size: 24px;
+    line-height: 1;
+    width: 28px;
+    text-align: center;
+    color: var(--vscode-progressBar-background, #0e70c0);
+    flex-shrink: 0;
+}
+
+/* Variant 2 — an electron orbiting a nucleus on a fixed, tilted orbit (CSS 3D) */
+.progress-panel-atom {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    perspective: 240px;
+}
+
+.progress-panel-scene {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+}
+
+.progress-panel-nucleus {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #6cb6ff, var(--vscode-progressBar-background, #0e70c0) 70%);
+    box-shadow: 0 0 8px rgba(14, 112, 192, 0.7);
+}
+
+.progress-panel-orbit {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    /* Tilt the orbital plane once, then spin within it — same orbit every revolution */
+    transform: rotateX(72deg);
+    animation: progress-panel-orbit-spin 1.4s linear infinite;
+}
+
+.progress-panel-electron {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 9px;
+    height: 9px;
+    margin: -4.5px 0 0 -4.5px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffffff, #b8d6ff 70%);
+    box-shadow: 0 0 6px rgba(184, 214, 255, 0.9);
+    /* Orbit radius; perspective makes it grow at the front and shrink at the back */
+    transform: translateX(16px);
+}
+
+@keyframes progress-panel-orbit-spin {
+    from {
+        transform: rotateX(72deg) rotateZ(0deg);
+    }
+    to {
+        transform: rotateX(72deg) rotateZ(360deg);
+    }
+}
+
+.progress-panel-fail {
+    font-size: 22px;
+    line-height: 1;
+    width: 28px;
+    text-align: center;
+    color: var(--vscode-errorForeground, #f48771);
+    flex-shrink: 0;
+}
+
+.progress-panel-headtext {
+    min-width: 0;
+}
+
+.progress-panel-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--vscode-descriptionForeground, #858585);
+}
+
+.progress-panel-message {
+    font-size: 14px;
+    color: var(--vscode-foreground, #cccccc);
+    margin-top: 2px;
+    word-break: break-word;
+}
+
+.progress-panel-message.is-error {
+    color: var(--vscode-errorForeground, #f48771);
+}
+
+.progress-panel-fields {
+    padding: 8px 0;
+    border-top: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+}
+
+.progress-panel-field {
+    display: flex;
+    gap: 8px;
+    padding: 2px 0;
+    font-size: 12px;
+}
+
+.progress-panel-field-key {
+    color: var(--vscode-descriptionForeground, #858585);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.progress-panel-field-val {
+    color: var(--vscode-foreground, #cccccc);
+    word-break: break-word;
+}
+
+.progress-panel-steps {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 0;
+}
+
+.progress-panel-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 12px;
+    color: var(--vscode-descriptionForeground, #858585);
+}
+
+.progress-panel-step-icon {
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.progress-panel-step.is-done {
+    color: var(--vscode-foreground, #cccccc);
+}
+
+.progress-panel-step.is-done .progress-panel-step-icon {
+    color: var(--vscode-testing-iconPassed, #73c991);
+}
+
+.progress-panel-step.is-active {
+    color: var(--vscode-foreground, #cccccc);
+}
+
+.progress-panel-step.is-active .progress-panel-step-icon {
+    color: var(--vscode-progressBar-background, #0e70c0);
+}
+
+.progress-panel-step.is-error,
+.progress-panel-step.is-error .progress-panel-step-icon {
+    color: var(--vscode-errorForeground, #f48771);
+}
+
+.progress-panel-error {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--vscode-inputValidation-errorBorder, #be1100);
+    border-radius: 4px;
+    background: var(--vscode-inputValidation-errorBackground, rgba(190, 17, 0, 0.15));
+}
+
+.progress-panel-error-msg {
+    font-size: 12px;
+    color: var(--vscode-foreground, #cccccc);
+    word-break: break-word;
+}
+
+.progress-panel-error-hint {
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground, #858585);
+    margin-top: 6px;
+    word-break: break-word;
+}
