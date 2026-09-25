@@ -1,0 +1,228 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="940" viewBox="0 0 880 940" font-family="'Segoe UI', system-ui, sans-serif">
+  <!--
+    OpenPanel component — Pilot's start screen for opening a file or folder and reopening recent items
+    Visual reference — states, row anatomy, IPC flow and post-open routing
+  -->
+  <rect width="880" height="940" fill="#f6f8fb"/>
+  <text x="24" y="40" font-size="20" font-weight="700" fill="#1a2230">OpenPanel</text>
+  <text x="24" y="62" font-size="13" fill="#667">Pilot start screen · Open File / Open Folder · recent items with filter · missing-path guard · IPC through window.fileApi</text>
+
+  <!-- ===== Default state ===== -->
+  <text x="24" y="98" font-size="12" font-weight="700" fill="#667">DEFAULT STATE (renderer window `open.html`, card centred in the viewport)</text>
+
+  <g transform="translate(24,110)">
+    <rect width="470" height="360" fill="#1e1e1e" stroke="#444"/>
+
+    <!-- hero icon (the component's inline folder-plus glyph) -->
+    <g transform="translate(221,16) scale(0.58)" stroke="#3794ff" stroke-width="2.5" fill="none"
+       stroke-linecap="round" stroke-linejoin="round" opacity="0.7">
+      <path d="M4 16 L8 6 L20 6 L26 12 L44 12 L44 40 L8 40 L2 16 Z"/>
+      <path d="M8 24 L14 16 L48 16 L44 40"/>
+      <path d="M26 22 V36"/>
+      <path d="M19 29 H33"/>
+    </g>
+    <text x="235" y="68" font-size="13" text-anchor="middle" fill="#cccccc">Open a File or Project</text>
+
+    <!-- action buttons -->
+    <rect x="141" y="82" width="88" height="24" rx="4" fill="#0e639c"/>
+    <text x="185" y="98" font-size="10" text-anchor="middle" fill="#ffffff">Open File</text>
+    <rect x="241" y="82" width="88" height="24" rx="4" fill="#1177bb"/>
+    <text x="285" y="98" font-size="10" text-anchor="middle" fill="#ffffff">Open Folder</text>
+
+    <!-- recent header -->
+    <text x="40" y="132" font-size="8" font-weight="600" letter-spacing="0.5" fill="#969696">RECENT</text>
+    <rect x="310" y="122" width="124" height="18" rx="4" fill="#2d2d2d" stroke="#3c3c3c"/>
+    <text x="318" y="135" font-size="8" fill="#969696">Filter... (press /)</text>
+
+    <!-- recent rows -->
+    <g font-size="9.5">
+      <!-- hovered row -->
+      <rect x="36" y="146" width="398" height="22" rx="4" fill="#ffffff" opacity="0.05"/>
+      <g transform="translate(44,151) scale(0.75)" stroke="#969696" stroke-width="1.3" fill="none" stroke-linejoin="round">
+        <path d="M0 4L2 0H7L9 3H16V14H0V4Z"/>
+      </g>
+      <text x="66" y="161" fill="#cccccc" font-weight="500">portunix</text>
+      <text x="128" y="161" font-size="9" fill="#969696">~/DEV/CassandraGargoyle/portunix</text>
+
+      <g transform="translate(45,175) scale(0.75)" stroke="#969696" stroke-width="1.3" fill="none" stroke-linejoin="round">
+        <path d="M0 2V14H12V5L8 0H0Z"/><path d="M8 0V5H12"/>
+      </g>
+      <text x="66" y="185" fill="#cccccc" font-weight="500">notes.md</text>
+      <text x="128" y="185" font-size="9" fill="#969696">~/Documents/notes.md</text>
+
+      <g transform="translate(44,199) scale(0.75)" stroke="#969696" stroke-width="1.3" fill="none" stroke-linejoin="round">
+        <path d="M0 4L2 0H7L9 3H16V14H0V4Z"/>
+      </g>
+      <text x="66" y="209" fill="#cccccc" font-weight="500">acme.discovery</text>
+      <text x="128" y="209" font-size="9" fill="#969696">~/DEV/acme.discovery</text>
+
+      <!-- missing item — dimmed, disabled -->
+      <g opacity="0.5">
+        <g transform="translate(45,223) scale(0.75)" stroke="#969696" stroke-width="1.3" fill="none" stroke-linejoin="round">
+          <path d="M0 2V14H12V5L8 0H0Z"/><path d="M8 0V5H12"/>
+        </g>
+        <text x="66" y="233" fill="#cccccc" font-weight="500">old-plan.wf.json</text>
+        <text x="128" y="233" font-size="9" fill="#969696">~/DEV/archive/old-plan.wf.json</text>
+        <rect x="374" y="224" width="52" height="14" rx="3" fill="none" stroke="#444"/>
+        <text x="380" y="234" font-size="8" letter-spacing="0.4" fill="#969696">NOT FOUND</text>
+      </g>
+
+      <g transform="translate(45,247) scale(0.75)" stroke="#969696" stroke-width="1.3" fill="none" stroke-linejoin="round">
+        <path d="M0 2V14H12V5L8 0H0Z"/><path d="M8 0V5H12"/>
+      </g>
+      <text x="66" y="257" fill="#cccccc" font-weight="500">pipeline.graph.json</text>
+      <text x="128" y="257" font-size="9" fill="#969696">~/DEV/pipeline.graph.json</text>
+    </g>
+
+    <!-- clear recent -->
+    <rect x="191" y="276" width="88" height="18" rx="4" fill="none" stroke="#444"/>
+    <text x="235" y="289" font-size="9" text-anchor="middle" fill="#969696">Clear Recent</text>
+
+    <!-- status bar (owned by AppShell, not by OpenPanel) -->
+    <rect y="338" width="470" height="22" fill="#007acc"/>
+    <circle cx="14" cy="349" r="3" fill="#28c840"/>
+    <text x="24" y="353" font-size="8" fill="#ffffff">Connected · main</text>
+    <text x="458" y="353" font-size="8" text-anchor="end" fill="#ffffff">portunix 1.8.0</text>
+  </g>
+
+  <!-- annotations -->
+  <g stroke="#98a2b3" stroke-width="1" fill="none">
+    <path d="M506 148 H494"/>
+    <path d="M506 204 H494"/>
+    <path d="M506 244 H494"/>
+    <path d="M506 272 H494"/>
+    <path d="M506 344 H494"/>
+    <path d="M506 396 H494"/>
+    <path d="M506 460 H494"/>
+  </g>
+  <g font-size="9.5" fill="#98a2b3">
+    <text x="512" y="145">Static hero — inline folder-plus glyph, `currentColor`</text>
+    <text x="512" y="157">tinted by `--vscode-textLink-foreground`</text>
+
+    <text x="512" y="201">Both buttons call <tspan font-weight="700" fill="#5b6570">fileApi.openDialog(type)</tspan>;</text>
+    <text x="512" y="213">the native dialog is opened by the main process</text>
+
+    <text x="512" y="241">Filter input renders only when there are more than</text>
+    <text x="512" y="253">3 recents; pressing “/” in the panel focuses it</text>
+
+    <text x="512" y="269">Row = kind icon + name + shortened path (home → ~).</text>
+    <text x="512" y="281">Click sends <tspan font-weight="700" fill="#5b6570">fileApi.openRecent(path)</tspan>; the full</text>
+    <text x="512" y="293">path is the tooltip</text>
+
+    <text x="512" y="341" fill="#c77700">exists === false → dimmed, disabled, NOT FOUND badge.</text>
+    <text x="512" y="353" fill="#c77700">Main also re-sends the list if a path vanished (#102)</text>
+
+    <text x="512" y="393"><tspan font-weight="700" fill="#5b6570">fileApi.clearRecent()</tspan> — wipes the store and</text>
+    <text x="512" y="405">rebuilds the application menu</text>
+
+    <text x="512" y="457">The status bar belongs to <tspan font-weight="700" fill="#5b6570">AppShell</tspan>, not to</text>
+    <text x="512" y="469">OpenPanel — the entry mounts the panel inside it</text>
+  </g>
+
+  <!-- ===== Other states ===== -->
+  <text x="24" y="506" font-size="12" font-weight="700" fill="#667">OTHER STATES</text>
+
+  <!-- empty state -->
+  <g transform="translate(24,518)">
+    <rect width="270" height="140" fill="#1e1e1e" stroke="#444"/>
+    <g transform="translate(121,14) scale(0.5)" stroke="#3794ff" stroke-width="2.5" fill="none"
+       stroke-linecap="round" stroke-linejoin="round" opacity="0.7">
+      <path d="M4 16 L8 6 L20 6 L26 12 L44 12 L44 40 L8 40 L2 16 Z"/>
+      <path d="M8 24 L14 16 L48 16 L44 40"/>
+      <path d="M26 22 V36"/><path d="M19 29 H33"/>
+    </g>
+    <text x="135" y="58" font-size="11" text-anchor="middle" fill="#cccccc">Open a File or Project</text>
+    <rect x="57" y="68" width="72" height="20" rx="4" fill="#0e639c"/>
+    <text x="93" y="82" font-size="9" text-anchor="middle" fill="#ffffff">Open File</text>
+    <rect x="141" y="68" width="72" height="20" rx="4" fill="#0e639c"/>
+    <text x="177" y="82" font-size="9" text-anchor="middle" fill="#ffffff">Open Folder</text>
+    <text x="135" y="110" font-size="9" text-anchor="middle" fill="#969696">No recently opened files or folders</text>
+    <text x="135" y="124" font-size="8" text-anchor="middle" fill="#969696" opacity="0.7">Use the buttons above or File menu to get started</text>
+  </g>
+  <text x="24" y="674" font-size="9.5" fill="#98a2b3">Empty store — the whole Recent block (header, list, Clear) is not rendered at all</text>
+
+  <!-- no-match state -->
+  <g transform="translate(314,518)">
+    <rect width="270" height="140" fill="#1e1e1e" stroke="#444"/>
+    <text x="16" y="24" font-size="8" font-weight="600" letter-spacing="0.5" fill="#969696">RECENT</text>
+    <rect x="140" y="14" width="114" height="18" rx="4" fill="#2d2d2d" stroke="#3794ff"/>
+    <text x="148" y="27" font-size="8" fill="#cccccc">zzz</text>
+    <rect x="14" y="42" width="242" height="80" rx="4" fill="none" stroke="#3c3c3c" stroke-dasharray="4 3"/>
+    <text x="135" y="78" font-size="9" text-anchor="middle" fill="#969696">No matching items</text>
+    <text x="135" y="98" font-size="8" text-anchor="middle" fill="#969696" opacity="0.7">reserved height keeps the card from jumping</text>
+    <rect x="91" y="128" width="88" height="0.6" fill="#444"/>
+  </g>
+  <text x="314" y="674" font-size="9.5" fill="#98a2b3">Filter with no hits — the list keeps its reserved height, the card stays put</text>
+
+  <!-- height reservation note -->
+  <g transform="translate(604,518)">
+    <rect width="252" height="140" rx="4" fill="#ffffff" stroke="#c8d2e0"/>
+    <text x="14" y="24" font-size="10" font-weight="700" fill="#1a2230">Reserved list height</text>
+    <text x="14" y="44" font-size="9.5" fill="#667">minHeight = min(recents, 9) × 34px</text>
+    <text x="14" y="62" font-size="9.5" fill="#667">Computed from the <tspan font-style="italic">unfiltered</tspan> count, so</text>
+    <text x="14" y="76" font-size="9.5" fill="#667">typing in the filter only swaps the visible</text>
+    <text x="14" y="90" font-size="9.5" fill="#667">rows instead of resizing and re-centring</text>
+    <text x="14" y="104" font-size="9.5" fill="#667">the whole card.</text>
+    <text x="14" y="126" font-size="9" fill="#98a2b3">Beyond ~9 rows the list scrolls (max-height 320px)</text>
+  </g>
+
+  <!-- ===== IPC flow ===== -->
+  <text x="24" y="706" font-size="12" font-weight="700" fill="#667">IPC FLOW (the renderer owns no filesystem access — everything goes through the preload bridge)</text>
+
+  <g font-size="9">
+    <rect x="24" y="718" width="186" height="58" rx="4" fill="#eef4fb" stroke="#7fb3d5"/>
+    <text x="117" y="737" text-anchor="middle" font-size="10" font-weight="600" fill="#1a2230">OpenPanel</text>
+    <text x="117" y="752" text-anchor="middle" fill="#667">renderer · React state</text>
+    <text x="117" y="764" text-anchor="middle" fill="#667">recentItems · filter</text>
+
+    <rect x="234" y="718" width="186" height="58" rx="4" fill="#ffffff" stroke="#c8d2e0"/>
+    <text x="327" y="737" text-anchor="middle" font-size="10" font-weight="600" fill="#1a2230">window.fileApi</text>
+    <text x="327" y="752" text-anchor="middle" fill="#667">electron/preload.ts</text>
+    <text x="327" y="764" text-anchor="middle" fill="#667">contextBridge · ipcRenderer</text>
+
+    <rect x="444" y="718" width="186" height="58" rx="4" fill="#ffffff" stroke="#c8d2e0"/>
+    <text x="537" y="737" text-anchor="middle" font-size="10" font-weight="600" fill="#1a2230">main process</text>
+    <text x="537" y="752" text-anchor="middle" fill="#667">ipcMain · native dialog</text>
+    <text x="537" y="764" text-anchor="middle" fill="#667">openFileOrFolder()</text>
+
+    <rect x="654" y="718" width="202" height="58" rx="4" fill="#ffffff" stroke="#c8d2e0"/>
+    <text x="755" y="737" text-anchor="middle" font-size="10" font-weight="600" fill="#1a2230">recentItems store</text>
+    <text x="755" y="752" text-anchor="middle" fill="#667">recent-items.json (userData)</text>
+    <text x="755" y="764" text-anchor="middle" fill="#667">dedupe by path · max 20</text>
+
+    <g stroke="#98a2b3" stroke-width="1.2" fill="none" marker-end="url(#arrow)">
+      <path d="M210 740 H228"/>
+      <path d="M420 740 H438"/>
+      <path d="M630 740 H648"/>
+      <path d="M648 762 H630"/>
+      <path d="M438 762 H420"/>
+      <path d="M228 762 H210"/>
+    </g>
+  </g>
+
+  <text x="24" y="798" font-size="9.5" fill="#98a2b3">out: file:open-dialog · file:get-recent · file:open-recent · file:clear-recent · file:close-project</text>
+  <text x="24" y="812" font-size="9.5" fill="#98a2b3">in: file:recent-items (list refresh, annotated with `exists`) · file:open-item (routed item push, not consumed by this panel)</text>
+
+  <!-- ===== Post-open routing ===== -->
+  <text x="24" y="848" font-size="12" font-weight="700" fill="#667">AFTER OPENING — the panel does not render the result; the main process replaces the whole renderer</text>
+
+  <g font-size="9">
+    <rect x="24" y="860" width="160" height="34" rx="4" fill="#ffffff" stroke="#c8d2e0"/>
+    <text x="104" y="881" text-anchor="middle" font-size="10" fill="#1a2230">openFileOrFolder()</text>
+    <g stroke="#98a2b3" stroke-width="1.2" fill="none" marker-end="url(#arrow)">
+      <path d="M184 877 H214"/>
+    </g>
+    <rect x="220" y="860" width="636" height="34" rx="4" fill="#ffffff" stroke="#c8d2e0"/>
+    <text x="232" y="874" fill="#667">Workflow Canvas · Graph Canvas · GraphLens 3D · Canvas (image) · Opportunity gallery · Venture workspace</text>
+    <text x="232" y="887" fill="#667">Explorer (folder) · viewer plugin (by extension) · Pilot Chat (fallback) — File ▸ Close Project returns here</text>
+  </g>
+
+  <text x="24" y="920" font-size="9.5" fill="#98a2b3">Colours are VS Code theme variables (--vscode-editor-background, --vscode-button-background, …) with the literal dark fallbacks shown above</text>
+  <text x="24" y="934" font-size="9.5" fill="#98a2b3">open.css is a global stylesheet (body, #root, .app-shell, .status-bar), not a scoped component stylesheet</text>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L8 4 L0 8 z" fill="#98a2b3"/>
+    </marker>
+  </defs>
+</svg>
