@@ -1,151 +1,26 @@
-/* Styles for the Open Panel
-   Uses the same theme variables as Pilot Chat for consistency */
+/*
+ *  This file is part of CassandraGargoyle Community Project
+ *  Licensed under the MIT License - see LICENSE file for details
+ */
 
-:root {
-    --pilot-bg: var(--vscode-editor-background, #1e1e1e);
-    --pilot-fg: var(--vscode-editor-foreground, #cccccc);
-    --pilot-dim: var(--vscode-descriptionForeground, #969696);
-    --pilot-border: var(--vscode-panel-border, #444);
-    --pilot-input-bg: var(--vscode-input-background, #2d2d2d);
-    --pilot-input-fg: var(--vscode-input-foreground, #cccccc);
-    --pilot-input-border: var(--vscode-input-border, #3c3c3c);
-    --pilot-btn-bg: var(--vscode-button-background, #0e639c);
-    --pilot-btn-fg: var(--vscode-button-foreground, #ffffff);
-    --pilot-btn-hover: var(--vscode-button-hoverBackground, #1177bb);
-    --pilot-link: var(--vscode-textLink-foreground, #3794ff);
-}
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-    font-family: var(--vscode-font-family, sans-serif);
-    font-size: var(--vscode-font-size, 13px);
-    background: var(--pilot-bg);
-    color: var(--pilot-fg);
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    overflow: hidden;
-}
-
-#root {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-/* AppShell layout */
-.app-shell {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.app-shell-content {
-    flex: 1;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Status bar */
-.status-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 22px;
-    padding: 0 8px;
-    font-size: 11px;
-    color: #ffffff;
-    flex-shrink: 0;
-    transition: background-color 200ms ease;
-}
-
-.status-bar-connected {
-    background: #007acc;
-}
-
-.status-bar-disconnected {
-    background: #3c3c3c;
-}
-
-.status-bar-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-}
-
-.status-bar-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.status-bar-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 0 4px;
-    height: 22px;
-    cursor: default;
-    border-radius: 2px;
-    transition: background 150ms ease;
-}
-
-.status-bar-item:hover {
-    background: rgba(255, 255, 255, 0.12);
-}
-
-.status-bar-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-
-.status-bar-dot-connected {
-    background: #28c840;
-}
-
-.status-bar-dot-disconnected {
-    background: #f44;
-}
-
-.status-bar-dot-connecting {
-    background: #28c840;
-    animation: status-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes status-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-}
-
-.status-bar-letter {
-    font-weight: 600;
-}
-
-.status-bar-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.status-bar-dimmed {
-    opacity: 0.7;
-}
+/* Open panel: a launcher card with Open File / Open Folder and a filterable recent list
+   Colours read the VS Code theme variables and fall back to a dark theme outside a webview */
 
 /* Open Panel layout */
 .open-panel {
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100%;
     padding: 24px;
     outline: none;
+}
+
+.open-panel *,
+.open-panel *::before,
+.open-panel *::after {
+    box-sizing: border-box;
 }
 
 .open-panel-card {
@@ -158,7 +33,7 @@ body {
 
 .open-panel-icon {
     margin-bottom: 16px;
-    color: var(--pilot-link);
+    color: var(--vscode-textLink-foreground, #3794ff);
     opacity: 0.7;
     line-height: 0;
 }
@@ -166,7 +41,7 @@ body {
 .open-panel-title {
     font-size: 20px;
     font-weight: 400;
-    color: var(--pilot-fg);
+    color: var(--vscode-editor-foreground, #cccccc);
     margin: 0 0 24px 0;
 }
 
@@ -178,8 +53,8 @@ body {
 }
 
 .open-panel-btn {
-    background: var(--pilot-btn-bg);
-    color: var(--pilot-btn-fg);
+    background: var(--vscode-button-background, #0e639c);
+    color: var(--vscode-button-foreground, #ffffff);
     border: none;
     border-radius: 4px;
     padding: 8px 20px;
@@ -190,11 +65,11 @@ body {
 }
 
 .open-panel-btn:hover {
-    background: var(--pilot-btn-hover);
+    background: var(--vscode-button-hoverBackground, #1177bb);
 }
 
 .open-panel-btn:focus-visible {
-    outline: 2px solid var(--pilot-link);
+    outline: 2px solid var(--vscode-textLink-foreground, #3794ff);
     outline-offset: 2px;
 }
 
@@ -215,14 +90,14 @@ body {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--pilot-dim);
+    color: var(--vscode-descriptionForeground, #969696);
     font-weight: 600;
 }
 
 .open-panel-filter {
-    background: var(--pilot-input-bg);
-    color: var(--pilot-input-fg);
-    border: 1px solid var(--pilot-input-border);
+    background: var(--vscode-input-background, #2d2d2d);
+    color: var(--vscode-input-foreground, #cccccc);
+    border: 1px solid var(--vscode-input-border, #3c3c3c);
     border-radius: 4px;
     padding: 3px 8px;
     font-size: 12px;
@@ -232,11 +107,11 @@ body {
 }
 
 .open-panel-filter:focus {
-    border-color: var(--pilot-link);
+    border-color: var(--vscode-textLink-foreground, #3794ff);
 }
 
 .open-panel-filter::placeholder {
-    color: var(--pilot-dim);
+    color: var(--vscode-descriptionForeground, #969696);
 }
 
 /* Recent items list */
@@ -256,7 +131,7 @@ body {
     background: transparent;
     border: none;
     border-radius: 4px;
-    color: var(--pilot-fg);
+    color: var(--vscode-editor-foreground, #cccccc);
     font-size: 13px;
     font-family: inherit;
     cursor: pointer;
@@ -270,7 +145,7 @@ body {
 }
 
 .open-panel-recent-item:focus-visible {
-    outline: 2px solid var(--pilot-link);
+    outline: 2px solid var(--vscode-textLink-foreground, #3794ff);
     outline-offset: -2px;
 }
 
@@ -288,17 +163,17 @@ body {
     flex-shrink: 0;
     margin-left: 8px;
     padding: 1px 6px;
-    border: 1px solid var(--pilot-border);
+    border: 1px solid var(--vscode-panel-border, #444);
     border-radius: 3px;
     font-size: 11px;
-    color: var(--pilot-dim);
+    color: var(--vscode-descriptionForeground, #969696);
     text-transform: uppercase;
     letter-spacing: 0.4px;
 }
 
 .open-panel-recent-icon {
     flex-shrink: 0;
-    color: var(--pilot-dim);
+    color: var(--vscode-descriptionForeground, #969696);
     line-height: 0;
     display: flex;
     align-items: center;
@@ -314,7 +189,7 @@ body {
 }
 
 .open-panel-recent-path {
-    color: var(--pilot-dim);
+    color: var(--vscode-descriptionForeground, #969696);
     font-size: 12px;
     white-space: nowrap;
     overflow: hidden;
@@ -328,8 +203,8 @@ body {
     display: block;
     margin: 12px auto 0;
     background: transparent;
-    color: var(--pilot-dim);
-    border: 1px solid var(--pilot-border);
+    color: var(--vscode-descriptionForeground, #969696);
+    border: 1px solid var(--vscode-panel-border, #444);
     border-radius: 4px;
     padding: 4px 12px;
     font-size: 12px;
@@ -340,13 +215,13 @@ body {
 
 .open-panel-clear:hover {
     background: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.05));
-    color: var(--pilot-fg);
+    color: var(--vscode-editor-foreground, #cccccc);
 }
 
 /* Empty state */
 .open-panel-empty {
     text-align: center;
-    color: var(--pilot-dim);
+    color: var(--vscode-descriptionForeground, #969696);
     padding: 16px 0;
 }
 

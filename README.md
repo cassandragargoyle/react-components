@@ -57,6 +57,7 @@ to import.
 | [`BlockDocument`](https://github.com/cassandragargoyle/react-components/tree/main/src/BlockDocument) | A document of blocks — chapters, paragraphs, images, videos — shown as one page and edited in place |
 | [`Carousel`](https://github.com/cassandragargoyle/react-components/tree/main/src/Carousel) | A three-card fan carousel around a centred hero card |
 | [`NodeTablePanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/NodeTablePanel) | A bottom table panel over AG Grid with an All/Selected filter and selection sync |
+| [`OpenPanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/OpenPanel) | A launcher card: Open File / Open Folder and a filterable list of recent items |
 | [`ProgressPanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/Progress) | An async-progress panel: spinner, message, fields, a step checklist and errors |
 | [`RadialMenu`](https://github.com/cassandragargoyle/react-components/tree/main/src/RadialMenu) | A radial (pie) action menu with nested rings and keyboard navigation |
 

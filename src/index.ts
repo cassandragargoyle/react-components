@@ -33,6 +33,14 @@ export type { CarouselItem, CarouselProps } from './Carousel';
 export { NodeTablePanel } from './NodeTablePanel';
 export type { TableFilter, NodeTableRow } from './NodeTablePanel';
 
+export { OpenPanel, DEFAULT_OPEN_PANEL_LABELS, shortenHomePath } from './OpenPanel';
+export type {
+    OpenPanelProps,
+    OpenPanelRecentItem,
+    OpenPanelItemType,
+    OpenPanelLabels,
+} from './OpenPanel';
+
 export { ProgressPanel } from './Progress';
 export type {
     ProgressPanelProps,

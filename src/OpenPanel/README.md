@@ -1,153 +1,105 @@
 # OpenPanel
 
-Pilot's **start screen**. When no project is open, the Electron window loads
-`open.html` and this panel is all the user sees: a centred card with **Open
-File** / **Open Folder** buttons and a filterable list of **recently opened**
-items. Picking anything hands control to the main process, which routes the
-item to the right viewer and replaces the renderer — so the panel is a launcher,
-never a container.
+A **launcher screen**: a centred card with **Open File** / **Open Folder** buttons and a
+filterable list of **recently opened** items. It fits the "nothing is open yet" screen of a
+desktop app or a webview — the panel starts an action and the host decides what happens next.
 
-Added in #014; the missing-path handling came with #102.
+The panel is host-neutral. It keeps no list of its own and calls no platform API: the
+recent items come in through `recentItems`, and every action goes out through a callback.
+It came from Pilot, the `portunix-vscode` desktop app (#014, missing paths in #102), where a
+thin wrapper binds it to the Electron preload bridge.
 
 ![OpenPanel visual reference](./OpenPanel.svg)
 
-## What it is good for
+## Usage
 
-- **The "nothing is open yet" screen** of the Pilot desktop app
-- **Reopening recent work** — the list is persisted by the main process across
-  restarts and is shared with the File ▸ Open Recent application menu
-- **The landing spot after File ▸ Close Project** (`file:close-project` sends
-  the window back to `open.html`)
+```tsx
+import { OpenPanel, type OpenPanelRecentItem } from '@cassandragargoyle/react-components';
 
-It is **not** a reusable file picker: the component takes no props, reads its
-data straight from `window.fileApi`, and its stylesheet is global rather than
-scoped. Embedding it inside another screen is not supported — use the IPC
-channels directly instead.
+function StartScreen({ host }: { host: MyHost }): React.ReactElement {
+    const [items, setItems] = useState<OpenPanelRecentItem[] | null>(null);
 
-## Where it is mounted
+    useEffect(() => host.loadRecent().then(setItems), [host]);
 
-```
-electron/main.ts        transitionToOpenPanel() → loadFile('renderer/open.html')
-renderer/open.html      <div id="root"> + open.js + open.css
-pilot/ui/entries/index.open.tsx
-                        createRoot(...).render(<AppShell><OpenPanel /></AppShell>)
-```
-
-`AppShell` supplies the status bar (connection, git branch, portunix version);
-`OpenPanel` fills the area above it. The panel is intentionally *not* exported
-from `src/pilot/ui/index.ts` — only the entry point uses it.
-
-## API
-
-The component takes **no props** and exposes no callbacks. Its whole contract is
-the `window.fileApi` bridge published by `src/electron/preload.ts`
-(declared locally in `OpenPanel.tsx` as a `global` augmentation):
-
-| Call | IPC channel | Handled by |
-| ------------------------ | ------------------- | ---------- |
-| `openDialog('file' \| 'folder')` | `file:open-dialog` | native `dialog.showOpenDialog`, then `openFileOrFolder()` |
-| `getRecentItems()` | `file:get-recent` | replies with `file:recent-items` |
-| `openRecent(path)` | `file:open-recent` | existence check, then `openFileOrFolder()` |
-| `clearRecent()` | `file:clear-recent` | wipes the store, rebuilds the menu, replies with an empty list |
-| `onRecentItems(cb)` | `file:recent-items` | list refresh (push, not request/response) |
-| `removeAllListeners()` | — | called on unmount |
-
-`closeProject()` and `onOpenItem()` exist on the same bridge but are used by
-other screens, not by this panel.
-
-A recent item as the panel sees it:
-
-```ts
-interface RecentItem {
-    type: 'file' | 'folder';
-    path: string;
-    name: string;
-    lastOpened: string;
-    exists?: boolean;   // runtime annotation from the main process, never persisted
+    return (
+        <OpenPanel
+            recentItems={items ?? []}
+            loading={items === null}
+            onOpenFile={() => host.pick('file')}
+            onOpenFolder={() => host.pick('folder')}
+            onOpenRecent={item => host.open(item.path)}
+            onClearRecent={() => host.clearRecent().then(() => setItems([]))}
+        />
+    );
 }
 ```
 
-The persisted shape lives in
-[`shared/types/fileTypes.ts`](../../../../shared/types/fileTypes.ts)
-(`RecentItem`, `RecentItemView`, `RecentItemsData`); the store itself is
-`recent-items.json` in Electron's `userData` directory, deduplicated by absolute
-path and capped at 20 entries.
+A button whose callback is omitted is not rendered, so a host that opens only folders
+passes only `onOpenFolder`.
+
+## Props
+
+| Prop | Type | Default | Description |
+| ---- | ---- | ------- | ----------- |
+| `recentItems` | `readonly OpenPanelRecentItem[]` | — | The recent list, most recent first; the panel only filters it |
+| `onOpenFile` | `() => void` | — | Open File button; hidden when omitted |
+| `onOpenFolder` | `() => void` | — | Open Folder button; hidden when omitted |
+| `onOpenRecent` | `(item) => void` | — | A click on a recent row that exists |
+| `onClearRecent` | `() => void` | — | Clear Recent button; hidden when omitted |
+| `loading` | `boolean` | `false` | Shows *Loading recent items...* instead of the empty state |
+| `filterThreshold` | `number` | `3` | The filter input appears above this many items |
+| `formatPath` | `(path) => string` | `shortenHomePath` | Display form of a path; the tooltip keeps the full path |
+| `labels` | `Partial<OpenPanelLabels>` | English | Override of any visible string |
+| `icon` | `ReactNode` | folder-plus | The icon above the title; `null` hides it |
+| `className`, `style` | | — | Applied to the root `.open-panel` element |
+
+A recent item:
+
+```ts
+interface OpenPanelRecentItem {
+    type: 'file' | 'folder';   // drives the row icon
+    path: string;              // key, tooltip and filter haystack
+    name: string;              // bold display name
+    lastOpened?: string;       // carried for the host, not rendered
+    exists?: boolean;          // false → dimmed, disabled, "Not found"
+}
+```
+
+`DEFAULT_OPEN_PANEL_LABELS` and `shortenHomePath` are exported too, for a host that wants
+to extend the defaults rather than replace them.
 
 ## Behavior
 
-- **Mount** — subscribes to `file:recent-items` and immediately sends
-  `file:get-recent`; unmount removes the listeners.
-- **Recent block** — rendered only when the store is non-empty. The filter input
-  appears only above **3** items, and pressing `/` anywhere in the panel (outside
-  an input) focuses it.
-- **Filtering** — case-insensitive substring match against `name` **and** `path`.
-  No hits with a non-empty filter shows *No matching items*.
-- **Stable height** — the list reserves `min(recents, 9) × 34px` computed from
-  the **unfiltered** count, so typing does not resize and re-centre the card. The
-  list scrolls past `max-height: 320px`.
-- **Missing paths (#102)** — an item with `exists === false` renders dimmed and
-  `disabled` with a *Not found* badge and a `"<path> (not found)"` tooltip. The
-  main process re-checks on open and re-sends the annotated list instead of
-  failing silently.
-- **Path shortening** — a leading `/home/<user>` or `C:\Users\<user>` is replaced
-  by `~` for display; the full path stays in the tooltip and in the IPC payload.
-- **Opening** — the panel never learns the outcome. `openFileOrFolder()` records
-  the item, updates the window title and menu, and navigates the window to the
-  matching viewer: Workflow Canvas, Graph Canvas, GraphLens 3D, Canvas (images),
-  Opportunity gallery (`*.discovery`), Venture workspace, Explorer (other
-  folders), a viewer plugin claiming the extension, or Pilot Chat as the
-  fallback.
+- **Filter** — case-insensitive substring match against `name` **and** `path`. Pressing
+  `/` anywhere in the panel (outside an input) focuses the filter. No hits shows
+  *No matching items*.
+- **Stable height** — the list reserves `min(items, 9) × 34px` from the **unfiltered**
+  count, so typing does not resize and re-centre the card. It scrolls past 320px.
+- **Missing paths** — an item with `exists === false` is dimmed and disabled, with a
+  *Not found* badge and a `"<path> (not found)"` tooltip; a click does nothing.
+- **Path shortening** — `shortenHomePath` replaces a leading `/home/<user>`,
+  `/Users/<user>` or `C:\Users\<user>` with `~`.
+- **Empty and loading** — with no items the panel shows the empty state, or the loading
+  line while `loading` is true, in a `role="status"` region.
 
 ## Styling
 
-`open.css` is a **global** stylesheet for the whole open-panel renderer, not a
-scoped component file: it styles `body`, `#root`, `.app-shell` and `.status-bar`
-alongside the `.open-panel-*` rules, and declares the `--pilot-*` custom
-properties (VS Code theme variables with literal dark fallbacks) used across
-Pilot. The entry imports it and
-[`esbuild.open.mjs`](../../../../electron/esbuild.open.mjs) (`.css` → `css`
-loader) emits it as `open.css` next to `open.js`, which is what the `<link>` in
-`open.html` picks up — so unlike most Pilot components there is no
-inject-into-`document.head` fallback here.
-
-Follows the [GUI Design Principles](../../../../../docs/architecture/GUI-DESIGN-PRINCIPLES.md):
-monochrome 16px stroke icons, 4px spacing grid, theme variables with fallbacks,
-`:focus-visible` outlines on every interactive element.
-
-## Caveats
-
-- **Electron-only.** Without `window.fileApi` (a browser or a Storybook-style
-  harness) every call is a silent no-op and the panel is stuck on the empty
-  state — the optional-chaining bridge never reports the missing host.
-- **No loading or error state.** Between mount and the first
-  `file:recent-items` push the panel shows *No recently opened files or folders*,
-  which is indistinguishable from a genuinely empty store.
-- **`removeAllListeners()` is global.** It clears *all* `file:open-item` and
-  `file:recent-items` listeners on the bridge, not just this component's — fine
-  today because the panel owns the whole renderer, but it would break if the
-  panel were ever mounted next to another consumer.
-- **The `/` shortcut queries the DOM** (`document.querySelector('.open-panel-filter')`)
-  instead of using a ref, so it depends on the class name and on a single panel
-  being mounted.
-- **`shortenPath` is heuristic** — it only recognises `/home/<user>` and
-  `C:\Users\<user>`; macOS `/Users/<user>` is left untouched.
-- **Not unit-tested.** There is no test file next to the component; the
-  behaviour is covered only manually through the Electron app.
+The stylesheet is injected once on first use and scoped to `.open-panel-*` classes; it does
+not touch `body` or any page layout. The root fills its parent's height (`height: 100%`),
+so give the parent a height. Colours read the VS Code theme variables
+(`--vscode-button-background`, `--vscode-textLink-foreground`, `--vscode-input-*`,
+`--vscode-descriptionForeground`, `--vscode-list-hoverBackground`, …) with dark-theme
+fallbacks, and every interactive element has a `:focus-visible` outline.
 
 ## Files
 
-- `OpenPanel.tsx` — the panel: recent-items state, filter, IPC calls, inline icons
-- `open.css` — global stylesheet for the open-panel renderer (`--pilot-*`, shell, status bar, `.open-panel-*`)
+- `OpenPanel.tsx` — the component, its props and the default labels
+- `OpenPanel.css` — scoped stylesheet
+- `OpenPanel.test.tsx` — unit tests
 - `OpenPanel.svg` — visual reference (this README's image)
-- `index.ts` — public export (`OpenPanel`)
-
-Related: [`pilot/ui/entries/index.open.tsx`](../../entries/index.open.tsx) (mount),
-[`pilot/ui/shell/AppShell.tsx`](../../shell/AppShell.tsx) (status bar wrapper),
-[`electron/preload.ts`](../../../../electron/preload.ts) (`window.fileApi`),
-[`electron/store/recentItems.ts`](../../../../electron/store/recentItems.ts) (persistence),
-[`electron/main.ts`](../../../../electron/main.ts) (`openFileOrFolder`, routing).
+- `index.ts` — public exports
 
 ---
 
 **Created**: 2026-08-16
-**Last Updated**: 2026-08-16
+**Last Updated**: 2026-09-26

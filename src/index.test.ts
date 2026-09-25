@@ -22,6 +22,8 @@ const EXPECTED = [
     'validateBlockDocument',
     'Carousel',
     'NodeTablePanel',
+    'OpenPanel',
+    'shortenHomePath',
     'ProgressPanel',
     'RadialMenu',
     'useRadialMenu',
@@ -33,7 +35,11 @@ describe('package entry point', () => {
         expect(api[name]).toBeTypeOf('function');
     });
 
+    it('exports the OpenPanel default labels', () => {
+        expect(api.DEFAULT_OPEN_PANEL_LABELS.title).toBe('Open a File or Project');
+    });
+
     it('exports nothing beyond the declared surface', () => {
-        expect(Object.keys(api).sort()).toEqual([...EXPECTED].sort());
+        expect(Object.keys(api).sort()).toEqual([...EXPECTED, 'DEFAULT_OPEN_PANEL_LABELS'].sort());
     });
 });

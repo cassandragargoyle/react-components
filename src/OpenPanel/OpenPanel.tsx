@@ -3,129 +3,214 @@
  *  Licensed under the MIT License - see LICENSE file for details
  */
 
-// Open Panel component for launching files and folders
-// Displays action buttons and a list of recently opened items
+// Open panel: a launcher card with Open File / Open Folder buttons and a filterable
+// list of recently opened items. Host-neutral — data comes in and actions go out through props
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
+import openPanelStyles from './OpenPanel.css';
 
-declare global {
-    interface Window {
-        fileApi?: {
-            openDialog(type: 'file' | 'folder'): void;
-            getRecentItems(): void;
-            openRecent(path: string): void;
-            clearRecent(): void;
-            closeProject(): void;
-            onOpenItem(callback: (item: unknown) => void): void;
-            onRecentItems(callback: (data: unknown) => void): void;
-            removeAllListeners(): void;
-        };
-    }
+// Inject styles once when bundled with the 'text' loader (single-file bundle).
+// Under the 'css' loader the import resolves to a non-string and a sibling
+// stylesheet is emitted instead, so this injection is skipped.
+if (
+    typeof document !== 'undefined' &&
+    typeof openPanelStyles === 'string' &&
+    openPanelStyles &&
+    !document.getElementById('open-panel-styles')
+) {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'open-panel-styles';
+    styleEl.textContent = openPanelStyles;
+    document.head.appendChild(styleEl);
 }
 
-interface RecentItem {
-    type: 'file' | 'folder';
+/** What a recent entry points at — drives the row icon */
+export type OpenPanelItemType = 'file' | 'folder';
+
+/** One row of the recent list */
+export interface OpenPanelRecentItem {
+    type: OpenPanelItemType;
+    /** Full path; the row key, the tooltip and the filter haystack */
     path: string;
+    /** Display name shown in bold */
     name: string;
-    lastOpened: string;
-    // Whether the path still exists on disk; false → dimmed "Not found" (issue 102)
+    /** When the item was last opened; carried for the host, not rendered */
+    lastOpened?: string;
+    /** false → dimmed, disabled row with a "Not found" badge */
     exists?: boolean;
 }
 
-export function OpenPanel(): React.ReactElement {
-    const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
+/** Every user-visible string, overridable for other products or languages */
+export interface OpenPanelLabels {
+    title: string;
+    openFile: string;
+    openFolder: string;
+    recent: string;
+    filterPlaceholder: string;
+    noMatches: string;
+    clearRecent: string;
+    notFound: string;
+    loading: string;
+    empty: string;
+    emptyHint: string;
+}
+
+export const DEFAULT_OPEN_PANEL_LABELS: OpenPanelLabels = {
+    title: 'Open a File or Project',
+    openFile: 'Open File',
+    openFolder: 'Open Folder',
+    recent: 'Recent',
+    filterPlaceholder: 'Filter... (press /)',
+    noMatches: 'No matching items',
+    clearRecent: 'Clear Recent',
+    notFound: 'Not found',
+    loading: 'Loading recent items...',
+    empty: 'No recently opened files or folders',
+    emptyHint: 'Use the buttons above or File menu to get started',
+};
+
+export interface OpenPanelProps {
+    /** The recent list, most recent first; the panel only filters it */
+    recentItems: readonly OpenPanelRecentItem[];
+    /** Open File button; the button is hidden when omitted */
+    onOpenFile?: () => void;
+    /** Open Folder button; the button is hidden when omitted */
+    onOpenFolder?: () => void;
+    /** A click on an existing recent row */
+    onOpenRecent?: (item: OpenPanelRecentItem) => void;
+    /** Clear Recent button; the button is hidden when omitted */
+    onClearRecent?: () => void;
+    /** true while the host has not delivered the list yet — replaces the empty state */
+    loading?: boolean;
+    /** Shows the filter input above this many items */
+    filterThreshold?: number;
+    /** Display form of a path; the full path stays in the tooltip */
+    formatPath?: (path: string) => string;
+    /** Partial override of the built-in strings */
+    labels?: Partial<OpenPanelLabels>;
+    /** Replaces the default folder-plus icon above the title; null hides it */
+    icon?: React.ReactNode;
+    className?: string;
+    style?: React.CSSProperties;
+}
+
+// Row height and cap used to reserve the list height (see reservedListHeight)
+const RECENT_ROW_HEIGHT = 34; // row padding + line height + gap
+const RECENT_VISIBLE_CAP = 9; // rows shown before the list scrolls (~max-height)
+
+/** Replaces a leading home directory (Linux, macOS, Windows) with `~` */
+export function shortenHomePath(fullPath: string): string {
+    return fullPath
+        .replace(/^\/home\/[^/]+/, '~')
+        .replace(/^\/Users\/[^/]+/, '~')
+        .replace(/^[A-Z]:\\Users\\[^\\]+/i, '~');
+}
+
+const DefaultIcon = (
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M4 16 L8 6 L20 6 L26 12 L44 12 L44 40 L8 40 L2 16 Z"
+              stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M8 24 L14 16 L48 16 L44 40"
+              stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <line x1="26" y1="22" x2="26" y2="36" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+        <line x1="19" y1="29" x2="33" y2="29" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+    </svg>
+);
+
+const FolderIcon = (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M0 4L2 0H7L9 3H16V14H0V4Z"
+              stroke="currentColor" strokeWidth="1.3"
+              strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+);
+
+const FileIcon = (
+    <svg width="16" height="16" viewBox="0 0 14 16" fill="none" aria-hidden="true">
+        <path d="M0 2V14H12V5L8 0H0Z"
+              stroke="currentColor" strokeWidth="1.3"
+              strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M8 0V5H12"
+              stroke="currentColor" strokeWidth="1.3"
+              strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+);
+
+export function OpenPanel({
+    recentItems,
+    onOpenFile,
+    onOpenFolder,
+    onOpenRecent,
+    onClearRecent,
+    loading = false,
+    filterThreshold = 3,
+    formatPath = shortenHomePath,
+    labels,
+    icon = DefaultIcon,
+    className,
+    style,
+}: OpenPanelProps): React.ReactElement {
     const [filter, setFilter] = useState('');
-
-    useEffect(() => {
-        window.fileApi?.onRecentItems((data: unknown) => {
-            const payload = data as { items: RecentItem[] };
-            setRecentItems(payload.items || []);
-        });
-
-        // Request recent items on mount
-        window.fileApi?.getRecentItems();
-
-        return () => {
-            window.fileApi?.removeAllListeners();
-        };
-    }, []);
-
-    const handleOpenFile = useCallback(() => {
-        window.fileApi?.openDialog('file');
-    }, []);
-
-    const handleOpenFolder = useCallback(() => {
-        window.fileApi?.openDialog('folder');
-    }, []);
-
-    const handleOpenRecent = useCallback((itemPath: string) => {
-        window.fileApi?.openRecent(itemPath);
-    }, []);
-
-    const handleClearRecent = useCallback(() => {
-        window.fileApi?.clearRecent();
-    }, []);
+    const filterRef = useRef<HTMLInputElement>(null);
+    const text = { ...DEFAULT_OPEN_PANEL_LABELS, ...labels };
+    const showFilter = recentItems.length > filterThreshold;
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-        if (e.key === '/' && !(e.target instanceof HTMLInputElement)) {
+        if (e.key === '/' && !(e.target instanceof HTMLInputElement) && filterRef.current) {
             e.preventDefault();
-            const input = document.querySelector('.open-panel-filter') as HTMLInputElement;
-            input?.focus();
+            filterRef.current.focus();
         }
     }, []);
 
-    const filteredItems = filter
+    const needle = showFilter ? filter.toLowerCase() : '';
+    const filteredItems = needle
         ? recentItems.filter(item =>
-              item.name.toLowerCase().includes(filter.toLowerCase()) ||
-              item.path.toLowerCase().includes(filter.toLowerCase()))
+              item.name.toLowerCase().includes(needle) ||
+              item.path.toLowerCase().includes(needle))
         : recentItems;
 
     // Reserve the list height from the unfiltered count (capped) so filtering only
     // swaps the visible rows instead of resizing and re-centering the whole panel
-    const RECENT_ROW_HEIGHT = 34; // row padding + line height + gap
-    const RECENT_VISIBLE_CAP = 9; // rows shown before the list scrolls (~max-height)
     const reservedListHeight =
         Math.min(recentItems.length, RECENT_VISIBLE_CAP) * RECENT_ROW_HEIGHT;
 
-    const shortenPath = (fullPath: string): string => {
-        const home = fullPath.replace(/^\/home\/[^/]+/, '~')
-            .replace(/^[A-Z]:\\Users\\[^\\]+/, '~');
-        return home;
-    };
-
     return (
-        <div className="open-panel" onKeyDown={handleKeyDown} tabIndex={0}>
+        <div
+            className={className ? `open-panel ${className}` : 'open-panel'}
+            style={style}
+            onKeyDown={handleKeyDown}
+            tabIndex={0}
+        >
             <div className="open-panel-card">
-                <div className="open-panel-icon">
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 16 L8 6 L20 6 L26 12 L44 12 L44 40 L8 40 L2 16 Z"
-                              stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M8 24 L14 16 L48 16 L44 40"
-                              stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        <line x1="26" y1="22" x2="26" y2="36" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                        <line x1="19" y1="29" x2="33" y2="29" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                    </svg>
-                </div>
-                <h1 className="open-panel-title">Open a File or Project</h1>
+                {icon !== null && <div className="open-panel-icon">{icon}</div>}
+                <h1 className="open-panel-title">{text.title}</h1>
 
-                <div className="open-panel-actions">
-                    <button className="open-panel-btn" onClick={handleOpenFile}>
-                        Open File
-                    </button>
-                    <button className="open-panel-btn" onClick={handleOpenFolder}>
-                        Open Folder
-                    </button>
-                </div>
+                {(onOpenFile || onOpenFolder) && (
+                    <div className="open-panel-actions">
+                        {onOpenFile && (
+                            <button type="button" className="open-panel-btn" onClick={onOpenFile}>
+                                {text.openFile}
+                            </button>
+                        )}
+                        {onOpenFolder && (
+                            <button type="button" className="open-panel-btn" onClick={onOpenFolder}>
+                                {text.openFolder}
+                            </button>
+                        )}
+                    </div>
+                )}
 
                 {recentItems.length > 0 && (
                     <div className="open-panel-recent">
                         <div className="open-panel-recent-header">
-                            <span className="open-panel-recent-label">Recent</span>
-                            {recentItems.length > 3 && (
+                            <span className="open-panel-recent-label">{text.recent}</span>
+                            {showFilter && (
                                 <input
+                                    ref={filterRef}
                                     type="text"
                                     className="open-panel-filter"
-                                    placeholder="Filter... (press /)"
+                                    placeholder={text.filterPlaceholder}
+                                    aria-label={text.filterPlaceholder}
                                     value={filter}
                                     onChange={e => setFilter(e.target.value)}
                                 />
@@ -136,56 +221,48 @@ export function OpenPanel(): React.ReactElement {
                             {filteredItems.map(item => {
                                 const missing = item.exists === false;
                                 return (
-                                <button
-                                    key={item.path}
-                                    className={`open-panel-recent-item${missing ? ' open-panel-recent-item-missing' : ''}`}
-                                    onClick={() => !missing && handleOpenRecent(item.path)}
-                                    disabled={missing}
-                                    title={missing ? `${item.path} (not found)` : item.path}
-                                >
-                                    <span className="open-panel-recent-icon">
-                                        {item.type === 'folder' ? (
-                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                                <path d="M0 4L2 0H7L9 3H16V14H0V4Z"
-                                                      stroke="currentColor" strokeWidth="1.3"
-                                                      strokeLinecap="round" strokeLinejoin="round"/>
-                                            </svg>
-                                        ) : (
-                                            <svg width="16" height="16" viewBox="0 0 14 16" fill="none">
-                                                <path d="M0 2V14H12V5L8 0H0Z"
-                                                      stroke="currentColor" strokeWidth="1.3"
-                                                      strokeLinecap="round" strokeLinejoin="round"/>
-                                                <path d="M8 0V5H12"
-                                                      stroke="currentColor" strokeWidth="1.3"
-                                                      strokeLinecap="round" strokeLinejoin="round"/>
-                                            </svg>
+                                    <button
+                                        type="button"
+                                        key={item.path}
+                                        className={`open-panel-recent-item${missing ? ' open-panel-recent-item-missing' : ''}`}
+                                        onClick={() => !missing && onOpenRecent?.(item)}
+                                        disabled={missing}
+                                        title={missing ? `${item.path} (${text.notFound.toLowerCase()})` : item.path}
+                                    >
+                                        <span className="open-panel-recent-icon">
+                                            {item.type === 'folder' ? FolderIcon : FileIcon}
+                                        </span>
+                                        <span className="open-panel-recent-name">{item.name}</span>
+                                        <span className="open-panel-recent-path">{formatPath(item.path)}</span>
+                                        {missing && (
+                                            <span className="open-panel-recent-missing-label">{text.notFound}</span>
                                         )}
-                                    </span>
-                                    <span className="open-panel-recent-name">{item.name}</span>
-                                    <span className="open-panel-recent-path">{shortenPath(item.path)}</span>
-                                    {missing && (
-                                        <span className="open-panel-recent-missing-label">Not found</span>
-                                    )}
-                                </button>
+                                    </button>
                                 );
                             })}
-                            {filteredItems.length === 0 && filter && (
-                                <div className="open-panel-empty">No matching items</div>
+                            {filteredItems.length === 0 && needle && (
+                                <div className="open-panel-empty">{text.noMatches}</div>
                             )}
                         </div>
 
-                        <button className="open-panel-clear" onClick={handleClearRecent}>
-                            Clear Recent
-                        </button>
+                        {onClearRecent && (
+                            <button type="button" className="open-panel-clear" onClick={onClearRecent}>
+                                {text.clearRecent}
+                            </button>
+                        )}
                     </div>
                 )}
 
                 {recentItems.length === 0 && (
-                    <div className="open-panel-empty">
-                        <p>No recently opened files or folders</p>
-                        <p className="open-panel-empty-hint">
-                            Use the buttons above or File menu to get started
-                        </p>
+                    <div className="open-panel-empty" role="status">
+                        {loading ? (
+                            <p>{text.loading}</p>
+                        ) : (
+                            <>
+                                <p>{text.empty}</p>
+                                <p className="open-panel-empty-hint">{text.emptyHint}</p>
+                            </>
+                        )}
                     </div>
                 )}
             </div>
