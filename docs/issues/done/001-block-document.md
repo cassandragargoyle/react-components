@@ -3,7 +3,7 @@ title: INT-001 - BlockDocument, a block-based document viewer and editor
 description: Apply when working on BlockDocument — the document format, the block types, the editing operations and the family house sample.
 category: specification
 ai_load: on-demand
-status: draft
+status: active
 created: 2026-09-25
 related:
   - docs/architecture/GUI-DESIGN-PRINCIPLES.md
@@ -14,15 +14,17 @@ related:
 
 ## Metadata
 
-- **Status**: 📋 Open
+- **Status**: ✅ Implemented
 - **Type**: enhancement
 - **Priority**: medium
 - **Created**: 2026-09-25
+- **Closed**: 2026-09-25
+- **Version**: 0.1.1
 - **Author**: Zdenek
 - **Target**: `src/BlockDocument/` (new component)
 - **GitHub**: [#1](https://github.com/cassandragargoyle/react-components/issues/1)
 - **Related**:
-  - [GUI Design Guidelines](../architecture/GUI-DESIGN-PRINCIPLES.md) — theme, icons,
+  - [GUI Design Guidelines](../../architecture/GUI-DESIGN-PRINCIPLES.md) — theme, icons,
     interaction states
 
 ## Feature Description
@@ -153,20 +155,24 @@ Each is a later issue if it is wanted:
 
 ## Acceptance Criteria
 
-- [ ] `BlockDocument` and its props, the document types, `isBlockDocument` and the four
+- [x] `BlockDocument` and its props, the document types, `isBlockDocument` and the four
       editing functions are exported from `src/index.ts`
-- [ ] The family house sample renders as one page with chapters, paragraphs, images and a
+- [x] The family house sample renders as one page with chapters, paragraphs, images and a
       video, and passes `isBlockDocument`
-- [ ] Chapter headings take their level from nesting depth
-- [ ] The video plays in place with the native controls
-- [ ] Without `onChange` the document cannot be edited, and no editing affordance is shown
-- [ ] With `onChange`, editing text, inserting, deleting and moving blocks (by menu, by drag
-      and by keyboard) each call `onChange` once with the whole new document
-- [ ] A block can be moved into and out of a chapter; a chapter cannot be moved into itself
-- [ ] An unknown block type renders as a placeholder and is preserved through an edit
-- [ ] Text never reaches the DOM as HTML; a `javascript:` link is not rendered as a link
-- [ ] Images without `alt` fail validation; every control has an accessible name
-- [ ] The editing functions have unit tests; the component has tests over the sample
-- [ ] Colours, icons and states follow the GUI design guidelines, in a light and a dark theme
-- [ ] `src/BlockDocument/README.md` documents the format and shows a usage example
-- [ ] `npm run typecheck`, `npm run build` and `npm test` pass
+- [x] Chapter headings take their level from nesting depth
+- [ ] The video plays in place with the native controls - the `<video controls>` element
+      is rendered and tested, but playback was not verified: the sample video is not in the
+      repository
+- [x] Without `onChange` the document cannot be edited, and no editing affordance is shown
+- [x] With `onChange`, editing text, inserting, deleting and moving blocks (by menu, by drag
+      and by keyboard) each call `onChange` once with the whole new document - drag and drop
+      is tested in jsdom only; typing, Enter, Ctrl+B, Alt+arrows and Backspace were also
+      checked in Chrome
+- [x] A block can be moved into and out of a chapter; a chapter cannot be moved into itself
+- [x] An unknown block type renders as a placeholder and is preserved through an edit
+- [x] Text never reaches the DOM as HTML; a `javascript:` link is not rendered as a link
+- [x] Images without `alt` fail validation; every control has an accessible name
+- [x] The editing functions have unit tests; the component has tests over the sample
+- [x] Colours, icons and states follow the GUI design guidelines, in a light and a dark theme
+- [x] `src/BlockDocument/README.md` documents the format and shows a usage example
+- [x] `npm run typecheck`, `npm run build` and `npm test` pass
