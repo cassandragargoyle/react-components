@@ -1,4 +1,4 @@
-# Publish the @cassandragargoyle/react-components package to GitHub Packages
+# Publish the @cassandragargoyle/react-components package to npmjs.com
 # Triggered by a v* tag or manual dispatch; the pattern follows portunix-vscode ADR-011/012
 
 name: Publish
@@ -14,26 +14,32 @@ on:
         type: boolean
         default: false
 
-# GITHUB_TOKEN needs packages:write to publish to GitHub Packages; contents:read
-# is enough for checkout. No personal write:packages PAT required.
+# npm Trusted Publishing: the job proves who it is with a GitHub OIDC token (id-token: write)
+# and npm exchanges it for a short-lived publish credential. No npm token is stored in the
+# repository secrets, and npm attaches provenance to every version it publishes this way.
+# The trusted publisher (this repository, publish.yml) is configured on npmjs.com, in the
+# package's settings
 permissions:
   contents: read
-  packages: write
+  id-token: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '24'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@cassandragargoyle'
+          node-version-file: '.nvmrc'
+          registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
+
+      # Trusted Publishing needs npm 11.5.1 or newer
+      - name: Update npm
+        run: npm install -g npm@latest
 
       - name: Install dependencies
         run: npm ci
@@ -61,6 +67,7 @@ jobs:
 
       # Skip publish if this version already exists on the registry so a re-run
       # (or a workflow_dispatch on an unchanged version) does not hard-fail.
+      # npmjs.com answers anonymous reads, so this needs no credential
       - name: Check if version already published
         id: published
         run: |
@@ -70,17 +77,11 @@ jobs:
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish (dry run)
         if: steps.published.outputs.exists == 'false' && inputs.dry_run
         run: npm publish --dry-run
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish
         if: steps.published.outputs.exists == 'false' && !inputs.dry_run
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

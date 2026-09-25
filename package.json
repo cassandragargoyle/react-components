@@ -4,9 +4,21 @@
   "description": "Reusable, extensible React components shared across the CassandraGargoyle ecosystem",
   "license": "MIT",
   "type": "module",
+  "keywords": [
+    "react",
+    "components",
+    "typescript",
+    "block-editor",
+    "vscode-webview",
+    "cassandragargoyle"
+  ],
+  "homepage": "https://github.com/cassandragargoyle/react-components#readme",
+  "bugs": {
+    "url": "https://github.com/cassandragargoyle/react-components/issues"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cassandragargoyle/react-components"
+    "url": "git+https://github.com/cassandragargoyle/react-components.git"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -30,7 +42,8 @@
     "./package.json": "./package.json"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",

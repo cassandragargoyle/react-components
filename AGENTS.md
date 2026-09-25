@@ -4,7 +4,7 @@
 
 - **Repository**: `https://github.com/cassandragargoyle/react-components`
 - **Project Name**: react-components
-- **Package**: `@cassandragargoyle/react-components`, published to GitHub Packages
+- **Package**: `@cassandragargoyle/react-components`, published to npmjs.com
 - **Primary Purpose**: The shared component library of the CassandraGargoyle ecosystem —
   reusable, extensible React components used across several applications, so that look,
   behaviour and accessibility stay consistent instead of being reimplemented per app
@@ -20,7 +20,7 @@ comments (`#100`, `#105`) are `portunix-vscode` issues.
 - Never run destructive commands without confirmation
 - Always warn about potential data loss before executing risky operations
 - Require explicit confirmation for operations that could lose implemented code
-- Never commit a token; `.npmrc` reads `NODE_AUTH_TOKEN` from the environment
+- Never commit a token; publishing needs none (npm Trusted Publishing from the workflow)
 
 ## Project Structure
 
@@ -33,7 +33,7 @@ comments (`#100`, `#105`) are `portunix-vscode` issues.
 - `/vite.css-as-string.ts` - The plugin that imports a stylesheet as text, for the build
   and the demo alike
 - `/vitest.config.ts` - The jsdom test environment; `*.css` imports resolve to `''`
-- `/.github/workflows/` - Publish to GitHub Packages on a `v*` tag
+- `/.github/workflows/` - Publish to npmjs.com on a `v*` tag
 - `/.vscode/` - Debugging: the demo in Chrome or Edge, and Vitest under the debugger
 - `/docs/issues/` - The specification, one issue per file
 - `/docs/contributing/` - Methodology and conventions
@@ -115,9 +115,7 @@ Key priorities (in order):
 
 ### Prerequisites
 
-- Node.js 24 or newer, with npm
-- For publishing or consuming `@cassandragargoyle/*` packages: a GitHub token with
-  `read:packages` (`write:packages` to publish) exported as `NODE_AUTH_TOKEN`, see `.npmrc`
+- Node.js 24 or newer, with npm — the version is in `.nvmrc`
 
 ### Initial Setup
 
@@ -142,7 +140,10 @@ server, breakpoints in `src/`) and *Tests: the current file*.
 ### Releasing
 
 Bump `version` in `package.json`, commit, and push a matching `vX.Y.Z` tag; the publish
-workflow refuses a tag that does not match `package.json`.
+workflow refuses a tag that does not match `package.json`. It publishes to npmjs.com through
+npm Trusted Publishing — the trusted publisher (this repository, `publish.yml`) is set in the
+package settings on npmjs.com — so no npm token exists in the repository or its secrets.
+Versions 0.1.0 and 0.1.1 were also published to GitHub Packages; nothing new goes there.
 
 ## Testing
 
