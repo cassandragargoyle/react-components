@@ -1,0 +1,387 @@
+/*
+ *  This file is part of CassandraGargoyle Community Project
+ *  Licensed under the MIT License - see LICENSE file for details
+ */
+
+/* BlockDocument (INT-001): one page of blocks, and its editing chrome */
+/* Every colour falls back through the VS Code theme to a literal, per the GUI guidelines */
+
+.bd-document {
+    --bd-fg: var(--vscode-foreground, #cccccc);
+    --bd-fg-strong: var(--vscode-editor-foreground, #e0e0e0);
+    --bd-muted: var(--vscode-descriptionForeground, #858585);
+    --bd-placeholder: var(--vscode-input-placeholderForeground, #6a6a6a);
+    --bd-bg: var(--vscode-editor-background, #1e1e1e);
+    --bd-surface: var(--vscode-editorWidget-background, #252526);
+    --bd-border: var(--vscode-panel-border, #3c3c3c);
+    --bd-menu-border: var(--vscode-menu-border, #454545);
+    --bd-hover: var(--vscode-list-hoverBackground, #2a2d2e);
+    --bd-selected: var(--vscode-list-activeSelectionBackground, #04395e);
+    --bd-selected-fg: var(--vscode-list-activeSelectionForeground, #ffffff);
+    --bd-focus: var(--vscode-focusBorder, #007fd4);
+    --bd-link: var(--vscode-textLink-foreground, #3794ff);
+    --bd-code: var(--vscode-textPreformat-foreground, #ce9178);
+    --bd-danger: var(--vscode-errorForeground, #f48771);
+    --bd-button-bg: var(--vscode-button-background, #0e639c);
+    --bd-button-fg: var(--vscode-button-foreground, #ffffff);
+    --bd-button-hover: var(--vscode-button-hoverBackground, #1177bb);
+    --bd-input-bg: var(--vscode-input-background, #3c3c3c);
+    --bd-input-fg: var(--vscode-input-foreground, #cccccc);
+
+    box-sizing: border-box;
+    max-width: 48rem;
+    padding: 24px;
+    color: var(--bd-fg);
+    background: var(--bd-bg);
+    font-family: var(--vscode-font-family, system-ui, sans-serif);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.bd-document *,
+.bd-document *::before,
+.bd-document *::after {
+    box-sizing: border-box;
+}
+
+/* Room on the left for the handles */
+.bd-document--editable {
+    padding-left: 40px;
+}
+
+.bd-title {
+    margin: 0 0 16px;
+    color: var(--bd-fg-strong);
+    font-size: 24px;
+    line-height: 1.3;
+}
+
+.bd-heading {
+    margin: 24px 0 8px;
+    color: var(--bd-fg-strong);
+    line-height: 1.3;
+}
+
+h2.bd-heading { font-size: 20px; }
+h3.bd-heading { font-size: 16px; }
+h4.bd-heading,
+h5.bd-heading,
+h6.bd-heading { font-size: 14px; }
+
+.bd-paragraph {
+    margin: 0 0 12px;
+    white-space: pre-wrap;
+}
+
+.bd-document a {
+    color: var(--bd-link);
+}
+
+.bd-document code {
+    padding: 0 4px;
+    border-radius: 2px;
+    color: var(--bd-code);
+    background: var(--bd-surface);
+    font-family: var(--vscode-editor-font-family, Consolas, monospace);
+    font-size: 12px;
+}
+
+.bd-figure {
+    margin: 12px 0 16px;
+}
+
+.bd-image,
+.bd-video {
+    display: block;
+    max-width: 100%;
+    border: 1px solid var(--bd-border);
+    background: var(--bd-surface);
+}
+
+.bd-video {
+    width: 100%;
+    background: #000000;
+}
+
+.bd-caption {
+    margin-top: 4px;
+    color: var(--bd-muted);
+    font-size: 12px;
+    font-style: italic;
+}
+
+.bd-unknown,
+.bd-error {
+    margin: 12px 0;
+    padding: 8px 12px;
+    border: 1px dashed var(--bd-border);
+    border-radius: 2px;
+    color: var(--bd-muted);
+    font-size: 12px;
+}
+
+.bd-error {
+    border-style: solid;
+    border-color: var(--bd-danger);
+    color: var(--bd-danger);
+}
+
+/* ===== Editing ===== */
+
+.bd-block {
+    position: relative;
+    border-radius: 2px;
+    outline: none;
+}
+
+.bd-block:focus-visible {
+    box-shadow: 0 0 0 2px var(--bd-focus);
+}
+
+.bd-block--dragging {
+    opacity: 0.5;
+}
+
+.bd-editable {
+    min-height: 1.6em;
+    padding: 0 4px;
+    margin: 0 -4px;
+    border-radius: 2px;
+    outline: none;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.bd-editable:focus {
+    box-shadow: 0 0 0 1px var(--bd-focus);
+}
+
+.bd-editable[data-empty]::before {
+    content: attr(data-placeholder);
+    color: var(--bd-placeholder);
+    font-style: italic;
+    pointer-events: none;
+}
+
+.bd-handle-slot {
+    position: absolute;
+    top: 0;
+    left: -32px;
+    z-index: 2;
+}
+
+/* The space above a chapter is padding, not a heading margin that would collapse out of
+   the block, so the handle lines up with the heading */
+.bd-block--chapter {
+    padding-top: 16px;
+}
+
+.bd-block--chapter > .bd-chapter > .bd-heading {
+    margin-top: 0;
+}
+
+.bd-block--chapter > .bd-handle-slot {
+    top: 16px;
+}
+
+.bd-handle,
+.bd-gap-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    color: var(--bd-muted);
+    background: transparent;
+    cursor: pointer;
+    opacity: 0;
+}
+
+.bd-handle {
+    cursor: grab;
+}
+
+/* Only the innermost block under the pointer or holding focus shows its handle */
+.bd-block:hover:not(:has(.bd-block:hover)) > .bd-handle-slot > .bd-handle,
+.bd-block:focus-within:not(:has(.bd-block:focus-within)) > .bd-handle-slot > .bd-handle,
+.bd-handle[aria-expanded='true'],
+.bd-handle:focus-visible {
+    opacity: 1;
+}
+
+.bd-handle:hover,
+.bd-gap-add:hover,
+.bd-handle[aria-expanded='true'] {
+    color: var(--bd-fg);
+    background: var(--bd-hover);
+}
+
+.bd-handle:focus-visible,
+.bd-gap-add:focus-visible {
+    outline: 2px solid var(--bd-focus);
+    outline-offset: -2px;
+}
+
+/* A gap is a thin strip that shows its "+" on hover and grows while a block is dragged */
+.bd-gap {
+    position: relative;
+    height: 8px;
+    margin: 0;
+}
+
+.bd-gap > .bd-gap-add {
+    position: absolute;
+    top: 50%;
+    left: -32px;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    z-index: 1;
+}
+
+.bd-gap:hover > .bd-gap-add,
+.bd-gap-add[aria-expanded='true'] {
+    opacity: 1;
+}
+
+.bd-document--dragging .bd-gap--droppable {
+    height: 16px;
+}
+
+.bd-document--dragging .bd-gap-add {
+    display: none;
+}
+
+.bd-gap--over::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+    height: 2px;
+    transform: translateY(-50%);
+    background: var(--bd-focus);
+}
+
+.bd-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    min-width: 208px;
+    padding: 4px;
+    border: 1px solid var(--bd-menu-border);
+    border-radius: 4px;
+    background: var(--bd-surface);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.bd-gap > .bd-menu {
+    left: -32px;
+}
+
+.bd-menu-item {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 2px;
+    color: var(--bd-fg);
+    background: transparent;
+    font: inherit;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.bd-menu-item:hover,
+.bd-menu-item:focus {
+    outline: none;
+    color: var(--bd-selected-fg);
+    background: var(--bd-selected);
+}
+
+.bd-menu-item--danger {
+    color: var(--bd-danger);
+}
+
+.bd-media-form,
+.bd-link-form {
+    display: grid;
+    gap: 4px;
+    margin: 8px 0 12px;
+    padding: 12px;
+    border: 1px solid var(--bd-menu-border);
+    border-radius: 4px;
+    background: var(--bd-surface);
+    font-size: 12px;
+}
+
+.bd-link-form label {
+    display: grid;
+    gap: 4px;
+}
+
+.bd-media-form input,
+.bd-link-form input {
+    padding: 4px 8px;
+    border: 1px solid var(--bd-border);
+    border-radius: 2px;
+    color: var(--bd-input-fg);
+    background: var(--bd-input-bg);
+    font: inherit;
+}
+
+.bd-media-form input:focus,
+.bd-link-form input:focus {
+    outline: 1px solid var(--bd-focus);
+    outline-offset: -1px;
+}
+
+.bd-form-error {
+    margin: 0;
+    color: var(--bd-danger);
+}
+
+.bd-form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.bd-button {
+    padding: 4px 12px;
+    border: 1px solid var(--bd-border);
+    border-radius: 2px;
+    color: var(--bd-fg);
+    background: transparent;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.bd-button:hover {
+    background: var(--bd-hover);
+}
+
+.bd-button:focus-visible {
+    outline: 2px solid var(--bd-focus);
+    outline-offset: 1px;
+}
+
+.bd-button--primary {
+    border-color: transparent;
+    color: var(--bd-button-fg);
+    background: var(--bd-button-bg);
+}
+
+.bd-button--primary:hover {
+    background: var(--bd-button-hover);
+}
+
+.bd-add-first {
+    margin-top: 8px;
+}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" font-family="system-ui, sans-serif">
+  <!-- Sample poster for the walk-through video; the video itself is not in the repository -->
+  <rect width="640" height="360" fill="#111111"/>
+  <g fill="none" stroke="#5a5a5a" stroke-width="2" stroke-linejoin="round">
+    <rect x="220" y="150" width="200" height="110"/>
+    <path d="M205 150 L320 80 L435 150 Z"/>
+    <rect x="300" y="200" width="40" height="60"/>
+  </g>
+  <text x="320" y="300" font-size="16" fill="#8a8a8a" text-anchor="middle">Walk-through · 2:40</text>
+</svg>

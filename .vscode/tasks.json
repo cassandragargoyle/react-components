@@ -1,0 +1,40 @@
+{
+  // The steps behind F5. Each one is an npm script, so launch.json and package.json cannot
+  // drift apart
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // Vite, for the "Demo" configurations. The debugger waits for the line Vite prints when
+      // the server is up, rather than for the task to end - it never does
+      "label": "demo: dev server",
+      "type": "shell",
+      "command": "npm run dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "VITE",
+          "endsPattern": "ready in"
+        }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "npm run build",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$tsc"],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "check",
+      "type": "shell",
+      "command": "npm run typecheck && npm test",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": ["$tsc"]
+    }
+  ]
+}

@@ -134,7 +134,7 @@ Media is never fetched by the component on its own: `src` goes through `resolveM
 
 ### The sample
 
-`src/BlockDocument/samples/family-house.json` with its images beside it: an overview, the
+`src/BlockDocument/samples/family-house.blockdocument.json` with its images beside it: an overview, the
 floor plans (SVG), the wiring, the residents, and a video walk-through. The video is
 referenced, not committed: a repository is no place for a large binary, and the tests do not
 play it.

@@ -1,0 +1,56 @@
+{
+  // Debugging react-components. Each target starts the way the npm scripts start it:
+  //
+  //   Demo    the component demo in Chrome, with hot reload - `npm run dev`
+  //   Tests   Vitest under the Node debugger - `npm test`
+  //
+  // Breakpoints land in the sources: Vite serves src/ with source maps from the repository
+  // root, and Vitest runs the TypeScript directly.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Starts the Vite server (task "demo: dev server") and opens the demo page in Chrome.
+      // The server keeps running after the session ends; stop it from the task panel
+      "name": "Demo: BlockDocument in Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "demo: dev server",
+      "url": "http://127.0.0.1:5173/demo/",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true
+    },
+    {
+      // The same page in Edge, for a machine without Chrome
+      "name": "Demo: BlockDocument in Edge",
+      "type": "msedge",
+      "request": "launch",
+      "preLaunchTask": "demo: dev server",
+      "url": "http://127.0.0.1:5173/demo/",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true
+    },
+    {
+      // The test file open in the editor; put a breakpoint in the test or in the component
+      "name": "Tests: the current file",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "${relativeFile}"],
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Tests: all",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run"],
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "console": "integratedTerminal"
+    }
+  ]
+}

@@ -8,8 +8,10 @@
 
 import { dirname, isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
+
+import { cssAsString } from './vite.css-as-string.ts';
 
 const root = dirname(fileURLToPath(import.meta.url));
 
@@ -19,27 +21,6 @@ const root = dirname(fileURLToPath(import.meta.url));
 function isExternal(id: string): boolean {
     if (id.startsWith('.') || id.startsWith('\0') || isAbsolute(id)) return false;
     return true;
-}
-
-// Components import their stylesheet as a default string and inject it at runtime
-// (`import styles from './x.css'; styleEl.textContent = styles`). Redirect bare
-// `.css` imports to Vite's `?inline` so the default export is the CSS text and no
-// separate stylesheet asset is emitted — the library stays self-contained
-function cssAsString(): Plugin {
-    return {
-        name: 'react-components-css-as-string',
-        enforce: 'pre',
-        async resolveId(source, importer, options) {
-            if (source.endsWith('.css')) {
-                const resolved = await this.resolve(source, importer, {
-                    ...options,
-                    skipSelf: true,
-                });
-                if (resolved) return `${resolved.id}?inline`;
-            }
-            return null;
-        },
-    };
 }
 
 export default defineConfig({

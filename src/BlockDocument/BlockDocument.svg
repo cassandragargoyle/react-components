@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="740" viewBox="0 0 960 740" font-family="'Segoe UI', system-ui, sans-serif">
+  <!--
+    BlockDocument component (INT-001)
+    Visual reference — the same family house document read-only and while editing
+  -->
+  <rect width="960" height="740" fill="#f6f8fb"/>
+  <text x="24" y="40" font-size="20" font-weight="700" fill="#1a2230">BlockDocument</text>
+  <text x="24" y="62" font-size="13" fill="#667">A document made of blocks, shown as one page · chapters hold their blocks · edited in place when the host passes onChange</text>
+
+  <text x="24" y="98" font-size="12" font-weight="700" fill="#667">READ-ONLY (no onChange)</text>
+  <text x="496" y="98" font-size="12" font-weight="700" fill="#667">EDITING (onChange given)</text>
+
+  <!-- ===== Read-only ===== -->
+  <g transform="translate(24,110)">
+    <rect width="440" height="560" fill="#1e1e1e" stroke="#3c3c3c"/>
+
+    <!-- document title (h1) -->
+    <text x="24" y="44" font-size="20" font-weight="700" fill="#e0e0e0">Family house Novák</text>
+
+    <!-- chapter, depth 0 (h2) -->
+    <text x="24" y="84" font-size="16" font-weight="700" fill="#cccccc">Floor plans</text>
+    <text x="24" y="110" font-size="12" fill="#cccccc">The ground floor has <tspan font-weight="700">three</tspan> rooms and a <tspan font-style="italic">hall</tspan>.</text>
+
+    <!-- image block: figure + figcaption -->
+    <rect x="24" y="124" width="392" height="150" fill="#252526" stroke="#3c3c3c"/>
+    <g fill="none" stroke="#858585" stroke-width="1.5">
+      <rect x="60" y="140" width="320" height="118"/>
+      <line x1="220" y1="140" x2="220" y2="258"/>
+      <line x1="220" y1="200" x2="380" y2="200"/>
+      <line x1="60" y1="215" x2="160" y2="215"/>
+      <line x1="160" y1="215" x2="160" y2="258"/>
+    </g>
+    <g font-size="9" fill="#858585" text-anchor="middle">
+      <text x="140" y="182">Living room</text>
+      <text x="300" y="174">Kitchen</text>
+      <text x="300" y="234">Bedroom</text>
+      <text x="110" y="240">Hall</text>
+      <text x="190" y="240">WC</text>
+    </g>
+    <text x="24" y="292" font-size="11" font-style="italic" fill="#858585">Ground floor</text>
+
+    <!-- chapter, depth 0, with a nested chapter (h3) -->
+    <text x="24" y="330" font-size="16" font-weight="700" fill="#cccccc">Wiring</text>
+    <text x="24" y="358" font-size="14" font-weight="700" fill="#cccccc">Heating circuit</text>
+    <text x="24" y="382" font-size="12" fill="#cccccc">The boiler switches with relay <tspan font-family="Consolas, monospace" fill="#ce9178">K3</tspan>, see the <tspan fill="#3794ff" text-decoration="underline">manual</tspan>.</text>
+
+    <!-- video block: native controls -->
+    <rect x="24" y="398" width="392" height="112" fill="#000000"/>
+    <circle cx="220" cy="446" r="20" fill="none" stroke="#e0e0e0" stroke-width="1.5"/>
+    <path d="M214 436 L230 446 L214 456 Z" fill="#e0e0e0"/>
+    <rect x="24" y="490" width="392" height="20" fill="#252526"/>
+    <path d="M36 495 L44 500 L36 505 Z" fill="#cccccc"/>
+    <rect x="56" y="499" width="290" height="3" rx="1.5" fill="#3c3c3c"/>
+    <rect x="56" y="499" width="96" height="3" rx="1.5" fill="#3794ff"/>
+    <text x="406" y="504" font-size="9" fill="#cccccc" text-anchor="end">0:52 / 2:40</text>
+    <text x="24" y="530" font-size="11" font-style="italic" fill="#858585">Walk-through</text>
+  </g>
+
+  <!-- ===== Editing ===== -->
+  <g transform="translate(496,110)">
+    <rect width="440" height="560" fill="#1e1e1e" stroke="#3c3c3c"/>
+
+    <!-- title is editable as plain text -->
+    <text x="40" y="44" font-size="20" font-weight="700" fill="#e0e0e0">Family house Novák</text>
+    <text x="40" y="84" font-size="16" font-weight="700" fill="#cccccc">Floor plans</text>
+
+    <!-- focused paragraph: handle shown, focus outline, caret -->
+    <rect x="34" y="95" width="386" height="22" rx="2" fill="none" stroke="#007fd4"/>
+    <text x="40" y="110" font-size="12" fill="#cccccc">The ground floor has <tspan font-weight="700">three</tspan> rooms and a <tspan font-style="italic">hall</tspan>.</text>
+    <line x1="298" y1="99" x2="298" y2="113" stroke="#e0e0e0"/>
+    <rect x="8" y="97" width="20" height="18" rx="3" fill="#2a2d2e"/>
+    <g fill="#cccccc">
+      <circle cx="15" cy="101" r="1.3"/><circle cx="21" cy="101" r="1.3"/>
+      <circle cx="15" cy="106" r="1.3"/><circle cx="21" cy="106" r="1.3"/>
+      <circle cx="15" cy="111" r="1.3"/><circle cx="21" cy="111" r="1.3"/>
+    </g>
+
+    <!-- image block, partly under the open menu -->
+    <rect x="40" y="124" width="376" height="150" fill="#252526" stroke="#3c3c3c"/>
+    <g fill="none" stroke="#858585" stroke-width="1.5">
+      <rect x="70" y="140" width="316" height="118"/>
+      <line x1="228" y1="140" x2="228" y2="258"/>
+      <line x1="228" y1="200" x2="386" y2="200"/>
+    </g>
+    <text x="40" y="292" font-size="11" font-style="italic" fill="#858585">Ground floor</text>
+
+    <!-- block menu, opened from the handle -->
+    <g transform="translate(8,120)">
+      <rect width="206" height="186" rx="3" fill="#252526" stroke="#454545"/>
+      <g font-size="11" fill="#cccccc">
+        <rect x="4" y="3" width="198" height="18" rx="2" fill="#04395e"/>
+        <text x="12" y="16" fill="#ffffff">Insert paragraph below</text>
+        <text x="12" y="34">Insert chapter below</text>
+        <text x="12" y="52">Insert image below</text>
+        <text x="12" y="70">Insert video below</text>
+        <line x1="8" y1="80" x2="198" y2="80" stroke="#454545"/>
+        <text x="12" y="96">Move up</text><text x="194" y="96" fill="#858585" text-anchor="end">Alt+↑</text>
+        <text x="12" y="114">Move down</text><text x="194" y="114" fill="#858585" text-anchor="end">Alt+↓</text>
+        <text x="12" y="132">Move into chapter above</text><text x="194" y="132" fill="#858585" text-anchor="end">Alt+→</text>
+        <text x="12" y="150">Move out of chapter</text><text x="194" y="150" fill="#858585" text-anchor="end">Alt+←</text>
+        <line x1="8" y1="160" x2="198" y2="160" stroke="#454545"/>
+        <text x="12" y="176" fill="#f48771">Delete</text>
+      </g>
+    </g>
+
+    <!-- insertion gap: "+" on hover, drop indicator while dragging -->
+    <line x1="40" y1="316" x2="416" y2="316" stroke="#007fd4" stroke-width="2"/>
+    <circle cx="18" cy="316" r="9" fill="#2a2d2e" stroke="#007fd4"/>
+    <path d="M18 311 V321 M13 316 H23" stroke="#cccccc" stroke-width="1.5" stroke-linecap="round"/>
+
+    <!-- chapter just opened with Enter: an empty paragraph with its placeholder -->
+    <text x="40" y="344" font-size="16" font-weight="700" fill="#cccccc">Residents</text>
+    <text x="40" y="368" font-size="12" font-style="italic" fill="#6a6a6a">Type something…</text>
+
+    <!-- video with an empty caption placeholder -->
+    <rect x="40" y="382" width="376" height="112" fill="#000000"/>
+    <circle cx="228" cy="430" r="20" fill="none" stroke="#e0e0e0" stroke-width="1.5"/>
+    <path d="M222 420 L238 430 L222 440 Z" fill="#e0e0e0"/>
+    <rect x="40" y="474" width="376" height="20" fill="#252526"/>
+    <path d="M52 479 L60 484 L52 489 Z" fill="#cccccc"/>
+    <rect x="72" y="483" width="280" height="3" rx="1.5" fill="#3c3c3c"/>
+    <text x="40" y="514" font-size="11" font-style="italic" fill="#6a6a6a">Add a caption</text>
+
+    <!-- media form, opened by "Insert image below" -->
+    <rect x="40" y="524" width="376" height="28" rx="3" fill="#252526" stroke="#454545"/>
+    <text x="50" y="542" font-size="10" fill="#858585">Image address · Alternative text (required) · Insert · Cancel</text>
+  </g>
+
+  <!-- ===== Legend ===== -->
+  <g font-size="11" fill="#1a2230">
+    <text x="24" y="698"><tspan font-weight="700">Handle</tspan> — click for the block menu, drag to move the block, also into and out of a chapter · <tspan font-weight="700">+</tspan> between blocks inserts one, and is the drop target</text>
+    <text x="24" y="716"><tspan font-weight="700">Keys</tspan> — Enter splits a paragraph or opens a chapter · Backspace removes an empty paragraph or joins it upward · Alt+arrows move · Ctrl+B / I / K</text>
+    <text x="24" y="734" fill="#667">Colours come from the host theme (var(--vscode-*), shown in Dark+) · heading level = nesting depth · text is spans, never HTML</text>
+  </g>
+</svg>

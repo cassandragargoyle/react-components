@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="320" viewBox="0 0 640 320" font-family="system-ui, sans-serif">
+  <!-- Sample image for the family house document: the street side -->
+  <g fill="none" stroke="#8a8a8a" stroke-width="2" stroke-linejoin="round">
+    <line x1="40" y1="290" x2="600" y2="290"/>
+    <rect x="170" y="140" width="300" height="150"/>
+    <path d="M150 140 L320 40 L490 140 Z"/>
+    <g stroke-width="1.5">
+      <path d="M340 60 L420 107 M355 51 L435 98 M370 42 L450 89"/>
+    </g>
+    <rect x="195" y="200" width="46" height="90"/>
+    <circle cx="232" cy="248" r="2.5" fill="#8a8a8a"/>
+    <rect x="275" y="205" width="70" height="50"/>
+    <rect x="375" y="205" width="70" height="50"/>
+    <rect x="215" y="158" width="60" height="30"/>
+    <rect x="300" y="158" width="60" height="30"/>
+    <rect x="385" y="158" width="60" height="30"/>
+    <rect x="400" y="60" width="26" height="46"/>
+  </g>
+  <text x="320" y="312" font-size="12" fill="#8a8a8a" text-anchor="middle">Street side</text>
+</svg>

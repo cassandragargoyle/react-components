@@ -9,6 +9,24 @@
 export { Avatar } from './Avatar';
 export type { AvatarProps, AvatarKind } from './Avatar';
 
+export { BlockDocument, isBlockDocument, validateBlockDocument, insertBlock, removeBlock, moveBlock, updateBlock, canMoveBlock } from './BlockDocument';
+export type {
+    BlockDocumentProps,
+    BlockDocumentValidation,
+    BlockDocumentData,
+    BlockLocation,
+    BlockPatch,
+    ChapterBlock,
+    DocumentBlock,
+    ImageBlock,
+    KnownBlock,
+    ParagraphBlock,
+    RichText,
+    TextSpan,
+    UnknownBlock,
+    VideoBlock,
+} from './BlockDocument';
+
 export { Carousel } from './Carousel';
 export type { CarouselItem, CarouselProps } from './Carousel';
 

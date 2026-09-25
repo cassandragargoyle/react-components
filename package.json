@@ -1,6 +1,6 @@
 {
   "name": "@cassandragargoyle/react-components",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Reusable, extensible React components shared across the CassandraGargoyle ecosystem",
   "license": "MIT",
   "type": "module",
@@ -16,6 +16,7 @@
   ],
   "scripts": {
     "build": "vite build",
+    "dev": "vite --config demo/vite.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",

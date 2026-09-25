@@ -27,10 +27,14 @@ comments (`#100`, `#105`) are `portunix-vscode` issues.
 - `/src/<Component>/` - One directory per component: the component, its stylesheet, its
   types and hooks, its tests and its `README.md`. `index.ts` is its barrel
 - `/src/index.ts` - The public entry point; only what it exports is public API
+- `/demo/` - The demo page served by `npm run dev`; it imports the public entry point
 - `/types/` - Ambient declarations (CSS and SVG modules, JSX, testing matchers)
 - `/vite.config.ts` - The library build: ES modules plus the `.d.ts` tree in `dist/`
+- `/vite.css-as-string.ts` - The plugin that imports a stylesheet as text, for the build
+  and the demo alike
 - `/vitest.config.ts` - The jsdom test environment; `*.css` imports resolve to `''`
 - `/.github/workflows/` - Publish to GitHub Packages on a `v*` tag
+- `/.vscode/` - Debugging: the demo in Chrome or Edge, and Vitest under the debugger
 - `/docs/issues/` - The specification, one issue per file
 - `/docs/contributing/` - Methodology and conventions
 - `/docs/architecture/` - GUI design guidelines
@@ -128,8 +132,12 @@ npm run build
 
 ```bash
 npm run build           # the library: ES modules and .d.ts into dist/
-npm run typecheck       # tsc --noEmit over src/ and types/
+npm run typecheck       # tsc --noEmit over src/, types/ and demo/
+npm run dev             # the demo at http://127.0.0.1:5173/demo/, reloading on save
 ```
+
+In Visual Studio Code, **Run and Debug** offers *Demo: BlockDocument in Chrome* (starts the
+server, breakpoints in `src/`) and *Tests: the current file*.
 
 ### Releasing
 

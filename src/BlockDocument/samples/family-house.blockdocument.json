@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "id": "family-house-novak",
+  "title": "Family house Novák",
+  "blocks": [
+    {
+      "id": "overview",
+      "type": "chapter",
+      "title": [{ "text": "Overview" }],
+      "children": [
+        {
+          "id": "overview-text",
+          "type": "paragraph",
+          "text": [
+            { "text": "A detached two-storey house built in 2019, with a " },
+            { "text": "heat pump", "bold": true },
+            { "text": ", underfloor heating on the ground floor and a rooftop photovoltaic array of 6 kWp." }
+          ]
+        },
+        {
+          "id": "overview-exterior",
+          "type": "image",
+          "src": "plans/exterior.svg",
+          "alt": "Front view of the house: two storeys, a gable roof with solar panels, the entrance on the left",
+          "caption": [{ "text": "The street side" }]
+        },
+        {
+          "id": "overview-note",
+          "type": "paragraph",
+          "text": [
+            { "text": "This document is the house's own manual: where things are, how they are wired, and who may do what. Keep it " },
+            { "text": "up to date", "italic": true },
+            { "text": " after every change to the installation." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plans",
+      "type": "chapter",
+      "title": [{ "text": "Floor plans" }],
+      "children": [
+        {
+          "id": "plans-ground",
+          "type": "chapter",
+          "title": [{ "text": "Ground floor" }],
+          "children": [
+            {
+              "id": "plans-ground-text",
+              "type": "paragraph",
+              "text": [
+                { "text": "The ground floor has " },
+                { "text": "three", "bold": true },
+                { "text": " rooms and a hall: the living room with the kitchen, a study, and the technical room with the boiler and the distribution board." }
+              ]
+            },
+            {
+              "id": "plans-ground-image",
+              "type": "image",
+              "src": "plans/ground-floor.svg",
+              "alt": "Ground floor plan: living room and kitchen on the right, hall, WC and technical room on the left, study at the back",
+              "caption": [{ "text": "Ground floor, 1 : 100" }]
+            }
+          ]
+        },
+        {
+          "id": "plans-first",
+          "type": "chapter",
+          "title": [{ "text": "First floor" }],
+          "children": [
+            {
+              "id": "plans-first-text",
+              "type": "paragraph",
+              "text": [{ "text": "Three bedrooms and a bathroom around the landing." }]
+            },
+            {
+              "id": "plans-first-image",
+              "type": "image",
+              "src": "plans/first-floor.svg",
+              "alt": "First floor plan: parents' bedroom, two children's rooms and a bathroom around the landing",
+              "caption": [{ "text": "First floor, 1 : 100" }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wiring",
+      "type": "chapter",
+      "title": [{ "text": "Wiring" }],
+      "children": [
+        {
+          "id": "wiring-text",
+          "type": "paragraph",
+          "text": [
+            { "text": "All circuits start in the distribution board " },
+            { "text": "RD1", "code": true },
+            { "text": " in the technical room. The smart home controller sits on the same DIN rail." }
+          ]
+        },
+        {
+          "id": "wiring-board",
+          "type": "chapter",
+          "title": [{ "text": "Distribution board" }],
+          "children": [
+            {
+              "id": "wiring-board-image",
+              "type": "image",
+              "src": "plans/wiring.svg",
+              "alt": "Single-line diagram of RD1: main switch, residual current device, and breakers for lights, sockets, kitchen, heat pump and the controller",
+              "caption": [{ "text": "RD1, single-line diagram" }]
+            },
+            {
+              "id": "wiring-board-text",
+              "type": "paragraph",
+              "text": [
+                { "text": "Lights are on " },
+                { "text": "F1", "code": true },
+                { "text": " and " },
+                { "text": "F2", "code": true },
+                { "text": " (B10), sockets on " },
+                { "text": "F3", "code": true },
+                { "text": " to " },
+                { "text": "F5", "code": true },
+                { "text": " (B16), the heat pump on its own " },
+                { "text": "F8", "code": true },
+                { "text": " (C20)." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "wiring-heating",
+          "type": "chapter",
+          "title": [{ "text": "Heating circuit" }],
+          "children": [
+            {
+              "id": "wiring-heating-text",
+              "type": "paragraph",
+              "text": [
+                { "text": "The controller switches the circulation pump with relay " },
+                { "text": "K3", "code": true },
+                { "text": "; the heat pump itself is driven over Modbus. See the " },
+                { "text": "heat pump manual", "href": "https://example.com/heat-pump-manual.pdf" },
+                { "text": " for the register map." }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "residents",
+      "type": "chapter",
+      "title": [{ "text": "Residents" }],
+      "children": [
+        {
+          "id": "residents-adults",
+          "type": "paragraph",
+          "text": [
+            { "text": "Jana", "bold": true },
+            { "text": " — owner, administrator of the smart home system.\n" },
+            { "text": "Petr", "bold": true },
+            { "text": " — owner, may change schedules and scenes." }
+          ]
+        },
+        {
+          "id": "residents-children",
+          "type": "paragraph",
+          "text": [
+            { "text": "Eliška", "bold": true },
+            { "text": " (12) and " },
+            { "text": "Tomáš", "bold": true },
+            { "text": " (9) control the lights and blinds in their own rooms only." }
+          ]
+        },
+        {
+          "id": "residents-contact",
+          "type": "paragraph",
+          "text": [
+            { "text": "Service contact: " },
+            { "text": "servis@example.com", "href": "mailto:servis@example.com" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "walk-through",
+      "type": "video",
+      "src": "media/walk-through.mp4",
+      "poster": "media/walk-through-poster.svg",
+      "caption": [{ "text": "Walk-through of the house and the technical room" }]
+    }
+  ]
+}

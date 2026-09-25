@@ -12,6 +12,14 @@ import * as api from './index';
 
 const EXPECTED = [
     'Avatar',
+    'BlockDocument',
+    'canMoveBlock',
+    'insertBlock',
+    'isBlockDocument',
+    'moveBlock',
+    'removeBlock',
+    'updateBlock',
+    'validateBlockDocument',
     'Carousel',
     'NodeTablePanel',
     'ProgressPanel',
