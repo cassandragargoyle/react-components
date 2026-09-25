@@ -12,3 +12,6 @@ coverage/
 # Editor and OS noise
 .DS_Store
 *.log
+
+# The active assistant role, chosen per developer with /role
+CLAUDE.local.md
