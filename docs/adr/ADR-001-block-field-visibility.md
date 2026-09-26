@@ -6,7 +6,7 @@ ai_load: on-demand
 status: draft
 created: 2026-09-26
 related:
-  - docs/issues/003-address-block.md
+  - docs/issues/done/003-address-block.md
   - src/BlockDocument/
 ---
 
@@ -22,7 +22,7 @@ The blocks of the first version (INT-001) show everything they hold. A paragraph
 text, and an image is its picture and its caption. What such a block stores and what the
 reader sees are the same thing.
 
-The address block ([INT-003](../issues/003-address-block.md)) breaks that. It holds a
+The address block ([INT-003](../issues/done/003-address-block.md)) breaks that. It holds a
 postal address and the GPS coordinates of the place. A reader of the family house
 document wants the address. The coordinates are there for whoever edits the document and
 for the application that embeds it: to put the house on a map, or to navigate to it. Printed

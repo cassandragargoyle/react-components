@@ -8,7 +8,7 @@ language: cs
 translation_of: ADR-001-block-field-visibility.md
 created: 2026-09-26
 related:
-  - docs/issues/003-address-block.md
+  - docs/issues/done/003-address-block.md
   - src/BlockDocument/
 ---
 
@@ -27,7 +27,7 @@ related:
 Bloky první verze (INT-001) ukazují všechno, co obsahují. Odstavec je jeho text, obrázek
 je jeho obrázek a popisek. To, co blok ukládá, a to, co čtenář vidí, je totéž.
 
-Blok adresy ([INT-003](../issues/003-address-block.md)) to porušuje. Obsahuje poštovní
+Blok adresy ([INT-003](../issues/done/003-address-block.md)) to porušuje. Obsahuje poštovní
 adresu a GPS souřadnice místa. Čtenář dokumentu o rodinném domě chce adresu. Souřadnice
 jsou tu pro toho, kdo dokument upravuje, a pro aplikaci, která ho vkládá: aby dům zobrazila
 na mapě nebo k němu navigovala. Vytištěné pod adresou jsou jen šumem.

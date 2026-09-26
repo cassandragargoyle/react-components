@@ -4,7 +4,7 @@ A document made of **blocks** — chapters, paragraphs, images, videos, addresse
 one page and edited in place, the way Notion does it. The host owns the document; every edit
 is proposed to it whole through `onChange`. Specified in
 [INT-001](../../docs/issues/done/001-block-document.md) and
-[INT-003](../../docs/issues/003-address-block.md).
+[INT-003](../../docs/issues/done/003-address-block.md).
 
 ![BlockDocument visual reference](./BlockDocument.svg)
 
