@@ -154,15 +154,31 @@ block. The form:
   longitude, each with a label. A coordinate may be typed with a decimal comma
 - Marks every field that the document does not show, both visibly and for a screen
   reader, with the text *Not shown in the document*
-- Has a *Show in document* switch per field, which writes the block's `visibility`. It
-  starts at the value the three levels produce. A switch set back to what the host and type
-  levels already give removes its key, so that `visibility` holds only real overrides
 - Refuses to save an empty address, coordinates out of range or only one of them, and a
   RÚIAN code that is not a positive whole number, with a message that names the field and
   focus moved to it
 
 In edit mode, the block itself also shows its hidden fields, dimmed and marked the same
 way, so that the author sees what the reader will not.
+
+### Block tools: edit and display settings
+
+A selected block, meaning the innermost one under the pointer or holding focus, shows two
+buttons on its right, the way its handle shows on its left:
+
+- **Edit** (a pencil) opens the form of an image, a video or an address, and puts the caret
+  at the end of a paragraph or a chapter title. An unknown block has none
+- **Display settings** (a gear), only on a type that declares fields (image, video,
+  address), opens a panel with a *Show in document* switch per declared field. Each switch
+  writes the block's `visibility` at once. It starts at the value the three levels produce,
+  and one set back to what the host and type levels already give removes its key, so that
+  `visibility` holds only real overrides. A field overridden by the block is marked
+  *this block*. `Escape` or *Done* closes the panel and returns focus to the gear
+
+Judgement call: **the data and the display are apart.** The form edits what the block
+says, and the display settings choose what the document shows of it. So a change of
+visibility needs no *Save*, and the form stays the same for every host. The switches
+first proposed inside the address form moved to the display settings
 
 ### The data
 
@@ -202,11 +218,14 @@ way, so that the author sees what the reader will not.
       directions (`true` and `false`)
 - [ ] A field that no level names keeps the type default, and an unknown field name in
       `visibility` is ignored and preserved through an edit
-- [ ] The *Show in document* switch writes `visibility`, and switching back to the
-      inherited value removes the key
+- [ ] A selected block shows *Edit* and, for image, video and address, *Display settings*
+      on its right; *Edit* opens the form or puts the caret into the text
+- [ ] A *Show in document* switch in the display settings writes `visibility` at once, and
+      switching back to the inherited value removes the key; the address form has no
+      switches
 - [ ] The form refuses an empty address and coordinates out of range, and names the field
-- [ ] The form is fully keyboard operable. Every input and switch has a label, and the
-      hidden marker is announced to a screen reader
+- [ ] The form and the display settings are fully keyboard operable. Every input and
+      switch has a label, and the hidden marker is announced to a screen reader
 - [ ] Chapter, paragraph, image and video render exactly as before (the existing tests
       pass unchanged)
 - [ ] `validateBlockDocument` rejects a malformed `gps`, an unknown `houseNumberType`, a

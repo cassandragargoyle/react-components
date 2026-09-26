@@ -8,7 +8,8 @@
 
 import { createContext, useContext } from 'react';
 
-import type { BlockFieldVisibility, DocumentBlock, KnownBlockType } from './types';
+import { ADDRESS_FIELD_LABELS } from './address';
+import type { BlockFieldVisibility, DocumentBlock, FieldVisibility, KnownBlockType } from './types';
 
 /**
  * The fields each known type can show or hide, with whether the document shows them by default.
@@ -31,6 +32,18 @@ export const BLOCK_FIELDS: Readonly<Record<KnownBlockType, Readonly<Record<strin
         gps: false,
     },
 };
+
+const FIELD_LABELS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+    image: { caption: 'Caption' },
+    video: { poster: 'Poster', caption: 'Caption' },
+    address: ADDRESS_FIELD_LABELS,
+};
+
+/** The fields of a block the display settings offer, with their labels; empty for a type with none */
+export function declaredFields(block: DocumentBlock): { field: string; label: string }[] {
+    const declared = (BLOCK_FIELDS as Record<string, Record<string, boolean> | undefined>)[block.type] ?? {};
+    return Object.keys(declared).map((field) => ({ field, label: FIELD_LABELS[block.type]?.[field] ?? field }));
+}
 
 /**
  * Whether the document shows `field` of `block`: the block's `visibility`, else the host's
@@ -65,4 +78,21 @@ export const FieldVisibilityContext = createContext<BlockFieldVisibility | undef
 export function useFieldVisibility(block: DocumentBlock): (field: string) => boolean {
     const host = useContext(FieldVisibilityContext);
     return (field) => isFieldVisible(block, field, host);
+}
+
+/**
+ * The block's `visibility` after showing or hiding `field`: a value equal to what the field
+ * inherits is no override and is dropped; names this does not touch are kept.
+ * `undefined` when no override is left
+ */
+export function withFieldShown(
+    block: DocumentBlock,
+    field: string,
+    shown: boolean,
+    fieldVisibility?: BlockFieldVisibility,
+): FieldVisibility | undefined {
+    const next: FieldVisibility = { ...(block.visibility as FieldVisibility | undefined) };
+    if (shown === inheritedFieldVisibility(block, field, fieldVisibility)) delete next[field];
+    else next[field] = shown;
+    return Object.keys(next).length ? next : undefined;
 }

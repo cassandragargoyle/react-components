@@ -442,34 +442,6 @@ describe('BlockDocument address and field visibility (INT-003)', () => {
         expect(onChange).not.toHaveBeenCalled();
     });
 
-    it('writes visibility from the switches, and drops a switch set back to the inherited value', () => {
-        const { block, last } = edit(withAddress());
-        fireEvent.click(within(openMenu(block('addr'))).getByRole('menuitem', { name: 'Edit address…' }));
-        let form = screen.getByRole('form', { name: 'Edit address' });
-        const gpsSwitch = within(form).getByRole('switch', { name: 'Show GPS coordinates in the document' });
-        expect(gpsSwitch).not.toBeChecked();
-        expect(within(form).getByLabelText('Latitude')).toHaveAccessibleDescription(
-            'Latitude and longitude: not shown in the document',
-        );
-        fireEvent.click(gpsSwitch);
-        fireEvent.click(within(form).getByRole('switch', { name: 'Show Country in the document' }));
-        fireEvent.change(within(form).getByLabelText('Street'), { target: { value: 'Lipová alej' } });
-        fireEvent.submit(form);
-        expect(findBlock(last(), 'addr')!.block).toMatchObject({
-            street: 'Lipová alej',
-            gps: { lat: 49.9917, lon: 14.6543 },
-            visibility: { gps: true, country: false },
-        });
-        expect(addressText(block('addr'))).toContain('49.9917');
-
-        fireEvent.click(within(openMenu(block('addr'))).getByRole('menuitem', { name: 'Edit address…' }));
-        form = screen.getByRole('form', { name: 'Edit address' });
-        fireEvent.click(within(form).getByRole('switch', { name: 'Show GPS coordinates in the document' }));
-        fireEvent.click(within(form).getByRole('switch', { name: 'Show Country in the document' }));
-        fireEvent.submit(form);
-        expect(findBlock(last(), 'addr')!.block).not.toHaveProperty('visibility');
-    });
-
     it('keeps visibility names it does not know through an edit', () => {
         const { block, last } = edit(withAddress({ visibility: { floor: true } }));
         fireEvent.click(within(openMenu(block('addr'))).getByRole('menuitem', { name: 'Edit address…' }));
@@ -477,10 +449,74 @@ describe('BlockDocument address and field visibility (INT-003)', () => {
         expect(findBlock(last(), 'addr')!.block).toHaveProperty('visibility', { floor: true });
     });
 
+    it('offers edit and display settings on the right of a block', () => {
+        const { block } = edit(withAddress());
+        const tools = (id: string): string[] =>
+            within(block(id))
+                .queryAllByRole('button')
+                .filter((el) => el.closest('.bd-tools')?.parentElement === block(id))
+                .map((el) => el.getAttribute('aria-label')!);
+        expect(tools('addr')).toEqual([
+            'Edit address Lipová 1234/12',
+            'Display settings for address Lipová 1234/12',
+        ]);
+        expect(tools('a')).toEqual(['Edit paragraph']);
+        expect(tools('x')).toEqual([]);
+    });
+
+    it('opens the address form from the edit button, with no switches in it', () => {
+        const { block } = edit(withAddress());
+        fireEvent.click(within(block('addr')).getByRole('button', { name: /^Edit address/ }));
+        const form = screen.getByRole('form', { name: 'Edit address' });
+        expect(within(form).queryByRole('switch')).toBeNull();
+        expect(within(form).getByLabelText('Latitude')).toHaveAccessibleDescription(
+            'Latitude and longitude: not shown in the document',
+        );
+    });
+
+    it('puts the caret into a paragraph from its edit button', () => {
+        const { block } = edit(small());
+        fireEvent.click(within(block('a')).getByRole('button', { name: 'Edit paragraph' }));
+        expect(within(block('a')).getByRole('textbox', { name: 'Paragraph' })).toHaveFocus();
+    });
+
+    it('writes visibility from the display settings at once, and drops a switch set back to the inherited value', () => {
+        const { block, last } = edit(withAddress());
+        const settings = within(block('addr')).getByRole('button', { name: /^Display settings/ });
+        fireEvent.click(settings);
+        const dialog = screen.getByRole('dialog', { name: /Show in document/ });
+        const gpsSwitch = within(dialog).getByRole('switch', { name: 'Show GPS coordinates in the document' });
+        expect(within(dialog).getByRole('switch', { name: 'Show Street in the document' })).toHaveFocus();
+        expect(gpsSwitch).not.toBeChecked();
+
+        fireEvent.click(gpsSwitch);
+        expect(findBlock(last(), 'addr')!.block).toHaveProperty('visibility', { gps: true });
+        fireEvent.click(within(dialog).getByRole('switch', { name: 'Show Country in the document' }));
+        expect(findBlock(last(), 'addr')!.block).toHaveProperty('visibility', { gps: true, country: false });
+        expect(dialog).toHaveTextContent('GPS coordinates · this block');
+        expect(addressText(block('addr'))).toContain('49.9917');
+
+        fireEvent.click(within(dialog).getByRole('switch', { name: 'Show GPS coordinates in the document' }));
+        fireEvent.click(within(dialog).getByRole('switch', { name: 'Show Country in the document' }));
+        expect(findBlock(last(), 'addr')!.block).not.toHaveProperty('visibility');
+
+        fireEvent.keyDown(dialog, { key: 'Escape' });
+        expect(screen.queryByRole('dialog')).toBeNull();
+        expect(settings).toHaveFocus();
+    });
+
+    it('offers the caption of an image in its display settings', () => {
+        const { container, last } = edit(sample);
+        const figure = container.querySelector('[data-block-id="plans-ground-image"]') as HTMLElement;
+        fireEvent.click(within(figure).getByRole('button', { name: /^Display settings/ }));
+        fireEvent.click(screen.getByRole('switch', { name: 'Show Caption in the document' }));
+        expect(findBlock(last(), 'plans-ground-image')!.block).toHaveProperty('visibility', { caption: false });
+        expect(figure).toHaveTextContent('Caption: not shown in the document');
+    });
+
     it('starts a switch at what the host gives', () => {
         const { block } = edit(withAddress(), { fieldVisibility: { address: { gps: true } } });
-        fireEvent.click(within(openMenu(block('addr'))).getByRole('menuitem', { name: 'Edit address…' }));
-        const form = screen.getByRole('form', { name: 'Edit address' });
-        expect(within(form).getByRole('switch', { name: 'Show GPS coordinates in the document' })).toBeChecked();
+        fireEvent.click(within(block('addr')).getByRole('button', { name: /^Display settings/ }));
+        expect(screen.getByRole('switch', { name: 'Show GPS coordinates in the document' })).toBeChecked();
     });
 });

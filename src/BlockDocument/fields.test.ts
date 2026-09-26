@@ -8,7 +8,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { inheritedFieldVisibility, isFieldVisible } from './fields';
+import { declaredFields, inheritedFieldVisibility, isFieldVisible, withFieldShown } from './fields';
 import type { AddressBlock, DocumentBlock } from './types';
 
 const address = (visibility?: Record<string, boolean>): AddressBlock => ({
@@ -62,5 +62,33 @@ describe('inheritedFieldVisibility', () => {
     it('is what the host and the type give, whatever the block says', () => {
         expect(inheritedFieldVisibility(address({ gps: true }), 'gps')).toBe(false);
         expect(inheritedFieldVisibility(address({ gps: false }), 'gps', { address: { gps: true } })).toBe(true);
+    });
+});
+
+describe('withFieldShown', () => {
+    it('adds an override only where it differs from what is inherited', () => {
+        expect(withFieldShown(address(), 'gps', true)).toEqual({ gps: true });
+        expect(withFieldShown(address(), 'gps', false)).toBeUndefined();
+        expect(withFieldShown(address(), 'gps', false, { address: { gps: true } })).toEqual({ gps: false });
+    });
+
+    it('drops an override set back and keeps the names it does not touch', () => {
+        expect(withFieldShown(address({ gps: true, floor: true }), 'gps', false)).toEqual({ floor: true });
+        expect(withFieldShown(address({ gps: true }), 'gps', false)).toBeUndefined();
+    });
+});
+
+describe('declaredFields', () => {
+    it('lists the fields a type declares, with their labels', () => {
+        expect(declaredFields({ id: 'v', type: 'video', src: 'a.mp4' })).toEqual([
+            { field: 'poster', label: 'Poster' },
+            { field: 'caption', label: 'Caption' },
+        ]);
+        expect(declaredFields(address()).map((f) => f.field)).toContain('gps');
+    });
+
+    it('lists none for a paragraph or an unknown type', () => {
+        expect(declaredFields({ id: 'p', type: 'paragraph', text: [] })).toEqual([]);
+        expect(declaredFields({ id: 'x', type: 'table' })).toEqual([]);
     });
 });

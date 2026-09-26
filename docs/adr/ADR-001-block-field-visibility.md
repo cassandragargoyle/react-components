@@ -81,9 +81,12 @@ know is ignored and kept.
 ```
 
 **Editing shows every field.** A field that is hidden in the document is still an input in
-the block's form, marked as *not shown in the document*. Beside each field, the form has
-a *Show in document* switch that writes the block's `visibility`, so level 3 can be set
-without touching the JSON. The switch starts at the value that the three levels produce.
+the block's form, marked as *not shown in the document*. The form edits the data and
+nothing else. What the document shows is set in the block's **display settings**, opened
+from the settings button on the right of a selected block. They hold a *Show in document*
+switch per declared field, which writes the block's `visibility` at once, so level 3 can
+be set without touching the JSON. A switch starts at the value that the three levels
+produce, and a switch set back to the inherited value removes its key.
 
 **Visibility is presentation, not access control.** A hidden field is in the document, is
 returned when the document is read, and is written by `updateBlock` like any other field.

@@ -10,10 +10,11 @@ import React, { useCallback, useContext, useEffect, useId, useRef, useState } fr
 
 import { ADDRESS_FIELD_LABELS, ADDRESS_FIELDS, addressLines, formatGeoPoint, type AddressField } from './address';
 import { AddressForm } from './AddressForm';
+import { DisplaySettings } from './DisplaySettings';
 import { EditableText } from './EditableText';
 import { useEditor, type Editor } from './editor';
-import { FieldVisibilityContext, inheritedFieldVisibility, isFieldVisible, useFieldVisibility } from './fields';
-import { EyeOffIcon, GripIcon, PinIcon, PlusIcon } from './icons';
+import { declaredFields, FieldVisibilityContext, isFieldVisible, useFieldVisibility } from './fields';
+import { EyeOffIcon, GearIcon, GripIcon, PencilIcon, PinIcon, PlusIcon } from './icons';
 import { MediaForm } from './MediaForm';
 import { Menu, type MenuItem } from './Menu';
 import { richTextToPlain, safeHref } from './richText';
@@ -153,7 +154,7 @@ function InsertGap({ parentId, index }: GapProps): React.ReactElement | null {
             {insertType === 'address' && (
                 <AddressForm
                     mode="insert"
-                    inherited={(field) => inheritedFieldVisibility({ id: '', type: 'address' }, field, host)}
+                    visible={(field) => isFieldVisible({ id: '', type: 'address' }, field, host)}
                     onCancel={() => editor.setMediaForm(null)}
                     onSubmit={(fields) => {
                         editor.setMediaForm(null);
@@ -209,7 +210,9 @@ function BlockView({ block, parentId, index, count, depth }: BlockProps): React.
     const ref = useRef<HTMLDivElement>(null);
     const headingId = useId();
     const [menuOpen, setMenuOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
     const handleRef = useRef<HTMLButtonElement>(null);
+    const settingsRef = useRef<HTMLButtonElement>(null);
     const textual = isParagraphBlock(block) || isChapterBlock(block);
 
     // A block without text of its own takes focus on its wrapper
@@ -224,6 +227,11 @@ function BlockView({ block, parentId, index, count, depth }: BlockProps): React.
     const closeMenu = useCallback((restoreFocus: boolean) => {
         setMenuOpen(false);
         if (restoreFocus) handleRef.current?.focus();
+    }, []);
+
+    const closeSettings = useCallback((restoreFocus: boolean) => {
+        setSettingsOpen(false);
+        if (restoreFocus) settingsRef.current?.focus();
     }, []);
 
     const onKeyDown = (e: React.KeyboardEvent): void => {
@@ -248,6 +256,14 @@ function BlockView({ block, parentId, index, count, depth }: BlockProps): React.
     }
 
     const below: BlockLocation = { parentId, index: index + 1 };
+    const hasForm = isImageBlock(block) || isVideoBlock(block) || isAddressBlock(block);
+    const hasSettings = declaredFields(block).length > 0;
+    // Text is edited in place, so its edit button puts the caret at the end of it
+    const edit = hasForm
+        ? () => editor.setMediaForm({ kind: 'edit', blockId: block.id })
+        : textual
+          ? () => editor.focusBlock(block.id, 'end')
+          : null;
     const menuItems: MenuItem[] = [
         ...insertItems(editor, below, ' below'),
         ...(index > 0 ? [{ label: 'Move up', onSelect: () => editor.moveBy(block.id, -1) }] : []),
@@ -256,7 +272,7 @@ function BlockView({ block, parentId, index, count, depth }: BlockProps): React.
             ? [{ label: 'Move into chapter above', onSelect: () => editor.indent(block.id) }]
             : []),
         ...(parentId ? [{ label: 'Move out of chapter', onSelect: () => editor.outdent(block.id) }] : []),
-        ...(isImageBlock(block) || isVideoBlock(block) || isAddressBlock(block)
+        ...(hasForm
             ? [
                   {
                       label: `Edit ${block.type}…`,
@@ -300,12 +316,43 @@ function BlockView({ block, parentId, index, count, depth }: BlockProps): React.
                 </button>
                 {menuOpen && <Menu label={`Actions for ${blockName}`} items={menuItems} onClose={closeMenu} />}
             </div>
+            {(edit || hasSettings) && (
+                <div className="bd-tools">
+                    {edit && (
+                        <button type="button" className="bd-tool" aria-label={`Edit ${blockName}`} onClick={edit}>
+                            <PencilIcon />
+                        </button>
+                    )}
+                    {hasSettings && (
+                        <button
+                            ref={settingsRef}
+                            type="button"
+                            className="bd-tool"
+                            aria-label={`Display settings for ${blockName}`}
+                            aria-haspopup="dialog"
+                            aria-expanded={settingsOpen}
+                            onClick={() => setSettingsOpen((open) => !open)}
+                        >
+                            <GearIcon />
+                        </button>
+                    )}
+                    {settingsOpen && (
+                        <DisplaySettings
+                            block={block}
+                            blockName={blockName}
+                            fieldVisibility={host}
+                            onChange={(visibility) => editor.update(block.id, { visibility })}
+                            onClose={closeSettings}
+                        />
+                    )}
+                </div>
+            )}
             {content}
             {editingMedia && isAddressBlock(block) && (
                 <AddressForm
                     mode="edit"
                     initial={block}
-                    inherited={(field) => inheritedFieldVisibility(block, field, host)}
+                    visible={(field) => isFieldVisible(block, field, host)}
                     onCancel={() => editor.setMediaForm(null)}
                     onSubmit={(fields) => {
                         editor.setMediaForm(null);

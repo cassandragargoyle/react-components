@@ -142,8 +142,9 @@ the level below, and a name the type does not know is ignored and kept. `isField
 field, fieldVisibility)` answers the question the renderer asks.
 
 **Editing shows every field.** A hidden field is dimmed and marked *Not shown in the document*,
-also for a screen reader, and the address form sets the block's `visibility` with a *Show in
-document* switch per field.
+also for a screen reader. The settings button on the right of a selected block opens its
+display settings: a *Show in document* switch per field, which writes the block's `visibility`
+at once and drops an override set back to the inherited value.
 
 **Hidden is not private.** A hidden field stays in the document, in what `onChange` receives
 and in what `updateBlock` writes. An application that must not disclose the coordinates removes
@@ -159,7 +160,8 @@ them from the data before passing the document on.
 | Bold, italic, link | — | `Ctrl+B`, `Ctrl+I`, `Ctrl+K` |
 | Block menu | the handle left of a block | `Tab` to the handle, `Enter` |
 | Insert a block | `+` between blocks, or the menu | the menu; `Enter` at the end of a paragraph |
-| Edit an image, video or address | the menu, *Edit …* | the menu |
+| Edit a block | the pencil right of it, or the menu | `Tab` to the pencil, `Enter` |
+| Display settings | the gear right of an image, video or address | `Tab` to the gear, `Enter`; `Escape` closes |
 | Open a chapter | — | `Enter` in its title adds its first paragraph |
 | Split, join | — | `Enter` mid-paragraph; `Backspace` at its start |
 | Delete | the menu | the menu; `Backspace` in an empty paragraph |
@@ -205,6 +207,7 @@ The sample lives in `samples/`; its video is not committed, see `samples/media/R
 - `BlockDocument.tsx` — the component and its props
 - `BlockView.tsx` — blocks, handles, menus and insertion gaps
 - `MediaForm.tsx`, `AddressForm.tsx` — the forms that insert and edit an image, a video, an address
+- `DisplaySettings.tsx` — the display settings a block's gear opens: a switch per field
 - `address.ts` — the address fields, their layout and checks
 - `fields.ts` — field visibility: the fields each type declares, `isFieldVisible`
 - `EditableText.tsx` — rich text edited in place

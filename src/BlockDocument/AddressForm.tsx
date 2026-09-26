@@ -3,8 +3,8 @@
  *  Licensed under the MIT License - see LICENSE file for details
  */
 
-// The form that inserts or edits an address block (INT-003), with every field shown
-// Each field has a "Show in document" switch that writes the block's visibility (ADR-001)
+// The form that inserts or edits the data of an address block (INT-003), every field shown
+// A field the document does not show is marked; the block's display settings change that
 
 import React, { useId, useRef, useState } from 'react';
 
@@ -19,14 +19,17 @@ import {
     type AddressTextField,
 } from './address';
 import { EyeOffIcon } from './icons';
-import type { FieldVisibility, GeoPoint, HouseNumberType } from './types';
+import type { GeoPoint, HouseNumberType } from './types';
+
+/** What the form saves: every data field, `undefined` where it is cleared; never `visibility` */
+export type AddressFormFields = Omit<AddressPatch, 'visibility'>;
 
 export interface AddressFormProps {
     mode: 'insert' | 'edit';
     initial?: AddressFields;
-    /** What each field inherits from the host and the type, without the block's own override */
-    inherited(field: AddressField): boolean;
-    onSubmit(fields: AddressPatch): void;
+    /** Whether the document shows a field, to mark the ones it does not */
+    visible(field: AddressField): boolean;
+    onSubmit(fields: AddressFormFields): void;
     onCancel(): void;
 }
 
@@ -38,7 +41,7 @@ function parseNumber(text: string): number | undefined {
     return trimmed ? Number(trimmed) : undefined;
 }
 
-export function AddressForm({ mode, initial, inherited, onSubmit, onCancel }: AddressFormProps): React.ReactElement {
+export function AddressForm({ mode, initial, visible, onSubmit, onCancel }: AddressFormProps): React.ReactElement {
     const id = useId();
     const [text, setText] = useState<Record<AddressTextField, string>>(() => {
         const out = {} as Record<AddressTextField, string>;
@@ -49,12 +52,6 @@ export function AddressForm({ mode, initial, inherited, onSubmit, onCancel }: Ad
     const [ruian, setRuian] = useState(initial?.ruianCode !== undefined ? String(initial.ruianCode) : '');
     const [lat, setLat] = useState(initial?.gps ? String(initial.gps.lat) : '');
     const [lon, setLon] = useState(initial?.gps ? String(initial.gps.lon) : '');
-    const [shown, setShown] = useState<Record<AddressField, boolean>>(() => {
-        const own = initial?.visibility ?? {};
-        const out = {} as Record<AddressField, boolean>;
-        for (const field of ADDRESS_FIELDS) out[field] = own[field] ?? inherited(field);
-        return out;
-    });
     const [error, setError] = useState<{ input: InputName; message: string } | null>(null);
     const inputs = useRef(new Map<InputName, HTMLInputElement>());
 
@@ -94,20 +91,12 @@ export function AddressForm({ mode, initial, inherited, onSubmit, onCancel }: Ad
             return;
         }
 
-        // Keeps names this form does not know; a switch at its inherited value is no override
-        const visibility: FieldVisibility = { ...initial?.visibility };
-        for (const field of ADDRESS_FIELDS) {
-            if (shown[field] === inherited(field)) delete visibility[field];
-            else visibility[field] = shown[field];
-        }
-
         onSubmit({
             ...values,
             // A number type without a number says nothing
             houseNumberType: values.houseNumber && numberType ? numberType : undefined,
             ruianCode,
             gps,
-            visibility: Object.keys(visibility).length ? visibility : undefined,
         });
     };
 
@@ -134,33 +123,20 @@ export function AddressForm({ mode, initial, inherited, onSubmit, onCancel }: Ad
                 type="text"
                 value={value}
                 aria-invalid={error?.input === name || undefined}
-                aria-describedby={shown[field] ? undefined : `${id}-${field}-hidden`}
+                aria-describedby={visible(field) ? undefined : `${id}-${field}-hidden`}
                 onChange={(e) => onChange(e.target.value)}
                 {...extra}
             />
         </>
     );
 
-    const toggle = (field: AddressField, rows = 1): React.ReactElement => (
-        <label className="bd-switch" style={rows > 1 ? { gridRow: `span ${rows}` } : undefined}>
-            <input
-                type="checkbox"
-                role="switch"
-                checked={shown[field]}
-                onChange={(e) => setShown((prev) => ({ ...prev, [field]: e.target.checked }))}
-            />
-            <span className="bd-visually-hidden">Show {ADDRESS_FIELD_LABELS[field]} in the document</span>
-        </label>
-    );
-
     const textRow = (field: AddressTextField, extra: Partial<React.InputHTMLAttributes<HTMLInputElement>> = {}) => (
         <React.Fragment key={field}>
             {input(field, ADDRESS_FIELD_LABELS[field], text[field], (next) => setText((prev) => ({ ...prev, [field]: next })), field, extra)}
-            {toggle(field)}
         </React.Fragment>
     );
 
-    const hidden = ADDRESS_FIELDS.filter((field) => !shown[field]);
+    const hidden = ADDRESS_FIELDS.filter((field) => !visible(field));
 
     return (
         <form
@@ -178,9 +154,6 @@ export function AddressForm({ mode, initial, inherited, onSubmit, onCancel }: Ad
             }}
         >
             <div className="bd-address-grid">
-                <span className="bd-address-grid-head" aria-hidden="true">
-                    Show in document
-                </span>
                 {textRow('street', { autoFocus: true })}
                 {textRow('houseNumber')}
                 <label htmlFor={`${id}-numberType`}>House number type</label>
@@ -193,16 +166,13 @@ export function AddressForm({ mode, initial, inherited, onSubmit, onCancel }: Ad
                     <option value="conscription">Conscription number (č.p.)</option>
                     <option value="registration">Registration number (č.ev.)</option>
                 </select>
-                <span />
                 {textRow('orientationNumber', { placeholder: '14a' })}
                 {textRow('municipalityPart')}
                 {textRow('postalCode')}
                 {textRow('city')}
                 {textRow('country')}
                 {input('ruianCode', ADDRESS_FIELD_LABELS.ruianCode, ruian, setRuian, 'ruianCode', { inputMode: 'numeric' })}
-                {toggle('ruianCode')}
                 {input('lat', 'Latitude', lat, setLat, 'gps', { inputMode: 'decimal', placeholder: '49.9917' })}
-                {toggle('gps', 2)}
                 {input('lon', 'Longitude', lon, setLon, 'gps', { inputMode: 'decimal', placeholder: '14.6543' })}
             </div>
             {hidden.map((field) => (

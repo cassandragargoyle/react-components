@@ -60,6 +60,8 @@ export interface Editor {
     registerFocus(blockId: string, target: FocusTarget): () => void;
     /** Focus a block once it is rendered */
     requestFocus(blockId: string, caret: Caret): void;
+    /** Focus a block that is already rendered, now */
+    focusBlock(blockId: string, caret: Caret): void;
 
     draggingId: string | null;
     setDraggingId(id: string | null): void;
@@ -107,7 +109,7 @@ interface EditorDeps {
 
 type EditorActions = Omit<
     Editor,
-    'registerFocus' | 'requestFocus' | 'draggingId' | 'setDraggingId' | 'mediaForm' | 'setMediaForm'
+    'registerFocus' | 'requestFocus' | 'focusBlock' | 'draggingId' | 'setDraggingId' | 'mediaForm' | 'setMediaForm'
 >;
 
 /** Builds the document-changing half of the editor over a document ref */

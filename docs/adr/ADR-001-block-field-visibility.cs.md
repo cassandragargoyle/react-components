@@ -83,9 +83,12 @@ zachová.
 ```
 
 **Editace ukazuje všechna pole.** Pole, které je v dokumentu skryté, je ve formuláři bloku
-stále vstupem, označeným *není zobrazeno v dokumentu*. Vedle každého pole má formulář
-přepínač *Zobrazit v dokumentu*, který zapisuje `visibility` bloku, takže úroveň 3 lze
-nastavit bez zásahu do JSON. Přepínač začíná na hodnotě, kterou dávají tři úrovně.
+stále vstupem, označeným *není zobrazeno v dokumentu*. Formulář upravuje data a nic jiného.
+Co dokument ukazuje, se nastavuje v **nastavení zobrazení** bloku, které se otevře tlačítkem
+nastavení vpravo od vybraného bloku. Obsahuje přepínač *Zobrazit v dokumentu* pro každé
+deklarované pole, který hned zapíše `visibility` bloku, takže úroveň 3 lze nastavit bez
+zásahu do JSON. Přepínač začíná na hodnotě, kterou dávají tři úrovně, a přepínač vrácený na
+zděděnou hodnotu svůj klíč odstraní.
 
 **Viditelnost je prezentace, ne řízení přístupu.** Skryté pole je v dokumentu, vrací se při
 čtení dokumentu a `updateBlock` ho zapisuje jako kterékoli jiné pole. Komponenta ho nikdy

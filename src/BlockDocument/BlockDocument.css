@@ -44,9 +44,10 @@
     box-sizing: border-box;
 }
 
-/* Room on the left for the handles */
+/* Room on the left for the handles, on the right for the edit and settings buttons */
 .bd-document--editable {
     padding-left: 40px;
+    padding-right: 64px;
 }
 
 .bd-title {
@@ -238,8 +239,93 @@ h6.bd-heading { font-size: 14px; }
     margin-top: 0;
 }
 
-.bd-block--chapter > .bd-handle-slot {
+.bd-block--chapter > .bd-handle-slot,
+.bd-block--chapter > .bd-tools {
     top: 16px;
+}
+
+/* Edit and display settings, right of the block that is selected */
+.bd-tools {
+    position: absolute;
+    top: 0;
+    right: -60px;
+    z-index: 2;
+    display: flex;
+    gap: 4px;
+}
+
+.bd-tool {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    color: var(--bd-muted);
+    background: transparent;
+    cursor: pointer;
+    opacity: 0;
+}
+
+.bd-block:hover:not(:has(.bd-block:hover)) > .bd-tools > .bd-tool,
+.bd-block:focus-within:not(:has(.bd-block:focus-within)) > .bd-tools > .bd-tool,
+.bd-tool[aria-expanded='true'],
+.bd-tool:focus-visible {
+    opacity: 1;
+}
+
+.bd-tool:hover,
+.bd-tool[aria-expanded='true'] {
+    color: var(--bd-fg);
+    background: var(--bd-hover);
+}
+
+.bd-tool:focus-visible {
+    outline: 2px solid var(--bd-focus);
+    outline-offset: -2px;
+}
+
+/* The display settings, dropped from the settings button towards the page */
+.bd-settings {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 10;
+    display: grid;
+    gap: 4px;
+    min-width: 240px;
+    padding: 8px 12px;
+    border: 1px solid var(--bd-menu-border);
+    border-radius: 4px;
+    background: var(--bd-surface);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    font-size: 12px;
+}
+
+.bd-settings-title {
+    margin: 0 0 4px;
+    color: var(--bd-muted);
+    font-size: 11px;
+}
+
+.bd-settings-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.bd-settings-own {
+    color: var(--bd-muted);
+    font-style: italic;
+}
+
+.bd-settings .bd-form-actions {
+    justify-content: flex-end;
+    margin-top: 4px;
 }
 
 .bd-handle,
@@ -399,18 +485,12 @@ h6.bd-heading { font-size: 14px; }
     outline-offset: -1px;
 }
 
-/* The address form: label, input, and the "Show in document" switch in a third column */
+/* The address form: a label beside each input */
 .bd-address-grid {
     display: grid;
-    grid-template-columns: max-content minmax(0, 1fr) auto;
+    grid-template-columns: max-content minmax(0, 1fr);
     gap: 4px 12px;
     align-items: center;
-}
-
-.bd-address-grid-head {
-    grid-column: 3;
-    color: var(--bd-muted);
-    font-size: 11px;
 }
 
 .bd-address-form select {

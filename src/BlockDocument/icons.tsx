@@ -59,3 +59,24 @@ export function EyeOffIcon(): React.ReactElement {
         </svg>
     );
 }
+
+/** Edit a block: a pencil */
+export function PencilIcon(): React.ReactElement {
+    return (
+        <svg {...SVG_PROPS}>
+            <path d="M13.5 3.5l3 3-9 9H4.5v-3z" />
+            <path d="M11.5 5.5l3 3" />
+        </svg>
+    );
+}
+
+/** The display settings of a block: a gear */
+export function GearIcon(): React.ReactElement {
+    return (
+        <svg {...SVG_PROPS}>
+            <circle cx="10" cy="10" r="2.5" />
+            <path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4" />
+            <circle cx="10" cy="10" r="5.5" />
+        </svg>
+    );
+}

@@ -129,6 +129,10 @@ export function BlockDocument({
                       requestFocus(blockId, caret) {
                           pendingFocus.current = { blockId, caret };
                       },
+                      focusBlock(blockId, caret) {
+                          pendingFocus.current = { blockId, caret };
+                          flushFocus();
+                      },
                       draggingId,
                       setDraggingId,
                       mediaForm,
