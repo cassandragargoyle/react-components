@@ -5,8 +5,14 @@
 
 // The demo page: the family house in BlockDocument, editable, in a light or a dark theme
 // It imports the public entry point, so it shows the library as a consumer sees it
+//
+// The query sets the starting state, for a debug target that opens straight on a block:
+//   ?block=<id>      scroll to that block
+//   ?readonly        start read-only
+//   ?light           start in the light theme
+//   ?gps             start with the host showing the address GPS and RÚIAN code
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { BlockDocument, validateBlockDocument, type BlockDocumentData } from '../src';
@@ -52,12 +58,22 @@ const THEMES: Record<Theme, Record<string, string>> = {
 
 const initial = sample as BlockDocumentData;
 
+const query = new URLSearchParams(window.location.search);
+
 function Demo(): React.ReactElement {
     const [doc, setDoc] = useState<BlockDocumentData>(initial);
-    const [editing, setEditing] = useState(true);
-    const [theme, setTheme] = useState<Theme>('dark');
+    const [editing, setEditing] = useState(!query.has('readonly'));
+    const [theme, setTheme] = useState<Theme>(query.has('light') ? 'light' : 'dark');
     const [changes, setChanges] = useState(0);
-    const [hostShowsGps, setHostShowsGps] = useState(false);
+    const [hostShowsGps, setHostShowsGps] = useState(query.has('gps'));
+
+    // Once, after the first render: bring the block named in the query into view and focus it
+    useEffect(() => {
+        const id = query.get('block');
+        const el = id ? document.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(id)}"]`) : null;
+        el?.scrollIntoView({ block: 'center' });
+        el?.focus({ preventScroll: true });
+    }, []);
     const validation = useMemo(() => validateBlockDocument(doc), [doc]);
     const colours = THEMES[theme];
 

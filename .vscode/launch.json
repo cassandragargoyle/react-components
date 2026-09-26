@@ -30,12 +30,44 @@
       "sourceMaps": true
     },
     {
+      // The address block (INT-003): the demo scrolled to it, with the host showing its GPS and
+      // RÚIAN code. Break in src/BlockDocument/address.ts (the lines), fields.ts (visibility)
+      // or AddressForm.tsx (save), then edit the address from its block menu
+      "name": "Demo: address block in Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "demo: dev server",
+      "url": "http://127.0.0.1:5173/demo/?block=overview-address&gps",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true
+    },
+    {
       // The test file open in the editor; put a breakpoint in the test or in the component
       "name": "Tests: the current file",
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
       "args": ["run", "${relativeFile}"],
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "console": "integratedTerminal"
+    },
+    {
+      // The address layout (all six samples of decree 359/2011 Sb.), field visibility, and the
+      // address block and its form in BlockDocument
+      "name": "Tests: address and field visibility",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": [
+        "run",
+        "src/BlockDocument/address.test.ts",
+        "src/BlockDocument/fields.test.ts",
+        "src/BlockDocument/BlockDocument.test.tsx",
+        "--testNamePattern",
+        "INT-003|addressLines|address values|isFieldVisible|inheritedFieldVisibility"
+      ],
       "autoAttachChildProcesses": true,
       "smartStep": true,
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],

@@ -184,9 +184,21 @@ itself (`canMoveBlock` asks first).
 ## Demo
 
 `npm run dev` serves the family house at <http://127.0.0.1:5173/demo/>, editable, with a light
-and a dark theme and a switch that shows the address coordinates through `fieldVisibility`; in Visual Studio Code, **Run and Debug → Demo: BlockDocument in Chrome**
-starts the same with breakpoints in `src/`. The sample lives in `samples/`; its video is not
-committed, see `samples/media/README.md`.
+and a dark theme and a switch that shows the address coordinates through `fieldVisibility`.
+The query sets the starting state: `?block=<id>` scrolls to a block, and `?readonly`,
+`?light` and `?gps` start read-only, in the light theme, and with the coordinates shown.
+
+In Visual Studio Code, **Run and Debug** offers:
+
+| Target | |
+| ------ | - |
+| *Demo: BlockDocument in Chrome* (or *in Edge*) | The demo, with breakpoints in `src/` |
+| *Demo: address block in Chrome* | The demo scrolled to the address, its GPS shown (`?block=overview-address&gps`) |
+| *Tests: address and field visibility* | The address layout, field visibility and the address form, under the debugger |
+| *Tests: the current file*, *Tests: all* | Vitest under the debugger |
+
+The demo targets start the Vite server as a task, which keeps running after the session ends.
+The sample lives in `samples/`; its video is not committed, see `samples/media/README.md`.
 
 ## Files
 
