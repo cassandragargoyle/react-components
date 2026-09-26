@@ -6,6 +6,14 @@
 // Runtime validation of a BlockDocument read from outside (INT-001)
 // Hand-written on purpose: the library adds no schema dependency for it
 
+import {
+    ADDRESS_TEXT_FIELDS,
+    HOUSE_NUMBER_TYPES,
+    hasAddressContent,
+    isGeoPoint,
+    isRuianCode,
+    type AddressFields,
+} from './address';
 import { BLOCK_DOCUMENT_SCHEMA_VERSION, type BlockDocumentData } from './types';
 
 /** The outcome of `validateBlockDocument`: the document, or the first thing wrong with it */
@@ -59,6 +67,39 @@ function checkRichText(value: unknown, path: string): void {
     });
 }
 
+// Any block may carry an override; a name the type does not know is allowed and kept
+function checkVisibility(value: unknown, path: string): void {
+    if (value === undefined) return;
+    if (!isObject(value)) throw new ValidationError(path, '"visibility" must be an object of booleans');
+    for (const [field, shown] of Object.entries(value)) {
+        if (typeof shown !== 'boolean') {
+            throw new ValidationError(`${path}.${field}`, `"${field}" must be true or false`);
+        }
+    }
+}
+
+function checkAddress(block: Json, path: string): void {
+    for (const field of ADDRESS_TEXT_FIELDS) optionalString(block, field, path);
+    if (block.houseNumberType !== undefined && !HOUSE_NUMBER_TYPES.includes(block.houseNumberType as never)) {
+        throw new ValidationError(
+            `${path}.houseNumberType`,
+            `"houseNumberType" must be one of ${HOUSE_NUMBER_TYPES.map((t) => `"${t}"`).join(', ')}`,
+        );
+    }
+    if (block.ruianCode !== undefined && !isRuianCode(block.ruianCode)) {
+        throw new ValidationError(`${path}.ruianCode`, '"ruianCode" must be a positive whole number');
+    }
+    if (block.gps !== undefined && !isGeoPoint(block.gps)) {
+        throw new ValidationError(
+            `${path}.gps`,
+            '"gps" must be { lat, lon } in decimal degrees, lat within -90..90 and lon within -180..180',
+        );
+    }
+    if (!hasAddressContent(block as Partial<AddressFields>)) {
+        throw new ValidationError(path, 'an address needs at least one field filled');
+    }
+}
+
 function checkBlocks(value: unknown, path: string, seen: Set<string>): void {
     if (!Array.isArray(value)) {
         throw new ValidationError(path, 'blocks must be an array');
@@ -74,6 +115,7 @@ function checkBlocks(value: unknown, path: string, seen: Set<string>): void {
             throw new ValidationError(`${blockPath}.id`, `block id "${id}" is used more than once`);
         }
         seen.add(id);
+        checkVisibility(block.visibility, `${blockPath}.visibility`);
 
         switch (block.type) {
             case 'chapter':
@@ -92,6 +134,9 @@ function checkBlocks(value: unknown, path: string, seen: Set<string>): void {
                 requireString(block, 'src', blockPath, false);
                 optionalString(block, 'poster', blockPath);
                 if (block.caption !== undefined) checkRichText(block.caption, `${blockPath}.caption`);
+                break;
+            case 'address':
+                checkAddress(block, blockPath);
                 break;
             default:
                 // Unknown types are kept as they are; only id and type are required

@@ -16,6 +16,7 @@ const EXPECTED = [
     'canMoveBlock',
     'insertBlock',
     'isBlockDocument',
+    'isFieldVisible',
     'moveBlock',
     'removeBlock',
     'updateBlock',

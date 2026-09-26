@@ -64,7 +64,10 @@ editing a single document.
   "id": "overview-address",
   "type": "address",
   "street": "Lipová",
-  "houseNumber": "12",
+  "houseNumber": "1234",
+  "houseNumberType": "conscription",
+  "orientationNumber": "12",
+  "municipalityPart": "Říčany",
   "postalCode": "251 01",
   "city": "Říčany",
   "country": "Czech Republic",
@@ -72,44 +75,67 @@ editing a single document.
 }
 ```
 
-| Field | Type | Shown by default |
-| ----- | ---- | ---------------- |
-| `street` | string | yes |
-| `houseNumber` | string | yes |
-| `postalCode` | string | yes |
-| `city` | string | yes |
-| `country` | string | yes |
-| `gps` | `{ lat: number, lon: number }` | **no** |
-| `visibility` | `Record<string, boolean>` | — (the override, [ADR-001](../adr/ADR-001-block-field-visibility.md)) |
+The fields follow the Czech open formal norm
+[OFN Adresy](https://ofn.gov.cz/adresy/2020-07-01/), named in English:
 
-The document renders it in an `<address>` element, in the order *street house number*,
-*postal code city*, *country*. An empty field leaves no gap or stray separator. When `gps`
-is shown, it appears as `49.9917, 14.6543` in decimal degrees.
+| Field | Type | Shown by default | OFN |
+| ----- | ---- | ---------------- | --- |
+| `street` | string | yes | `název_ulice` |
+| `houseNumber` | string | yes | `číslo_domovní` |
+| `houseNumberType` | `'conscription' \| 'registration'` | — | `typ_čísla_domovního` (`č.p.`, `č.ev.`) |
+| `orientationNumber` | string, with its letter | yes | `číslo_orientační` + `znak_čísla_orientačního` |
+| `municipalityPart` | string | yes | `název_části_obce`, in Prague `název_katastrálního_území` |
+| `postalCode` | string | yes | `psč` |
+| `city` | string | yes | `název_obce`, in Prague with the district |
+| `country` | string | yes | — |
+| `ruianCode` | positive integer | **no** | the code of the address place in RÚIAN |
+| `gps` | `{ lat: number, lon: number }` | **no** | — |
+| `visibility` | `Record<string, boolean>` | — (the override, [ADR-001](../adr/ADR-001-block-field-visibility.md)) | — |
+
+The document renders it in an `<address>` element, laid out per the Czech decree
+[359/2011 Sb., § 6](https://www.zakonyprolidi.cz/cs/2011-359) and its annex 1:
+
+1. street, house number and orientation number after a slash, `Studentská 1903/14a`
+2. part of municipality, only when it differs from the city, `Dejvice`
+3. postal code and city, `16000 Praha 6`
+4. country
+
+Without a street, the numbers follow the part of municipality (`Dolní Adršpach 13`). With
+neither, a conscription number reads `č.p. 111`. A registration number always reads
+`č.ev. 1`. An empty field leaves no gap or stray separator. When they are shown, `ruianCode`
+appears as `RÚIAN 22376925` and `gps` as `49.9917, 14.6543`.
 
 Judgement calls, open to disagreement before they are built:
 
-- **Every field is optional**, but an address with none of them filled is invalid. A rural
-  address has no street (`Lhota 12`), and a place that is being planned may so far have only
-  coordinates
-- **`houseNumber` is one string.** The Czech *číslo popisné/orientační* is written into it
-  as `1234/5` rather than split into two fields. Splitting it is a Czech concern, and the
-  component is not tied to one country
-- **One fixed layout, no locale formatting.** The order above fits most of Europe. A
-  per-country address format is a library of its own and would be a runtime dependency.
-  It is left for later, when a document actually needs it
+- **Every field is optional**, but an address with none of them filled is invalid. A place
+  that is being planned may so far have only coordinates
+- **The Czech numbers are separate fields.** The decree and the OFN distinguish the
+  conscription or registration number from the orientation number, and a register lookup
+  needs them apart. Storing `1234/12` in one string would lose which part is which. This
+  replaces the earlier proposal of a single `houseNumber` string
+- **The Czech rules are opt-in by the data.** `houseNumberType` is set only for a Czech
+  address, and without it no `č.p.` prefix appears. So an address in Berlin reads as it is
+  written. The layout above also fits most of Europe, and a per-country formatter is left
+  for later, when a document actually needs one
+- **The orientation number keeps its letter**, `14a`, in one field, where the OFN has two.
+  A separate input for one letter is a worse form, and the letter never appears on its own
+- **`ruianCode` is hidden by default**, like `gps`. It identifies the address place in the
+  register for an application, and a reader has no use for it
 - **`gps` is WGS 84 in decimal degrees**, `lat` in −90..90 and `lon` in −180..180, and is
   validated as such. It is shown as plain text and is not a link to a map. A map link
   would need a provider, and the validation of `href` already limits links to `http:`,
   `https:` and `mailto:`
-- **`houseNumber` and `postalCode` are strings**, not numbers: `251 01`, `12a`, `1234/5`
+- **Numbers and postal codes are strings**, not numbers: `251 01`, `12a`. The postal code is
+  kept as written, `16000` or `160 00`
 
 ### Field visibility, for every type
 
 As [ADR-001](../adr/ADR-001-block-field-visibility.md) decides:
 
-- Each known type declares its fields with a default visibility. Chapter, paragraph, image
-  and video declare all of theirs as visible, so they render exactly as they do today
-- `BlockDocument` takes `fieldVisibility?: Partial<Record<string, Record<string, boolean>>>`,
+- Each known type declares its fields with a default visibility. Image and video declare
+  `caption` and `poster` as visible, so they render exactly as they do today. Chapter and
+  paragraph declare none, because hiding their only content would hide the block
+- `BlockDocument` takes `fieldVisibility?: BlockFieldVisibility`, a map of `FieldVisibility`
   keyed by block type, which is level 2
 - A block may carry `visibility?: Record<string, boolean>`, which is level 3
 - The visibility of a field is the block value, else the host value, else the type
@@ -123,27 +149,31 @@ The address is edited in a form, the same way the image and the video are
 (`MediaForm`): *Insert address* in the insert menu, and *Edit address* in the menu of the
 block. The form:
 
-- Shows every field, including `gps` as two number inputs, latitude and longitude, each
-  with a label
+- Shows every field: the house number type as a choice of *Not specified*, *Conscription
+  number (č.p.)* and *Registration number (č.ev.)*, and `gps` as two inputs, latitude and
+  longitude, each with a label. A coordinate may be typed with a decimal comma
 - Marks every field that the document does not show, both visibly and for a screen
   reader, with the text *Not shown in the document*
 - Has a *Show in document* switch per field, which writes the block's `visibility`. It
   starts at the value the three levels produce. A switch set back to what the host and type
   levels already give removes its key, so that `visibility` holds only real overrides
-- Refuses to save an empty address or coordinates out of range, with a message that names
-  the field
+- Refuses to save an empty address, coordinates out of range or only one of them, and a
+  RÚIAN code that is not a positive whole number, with a message that names the field and
+  focus moved to it
 
 In edit mode, the block itself also shows its hidden fields, dimmed and marked the same
 way, so that the author sees what the reader will not.
 
 ### The data
 
-- `validateBlockDocument` checks the address fields, `gps`, and `visibility` on any block.
+- `validateBlockDocument` checks the address fields, `houseNumberType`, `ruianCode`, `gps`,
+  and `visibility` on any block.
   A `visibility` whose value is not a boolean is an error, and one that names an unknown
   field is not
 - `BlockPatch` gains the address fields and `visibility`, so that `updateBlock` writes
   `gps` like any other field. Nothing in the editing functions looks at visibility
-- `AddressBlock`, `GeoPoint` and `FieldVisibility` are exported from `src/index.ts`
+- `AddressBlock`, `GeoPoint`, `HouseNumberType`, `FieldVisibility` and
+  `BlockFieldVisibility` are exported from `src/index.ts`
 - `schemaVersion` stays at 1. An older component shows an address as an unknown block
   and keeps it, which is how INT-001 treats every type it does not know
 
@@ -157,9 +187,11 @@ way, so that the author sees what the reader will not.
 
 ## Acceptance Criteria
 
-- [ ] An `address` block renders in an `<address>` element with street, house number, postal
-      code, city and country, and it leaves no stray separator for an empty field
-- [ ] In view mode, `gps` is not rendered by default
+- [ ] An `address` block renders in an `<address>` element, and it leaves no stray separator
+      for an empty field
+- [ ] The six samples of annex 1 of decree 359/2011 Sb. are laid out exactly as the annex
+      writes them, and an address without `houseNumberType` gets no Czech prefix
+- [ ] In view mode, `gps` and `ruianCode` are not rendered by default
 - [ ] In edit mode, `gps` is rendered on the block and in its form, marked *Not shown in the
       document*
 - [ ] `updateBlock(doc, id, { gps })` writes the coordinates, and they are present in the
@@ -177,10 +209,11 @@ way, so that the author sees what the reader will not.
       hidden marker is announced to a screen reader
 - [ ] Chapter, paragraph, image and video render exactly as before (the existing tests
       pass unchanged)
-- [ ] `validateBlockDocument` rejects a malformed `gps` and a non-boolean `visibility`
-      value, with a path to it, and accepts the family house sample
-- [ ] `isFieldVisible`, `AddressBlock`, `GeoPoint` and `FieldVisibility` are exported from
-      `src/index.ts`
+- [ ] `validateBlockDocument` rejects a malformed `gps`, an unknown `houseNumberType`, a
+      `ruianCode` that is not a positive whole number and a non-boolean `visibility` value,
+      with a path to it, and accepts the family house sample
+- [ ] `isFieldVisible`, `AddressBlock`, `GeoPoint`, `HouseNumberType`, `FieldVisibility`
+      and `BlockFieldVisibility` are exported from `src/index.ts`
 - [ ] The family house sample contains an address with coordinates, and the demo shows it
 - [ ] `README.md` documents the address block and field visibility, including that a
       hidden field is not private

@@ -14,7 +14,7 @@ import { BlockDocument } from './BlockDocument';
 import { findBlock, flattenBlocks } from './operations';
 import { placeCaret } from './richTextDom';
 import sampleJson from './samples/family-house.blockdocument.json';
-import type { BlockDocumentData, DocumentBlock } from './types';
+import type { AddressBlock, BlockDocumentData, DocumentBlock } from './types';
 
 const sample = sampleJson as BlockDocumentData;
 
@@ -311,5 +311,176 @@ describe('BlockDocument editing', () => {
         const { last } = edit({ ...small(), blocks: [] });
         fireEvent.click(screen.getByRole('button', { name: 'Add a paragraph' }));
         expect(last().blocks).toEqual([{ id: 'new-1', type: 'paragraph', text: [] }]);
+    });
+});
+
+describe('BlockDocument address and field visibility (INT-003)', () => {
+    function withAddress(extra: Partial<AddressBlock> = {}): BlockDocumentData {
+        return {
+            ...small(),
+            blocks: [
+                {
+                    id: 'addr',
+                    type: 'address',
+                    street: 'Lipová',
+                    houseNumber: '1234',
+                    houseNumberType: 'conscription',
+                    orientationNumber: '12',
+                    postalCode: '251 01',
+                    city: 'Říčany',
+                    country: 'Czech Republic',
+                    ruianCode: 12345678,
+                    gps: { lat: 49.9917, lon: 14.6543 },
+                    ...extra,
+                },
+                ...small().blocks,
+            ],
+        };
+    }
+
+    const addressText = (container: HTMLElement): string => container.querySelector('address')?.textContent ?? '';
+
+    it('renders the family house address without its coordinates', () => {
+        const { container } = render(<BlockDocument document={sample} />);
+        const lines = [...container.querySelectorAll('address .bd-address-line')].map((el) => el.textContent);
+        expect(lines).toEqual(['Lipová 1234/12', '251 01 Říčany', 'Czech Republic']);
+        expect(container.textContent).not.toContain('49.9917');
+    });
+
+    it('shows the coordinates and the code when the host asks for them', () => {
+        const { container } = render(
+            <BlockDocument document={withAddress()} fieldVisibility={{ address: { gps: true, ruianCode: true } }} />,
+        );
+        expect(addressText(container)).toContain('49.9917, 14.6543');
+        expect(addressText(container)).toContain('RÚIAN 12345678');
+    });
+
+    it("lets a block's visibility win over the host's, in both directions", () => {
+        const hidden = render(
+            <BlockDocument document={withAddress({ visibility: { gps: false } })} fieldVisibility={{ address: { gps: true } }} />,
+        );
+        expect(addressText(hidden.container)).not.toContain('49.9917');
+        hidden.unmount();
+
+        const shown = render(
+            <BlockDocument
+                document={withAddress({ visibility: { gps: true, country: false } })}
+                fieldVisibility={{ address: { gps: false } }}
+            />,
+        );
+        expect(addressText(shown.container)).toContain('49.9917');
+        expect(addressText(shown.container)).not.toContain('Czech Republic');
+    });
+
+    it('shows hidden fields while editing, dimmed and marked', () => {
+        const { block } = edit(withAddress());
+        const hidden = block('addr').querySelectorAll('.bd-field--hidden');
+        expect([...hidden].map((el) => el.textContent)).toEqual([
+            'RÚIAN address code: 12345678 Not shown in the document',
+            'GPS coordinates: 49.9917, 14.6543 Not shown in the document',
+        ]);
+        expect(addressText(block('addr'))).not.toContain('49.9917');
+    });
+
+    it('hides an image caption per the host, and still edits it', () => {
+        const readOnly = render(<BlockDocument document={sample} fieldVisibility={{ image: { caption: false } }} />);
+        expect(readOnly.queryByText('Ground floor, 1 : 100')).toBeNull();
+        readOnly.unmount();
+
+        const { container } = edit(sample, { fieldVisibility: { image: { caption: false } } });
+        const figure = container.querySelector('[data-block-id="plans-ground-image"]') as HTMLElement;
+        expect(within(figure).getByRole('textbox', { name: 'Caption' })).toHaveTextContent('Ground floor, 1 : 100');
+        expect(figure).toHaveTextContent('Caption: not shown in the document');
+    });
+
+    it('inserts an address from the gap menu, only when something is filled in', () => {
+        const { container, onChange, last } = edit(small());
+        const gap = container.querySelectorAll('.bd-gap')[1] as HTMLElement;
+        fireEvent.click(within(gap).getByRole('button', { name: 'Insert block here' }));
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Insert address' }));
+        const form = screen.getByRole('form', { name: 'Insert address' });
+        expect(within(form).getByLabelText('Street')).toHaveFocus();
+
+        fireEvent.submit(form);
+        expect(within(form).getByRole('alert')).toHaveTextContent('at least one field');
+        expect(onChange).not.toHaveBeenCalled();
+
+        fireEvent.change(within(form).getByLabelText('Part of municipality'), { target: { value: 'Praskačka' } });
+        fireEvent.change(within(form).getByLabelText('House number'), { target: { value: '111' } });
+        fireEvent.change(within(form).getByLabelText('House number type'), { target: { value: 'conscription' } });
+        fireEvent.change(within(form).getByLabelText('City'), { target: { value: 'Praskačka' } });
+        fireEvent.change(within(form).getByLabelText('Latitude'), { target: { value: '50,2' } });
+        fireEvent.change(within(form).getByLabelText('Longitude'), { target: { value: '15.9' } });
+        fireEvent.submit(form);
+        expect(findBlock(last(), 'new-1')).toMatchObject({ parentId: undefined, index: 1 });
+        expect(findBlock(last(), 'new-1')!.block).toEqual({
+            id: 'new-1',
+            type: 'address',
+            houseNumber: '111',
+            houseNumberType: 'conscription',
+            municipalityPart: 'Praskačka',
+            city: 'Praskačka',
+            gps: { lat: 50.2, lon: 15.9 },
+        });
+        expect(addressText(container)).toBe('č.p. 111Praskačka');
+    });
+
+    it('refuses coordinates out of range or only one of them, naming the field', () => {
+        const { block, onChange } = edit(withAddress({ gps: undefined }));
+        fireEvent.click(within(openMenu(block('addr'))).getByRole('menuitem', { name: 'Edit address…' }));
+        const form = screen.getByRole('form', { name: 'Edit address' });
+
+        fireEvent.change(within(form).getByLabelText('Latitude'), { target: { value: '95' } });
+        fireEvent.change(within(form).getByLabelText('Longitude'), { target: { value: '14' } });
+        fireEvent.submit(form);
+        expect(within(form).getByRole('alert')).toHaveTextContent('Latitude must be a number between -90 and 90');
+        expect(within(form).getByLabelText('Latitude')).toHaveFocus();
+
+        fireEvent.change(within(form).getByLabelText('Latitude'), { target: { value: '' } });
+        fireEvent.submit(form);
+        expect(within(form).getByRole('alert')).toHaveTextContent('both latitude and longitude');
+        expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('writes visibility from the switches, and drops a switch set back to the inherited value', () => {
+        const { block, last } = edit(withAddress());
+        fireEvent.click(within(openMenu(block('addr'))).getByRole('menuitem', { name: 'Edit address…' }));
+        let form = screen.getByRole('form', { name: 'Edit address' });
+        const gpsSwitch = within(form).getByRole('switch', { name: 'Show GPS coordinates in the document' });
+        expect(gpsSwitch).not.toBeChecked();
+        expect(within(form).getByLabelText('Latitude')).toHaveAccessibleDescription(
+            'Latitude and longitude: not shown in the document',
+        );
+        fireEvent.click(gpsSwitch);
+        fireEvent.click(within(form).getByRole('switch', { name: 'Show Country in the document' }));
+        fireEvent.change(within(form).getByLabelText('Street'), { target: { value: 'Lipová alej' } });
+        fireEvent.submit(form);
+        expect(findBlock(last(), 'addr')!.block).toMatchObject({
+            street: 'Lipová alej',
+            gps: { lat: 49.9917, lon: 14.6543 },
+            visibility: { gps: true, country: false },
+        });
+        expect(addressText(block('addr'))).toContain('49.9917');
+
+        fireEvent.click(within(openMenu(block('addr'))).getByRole('menuitem', { name: 'Edit address…' }));
+        form = screen.getByRole('form', { name: 'Edit address' });
+        fireEvent.click(within(form).getByRole('switch', { name: 'Show GPS coordinates in the document' }));
+        fireEvent.click(within(form).getByRole('switch', { name: 'Show Country in the document' }));
+        fireEvent.submit(form);
+        expect(findBlock(last(), 'addr')!.block).not.toHaveProperty('visibility');
+    });
+
+    it('keeps visibility names it does not know through an edit', () => {
+        const { block, last } = edit(withAddress({ visibility: { floor: true } }));
+        fireEvent.click(within(openMenu(block('addr'))).getByRole('menuitem', { name: 'Edit address…' }));
+        fireEvent.submit(screen.getByRole('form', { name: 'Edit address' }));
+        expect(findBlock(last(), 'addr')!.block).toHaveProperty('visibility', { floor: true });
+    });
+
+    it('starts a switch at what the host gives', () => {
+        const { block } = edit(withAddress(), { fieldVisibility: { address: { gps: true } } });
+        fireEvent.click(within(openMenu(block('addr'))).getByRole('menuitem', { name: 'Edit address…' }));
+        const form = screen.getByRole('form', { name: 'Edit address' });
+        expect(within(form).getByRole('switch', { name: 'Show GPS coordinates in the document' })).toBeChecked();
     });
 });

@@ -45,9 +45,9 @@ Four questions need an answer:
 ## Decision
 
 **Every block type declares its fields and a default view**, meaning the fields the document
-shows. The address shows the street, house number, postal code, city and country, and it
-does not show `gps`. A type whose fields are all shown still declares them, so that an
-override can name them.
+shows. The address shows its postal lines, and it does not show `ruianCode` (the Czech
+register code of the address place) or `gps`. A type whose fields are all shown still
+declares them, so that an override can name them.
 
 **The default can be overridden at two more levels, and the most specific one wins:**
 
@@ -98,9 +98,10 @@ a field list with a default visibility. The renderer asks which fields are visib
 the editing form asks which ones exist. Adding a field to a type means adding it to that
 list, and nothing else has to learn about it.
 
-**The existing types do not change.** Chapter, paragraph, image and video declare their
-fields as all visible, so the documents already written look the same. A host may still
-hide, for example, the `caption` of every image through level 2.
+**The existing types do not change.** Image and video declare `caption` and `poster` as
+visible, so the documents already written look the same. A host may still hide, for
+example, the `caption` of every image through level 2. Chapter and paragraph declare no
+fields, because hiding their only content would hide the block, and deleting is for that.
 
 **The format stays at `schemaVersion` 1.** `visibility` is an optional key on a block. An
 older component ignores it, as it ignores every key it does not know, and shows the fields

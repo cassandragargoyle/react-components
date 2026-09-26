@@ -138,6 +138,13 @@ describe('updateBlock', () => {
         expect(findBlock(next, 'c1')!.block).toEqual(fixture().blocks[1]);
     });
 
+    it('writes a field the document hides like any other (ADR-001)', () => {
+        const doc: BlockDocumentData = { ...fixture(), blocks: [{ id: 'a', type: 'address', city: 'Říčany' }] };
+        const gps = { lat: 49.9917, lon: 14.6543 };
+        const next = updateBlock(doc, 'a', { gps, visibility: { gps: false } });
+        expect(next.blocks[0]).toEqual({ id: 'a', type: 'address', city: 'Říčany', gps, visibility: { gps: false } });
+    });
+
     it('throws for an unknown id', () => {
         expect(() => updateBlock(fixture(), 'nope', {})).toThrow(/No block/);
     });

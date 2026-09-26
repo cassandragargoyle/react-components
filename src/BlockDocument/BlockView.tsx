@@ -6,19 +6,26 @@
 // Rendering of the block tree: each block, its handle and menu, and the gaps between blocks
 // Read-only it is plain semantic HTML; with an editor it gains the editing chrome
 
-import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useId, useRef, useState } from 'react';
 
+import { ADDRESS_FIELD_LABELS, ADDRESS_FIELDS, addressLines, formatGeoPoint, type AddressField } from './address';
+import { AddressForm } from './AddressForm';
 import { EditableText } from './EditableText';
 import { useEditor, type Editor } from './editor';
-import { GripIcon, PlusIcon } from './icons';
+import { FieldVisibilityContext, inheritedFieldVisibility, isFieldVisible, useFieldVisibility } from './fields';
+import { EyeOffIcon, GripIcon, PinIcon, PlusIcon } from './icons';
 import { MediaForm } from './MediaForm';
 import { Menu, type MenuItem } from './Menu';
 import { richTextToPlain, safeHref } from './richText';
 import {
+    isAddressBlock,
     isChapterBlock,
     isImageBlock,
+    isKnownBlock,
     isParagraphBlock,
     isVideoBlock,
+    type AddressBlock,
+    type BlockFieldVisibility,
     type BlockLocation,
     type DocumentBlock,
     type RichText,
@@ -92,12 +99,13 @@ interface GapProps {
 /** Where a new block can be inserted, and where a dragged block can be dropped */
 function InsertGap({ parentId, index }: GapProps): React.ReactElement | null {
     const editor = useEditor()!;
+    const host = useContext(FieldVisibilityContext);
     const [menuOpen, setMenuOpen] = useState(false);
     const [over, setOver] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
     const location: BlockLocation = { parentId, index };
     const form = editor.mediaForm;
-    const formHere = form?.kind === 'insert' && sameLocation(form.location, location);
+    const insertType = form?.kind === 'insert' && sameLocation(form.location, location) ? form.type : null;
     const droppable = editor.draggingId !== null && editor.canDropAt(editor.draggingId, location);
 
     const closeMenu = useCallback((restoreFocus: boolean) => {
@@ -142,14 +150,25 @@ function InsertGap({ parentId, index }: GapProps): React.ReactElement | null {
                     items={insertItems(editor, location)}
                 />
             )}
-            {formHere && (
+            {insertType === 'address' && (
+                <AddressForm
+                    mode="insert"
+                    inherited={(field) => inheritedFieldVisibility({ id: '', type: 'address' }, field, host)}
+                    onCancel={() => editor.setMediaForm(null)}
+                    onSubmit={(fields) => {
+                        editor.setMediaForm(null);
+                        editor.insertAddress(location, fields);
+                    }}
+                />
+            )}
+            {insertType && insertType !== 'address' && (
                 <MediaForm
-                    type={form.type}
+                    type={insertType}
                     mode="insert"
                     onCancel={() => editor.setMediaForm(null)}
                     onSubmit={(fields) => {
                         editor.setMediaForm(null);
-                        editor.insertMedia(form.type, location, fields);
+                        editor.insertMedia(insertType, location, fields);
                     }}
                 />
             )}
@@ -169,6 +188,10 @@ function insertItems(editor: Editor, location: BlockLocation, suffix = ''): Menu
             label: `Insert video${suffix}`,
             onSelect: () => editor.setMediaForm({ kind: 'insert', type: 'video', location }),
         },
+        {
+            label: `Insert address${suffix}`,
+            onSelect: () => editor.setMediaForm({ kind: 'insert', type: 'address', location }),
+        },
     ];
 }
 
@@ -182,6 +205,7 @@ interface BlockProps {
 
 function BlockView({ block, parentId, index, count, depth }: BlockProps): React.ReactElement {
     const editor = useEditor();
+    const host = useContext(FieldVisibilityContext);
     const ref = useRef<HTMLDivElement>(null);
     const headingId = useId();
     const [menuOpen, setMenuOpen] = useState(false);
@@ -218,7 +242,7 @@ function BlockView({ block, parentId, index, count, depth }: BlockProps): React.
         action();
     };
 
-    const content = renderContent(block, depth, headingId, editor);
+    const content = renderContent(block, depth, headingId, editor, host);
     if (!editor) {
         return <div className={`bd-block bd-block--${blockClass(block)}`}>{content}</div>;
     }
@@ -232,7 +256,7 @@ function BlockView({ block, parentId, index, count, depth }: BlockProps): React.
             ? [{ label: 'Move into chapter above', onSelect: () => editor.indent(block.id) }]
             : []),
         ...(parentId ? [{ label: 'Move out of chapter', onSelect: () => editor.outdent(block.id) }] : []),
-        ...(isImageBlock(block) || isVideoBlock(block)
+        ...(isImageBlock(block) || isVideoBlock(block) || isAddressBlock(block)
             ? [
                   {
                       label: `Edit ${block.type}…`,
@@ -277,6 +301,19 @@ function BlockView({ block, parentId, index, count, depth }: BlockProps): React.
                 {menuOpen && <Menu label={`Actions for ${blockName}`} items={menuItems} onClose={closeMenu} />}
             </div>
             {content}
+            {editingMedia && isAddressBlock(block) && (
+                <AddressForm
+                    mode="edit"
+                    initial={block}
+                    inherited={(field) => inheritedFieldVisibility(block, field, host)}
+                    onCancel={() => editor.setMediaForm(null)}
+                    onSubmit={(fields) => {
+                        editor.setMediaForm(null);
+                        editor.update(block.id, fields);
+                        editor.requestFocus(block.id, 'start');
+                    }}
+                />
+            )}
             {editingMedia && (isImageBlock(block) || isVideoBlock(block)) && (
                 <MediaForm
                     type={block.type}
@@ -296,9 +333,7 @@ function BlockView({ block, parentId, index, count, depth }: BlockProps): React.
 }
 
 function blockClass(block: DocumentBlock): string {
-    return isChapterBlock(block) || isParagraphBlock(block) || isImageBlock(block) || isVideoBlock(block)
-        ? block.type
-        : 'unknown';
+    return isKnownBlock(block) ? block.type : 'unknown';
 }
 
 function describeBlock(block: DocumentBlock): string {
@@ -306,23 +341,28 @@ function describeBlock(block: DocumentBlock): string {
     if (isParagraphBlock(block)) return 'paragraph';
     if (isImageBlock(block)) return `image ${block.alt}`;
     if (isVideoBlock(block)) return `video ${richTextToPlain(block.caption) || block.src}`;
+    if (isAddressBlock(block)) return `address ${addressLines(block)[0] ?? ''}`.trim();
     return `unsupported block ${block.type}`;
 }
 
-function Caption({ blockId, caption, editor }: { blockId: string; caption?: RichText; editor: Editor | null }) {
+function Caption({ block, caption, editor }: { block: DocumentBlock; caption?: RichText; editor: Editor | null }) {
+    const visible = useFieldVisibility(block)('caption');
     if (editor) {
         return (
-            <EditableText
-                as="figcaption"
-                className="bd-caption"
-                value={caption ?? []}
-                label="Caption"
-                placeholder="Add a caption"
-                onChange={(next) => editor.update(blockId, { caption: next.length ? next : undefined })}
-            />
+            <>
+                <EditableText
+                    as="figcaption"
+                    className={`bd-caption${visible ? '' : ' bd-field--hidden'}`}
+                    value={caption ?? []}
+                    label="Caption"
+                    placeholder="Add a caption"
+                    onChange={(next) => editor.update(block.id, { caption: next.length ? next : undefined })}
+                />
+                {!visible && <HiddenNote what="Caption" />}
+            </>
         );
     }
-    if (!caption?.length) return null;
+    if (!visible || !caption?.length) return null;
     return (
         <figcaption className="bd-caption">
             <RichTextView spans={caption} />
@@ -330,11 +370,63 @@ function Caption({ blockId, caption, editor }: { blockId: string; caption?: Rich
     );
 }
 
+/** The marker of a field the document does not show, seen only while editing */
+function HiddenNote({ what }: { what?: string }): React.ReactElement {
+    return (
+        <span className="bd-hidden-note">
+            <EyeOffIcon />
+            {what ? `${what}: not shown in the document` : 'Not shown in the document'}
+        </span>
+    );
+}
+
+/** An address as the reader sees it; while editing, its hidden fields follow, dimmed and marked */
+function AddressView({ block, editing }: { block: AddressBlock; editing: boolean }): React.ReactElement {
+    const visible = useFieldVisibility(block);
+    const lines = addressLines(block, visible);
+    if (block.ruianCode !== undefined && visible('ruianCode')) lines.push(`RÚIAN ${block.ruianCode}`);
+    if (block.gps && visible('gps')) lines.push(formatGeoPoint(block.gps));
+
+    const hidden = editing
+        ? ADDRESS_FIELDS.filter((field) => !visible(field) && fieldText(block, field))
+        : [];
+
+    return (
+        <div className="bd-address-block">
+            <PinIcon />
+            <div>
+                {lines.length > 0 && (
+                    <address className="bd-address">
+                        {lines.map((line, i) => (
+                            <span key={i} className="bd-address-line">
+                                {line}
+                            </span>
+                        ))}
+                    </address>
+                )}
+                {hidden.map((field) => (
+                    <span key={field} className="bd-address-line bd-field--hidden">
+                        <span className="bd-visually-hidden">{ADDRESS_FIELD_LABELS[field]}: </span>
+                        {fieldText(block, field)} <HiddenNote />
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+function fieldText(block: AddressBlock, field: AddressField): string {
+    if (field === 'gps') return block.gps ? formatGeoPoint(block.gps) : '';
+    if (field === 'ruianCode') return block.ruianCode !== undefined ? String(block.ruianCode) : '';
+    return block[field]?.trim() ?? '';
+}
+
 function renderContent(
     block: DocumentBlock,
     depth: number,
     headingId: string,
     editor: Editor | null,
+    host?: BlockFieldVisibility,
 ): React.ReactNode {
     if (isChapterBlock(block)) {
         const Heading = headingTag(depth);
@@ -398,7 +490,7 @@ function renderContent(
         return (
             <figure className="bd-figure">
                 <MediaImage src={block.src} alt={block.alt} />
-                <Caption blockId={block.id} caption={block.caption} editor={editor} />
+                <Caption block={block} caption={block.caption} editor={editor} />
             </figure>
         );
     }
@@ -408,11 +500,15 @@ function renderContent(
                 <MediaVideo
                     src={block.src}
                     poster={block.poster}
+                    showPoster={!!editor || isFieldVisible(block, 'poster', host)}
                     label={richTextToPlain(block.caption) || 'Video'}
                 />
-                <Caption blockId={block.id} caption={block.caption} editor={editor} />
+                <Caption block={block} caption={block.caption} editor={editor} />
             </figure>
         );
+    }
+    if (isAddressBlock(block)) {
+        return <AddressView block={block} editing={!!editor} />;
     }
     return (
         <div className="bd-unknown" role="note">
@@ -432,10 +528,12 @@ function MediaImage({ src, alt }: { src: string; alt: string }): React.ReactElem
 function MediaVideo({
     src,
     poster,
+    showPoster,
     label,
 }: {
     src: string;
     poster?: string;
+    showPoster: boolean;
     label: string;
 }): React.ReactElement {
     const resolve = React.useContext(MediaUrlContext);
@@ -443,7 +541,7 @@ function MediaVideo({
         <video
             className="bd-video"
             src={resolve(src)}
-            poster={poster ? resolve(poster) : undefined}
+            poster={poster && showPoster ? resolve(poster) : undefined}
             controls
             preload="metadata"
             aria-label={label}

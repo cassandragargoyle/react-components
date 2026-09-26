@@ -38,3 +38,24 @@ export function PlusIcon(): React.ReactElement {
         </svg>
     );
 }
+
+/** An address: a map pin */
+export function PinIcon(): React.ReactElement {
+    return (
+        <svg {...SVG_PROPS}>
+            <path d="M10 17.5s-5.5-5.2-5.5-9.5a5.5 5.5 0 0 1 11 0c0 4.3-5.5 9.5-5.5 9.5z" />
+            <circle cx="10" cy="8" r="2" />
+        </svg>
+    );
+}
+
+/** A field the document does not show: a crossed-out eye */
+export function EyeOffIcon(): React.ReactElement {
+    return (
+        <svg {...SVG_PROPS}>
+            <path d="M2.5 10s2.7-5 7.5-5 7.5 5 7.5 5-2.7 5-7.5 5-7.5-5-7.5-5z" />
+            <circle cx="10" cy="10" r="2.2" />
+            <path d="M3.5 16.5l13-13" />
+        </svg>
+    );
+}

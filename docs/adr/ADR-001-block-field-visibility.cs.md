@@ -47,8 +47,9 @@ Je potřeba odpovědět na čtyři otázky:
 ## Rozhodnutí
 
 **Každý typ bloku deklaruje svá pole a výchozí zobrazení**, tedy pole, která dokument
-ukazuje. Adresa ukazuje ulici, číslo domu, PSČ, město a stát a neukazuje `gps`. Typ, jehož
-pole se ukazují všechna, je přesto deklaruje, aby je přepis mohl jmenovat.
+ukazuje. Adresa ukazuje své poštovní řádky a neukazuje `ruianCode` (kód adresního místa
+v RÚIAN) ani `gps`. Typ, jehož pole se ukazují všechna, je přesto deklaruje, aby je přepis
+mohl jmenovat.
 
 **Výchozí nastavení lze přepsat na dvou dalších úrovních a vyhrává ta nejkonkrétnější:**
 
@@ -99,9 +100,10 @@ polí s výchozí viditelností. Vykreslení se ptá, která pole jsou viditeln�
 editaci se ptá, která pole existují. Přidat pole do typu znamená přidat ho do toho seznamu
 a nic dalšího se o něm učit nemusí.
 
-**Stávající typy se nemění.** Kapitola, odstavec, obrázek a video deklarují svá pole jako
-všechna viditelná, takže už napsané dokumenty vypadají stejně. Hostitel přesto může přes
-úroveň 2 skrýt třeba `caption` u všech obrázků.
+**Stávající typy se nemění.** Obrázek a video deklarují `caption` a `poster` jako viditelné,
+takže už napsané dokumenty vypadají stejně. Hostitel přesto může přes úroveň 2 skrýt třeba
+`caption` u všech obrázků. Kapitola a odstavec nedeklarují žádná pole, protože skrytím
+jejich jediného obsahu by zmizel celý blok, a na to slouží mazání.
 
 **Formát zůstává na `schemaVersion` 1.** `visibility` je volitelný klíč bloku. Starší
 komponenta ho ignoruje, stejně jako každý klíč, který nezná, a ukazuje pole, která ukazuje

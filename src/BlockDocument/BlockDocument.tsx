@@ -11,9 +11,10 @@ import blockDocumentStyles from './BlockDocument.css';
 
 import { BlockList, MediaUrlContext } from './BlockView';
 import { EditableText } from './EditableText';
+import { FieldVisibilityContext } from './fields';
 import { createEditorActions, EditorContext, type Caret, type Editor, type FocusTarget, type MediaFormState } from './editor';
 import { richTextToPlain, plainToRichText } from './richText';
-import type { BlockDocumentData } from './types';
+import type { BlockDocumentData, BlockFieldVisibility } from './types';
 import { validateBlockDocument } from './validate';
 
 // Inject styles once when bundled as a string; under test the import is '' and this is skipped
@@ -40,6 +41,11 @@ export interface BlockDocumentProps {
     resolveMediaUrl?: (src: string) => string;
     /** Makes ids for new blocks; a random id by default */
     createBlockId?: () => string;
+    /**
+     * Which fields the document shows, per block type, over each type's default (ADR-001),
+     * e.g. `{ address: { gps: true } }`; a block's own `visibility` still wins. Editing shows every field
+     */
+    fieldVisibility?: BlockFieldVisibility;
     className?: string;
     style?: React.CSSProperties;
     ref?: React.Ref<HTMLElement>;
@@ -61,6 +67,7 @@ export function BlockDocument({
     readOnly = false,
     resolveMediaUrl = identity,
     createBlockId = defaultBlockId,
+    fieldVisibility,
     className,
     style,
     ref,
@@ -152,41 +159,43 @@ export function BlockDocument({
 
     return (
         <MediaUrlContext.Provider value={resolveMediaUrl}>
-            <EditorContext.Provider value={editor}>
-                <article ref={ref} className={classes} style={style} aria-label={doc.title || 'Document'}>
-                    {editor ? (
-                        <EditableText
-                            as="h1"
-                            className="bd-title"
-                            plain
-                            value={plainToRichText(doc.title)}
-                            label="Document title"
-                            placeholder="Untitled"
-                            onChange={(title) => {
-                                const next = { ...docRef.current, title: richTextToPlain(title) };
-                                docRef.current = next;
-                                onChangeRef.current?.(next);
-                            }}
-                            onEnter={() => {
-                                actions.insertText('paragraph', { index: 0 });
-                                return true;
-                            }}
-                        />
-                    ) : (
-                        doc.title && <h1 className="bd-title">{doc.title}</h1>
-                    )}
-                    <BlockList blocks={doc.blocks} depth={0} />
-                    {editor && doc.blocks.length === 0 && (
-                        <button
-                            type="button"
-                            className="bd-button bd-add-first"
-                            onClick={() => actions.insertText('paragraph', { index: 0 })}
-                        >
-                            Add a paragraph
-                        </button>
-                    )}
-                </article>
-            </EditorContext.Provider>
+            <FieldVisibilityContext.Provider value={fieldVisibility}>
+                <EditorContext.Provider value={editor}>
+                    <article ref={ref} className={classes} style={style} aria-label={doc.title || 'Document'}>
+                        {editor ? (
+                            <EditableText
+                                as="h1"
+                                className="bd-title"
+                                plain
+                                value={plainToRichText(doc.title)}
+                                label="Document title"
+                                placeholder="Untitled"
+                                onChange={(title) => {
+                                    const next = { ...docRef.current, title: richTextToPlain(title) };
+                                    docRef.current = next;
+                                    onChangeRef.current?.(next);
+                                }}
+                                onEnter={() => {
+                                    actions.insertText('paragraph', { index: 0 });
+                                    return true;
+                                }}
+                            />
+                        ) : (
+                            doc.title && <h1 className="bd-title">{doc.title}</h1>
+                        )}
+                        <BlockList blocks={doc.blocks} depth={0} />
+                        {editor && doc.blocks.length === 0 && (
+                            <button
+                                type="button"
+                                className="bd-button bd-add-first"
+                                onClick={() => actions.insertText('paragraph', { index: 0 })}
+                            >
+                                Add a paragraph
+                            </button>
+                        )}
+                    </article>
+                </EditorContext.Provider>
+            </FieldVisibilityContext.Provider>
         </MediaUrlContext.Provider>
     );
 }

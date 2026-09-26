@@ -57,6 +57,7 @@ function Demo(): React.ReactElement {
     const [editing, setEditing] = useState(true);
     const [theme, setTheme] = useState<Theme>('dark');
     const [changes, setChanges] = useState(0);
+    const [hostShowsGps, setHostShowsGps] = useState(false);
     const validation = useMemo(() => validateBlockDocument(doc), [doc]);
     const colours = THEMES[theme];
 
@@ -93,6 +94,10 @@ function Demo(): React.ReactElement {
                     />{' '}
                     Light theme
                 </label>
+                <label title="The host's fieldVisibility prop; a block's own visibility still wins">
+                    <input type="checkbox" checked={hostShowsGps} onChange={(e) => setHostShowsGps(e.target.checked)} />{' '}
+                    Show GPS and RÚIAN code
+                </label>
                 <button
                     type="button"
                     onClick={() => {
@@ -116,6 +121,7 @@ function Demo(): React.ReactElement {
                         setChanges((n) => n + 1);
                     }}
                     resolveMediaUrl={(src) => `/${src}`}
+                    fieldVisibility={hostShowsGps ? { address: { gps: true, ruianCode: true } } : undefined}
                     style={{ flex: '1 1 32rem' }}
                 />
                 <details style={{ flex: '1 1 20rem', minWidth: 0 }}>

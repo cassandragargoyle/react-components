@@ -9,15 +9,20 @@
 export { Avatar } from './Avatar';
 export type { AvatarProps, AvatarKind } from './Avatar';
 
-export { BlockDocument, isBlockDocument, validateBlockDocument, insertBlock, removeBlock, moveBlock, updateBlock, canMoveBlock } from './BlockDocument';
+export { BlockDocument, isBlockDocument, validateBlockDocument, insertBlock, removeBlock, moveBlock, updateBlock, canMoveBlock, isFieldVisible } from './BlockDocument';
 export type {
+    AddressBlock,
     BlockDocumentProps,
     BlockDocumentValidation,
     BlockDocumentData,
+    BlockFieldVisibility,
     BlockLocation,
     BlockPatch,
     ChapterBlock,
     DocumentBlock,
+    FieldVisibility,
+    GeoPoint,
+    HouseNumberType,
     ImageBlock,
     KnownBlock,
     ParagraphBlock,
