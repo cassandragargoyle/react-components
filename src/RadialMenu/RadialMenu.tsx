@@ -6,7 +6,7 @@
 // Framework-agnostic radial (pie) action menu: hub + concentric rings of segments
 // Handles geometry, pointer hit-testing, hover-select, nested rings, and keyboard nav
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { type JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { RadialMenuAction, RadialMenuActive, RadialMenuOptions } from './types';
 import radialMenuStyles from './RadialMenu.css';
