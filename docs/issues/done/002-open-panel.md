@@ -14,17 +14,18 @@ related:
 
 ## Metadata
 
-- **Status**: 🔄 In Progress
+- **Status**: ✅ Implemented
 - **Type**: enhancement
 - **Priority**: medium
 - **Created**: 2026-09-26
+- **Closed**: 2026-09-27
 - **Version**: 0.2.0
 - **Author**: Zdenek
 - **Target**: `src/OpenPanel/` (new component)
 - **GitHub**: [#2](https://github.com/cassandragargoyle/react-components/issues/2)
 - **Related**:
   - `portunix-vscode` issue 125 — the migration of components into this library
-  - [GUI Design Guidelines](../architecture/GUI-DESIGN-PRINCIPLES.md) — theme, icons,
+  - [GUI Design Guidelines](../../architecture/GUI-DESIGN-PRINCIPLES.md) — theme, icons,
     interaction states
 
 ## Feature Description
@@ -73,6 +74,6 @@ out of the library. This issue makes it host-neutral.
       shortcut, missing items, label overrides and path shortening
 - [x] The component ships a `README.md` with usage, props and styling
 - [x] `npm run typecheck`, `npm run build` and `npm test` pass
-- [ ] Version 0.2.0 is published to npmjs.com — waits for the `v0.2.0` tag
+- [x] Version 0.2.0 is published to npmjs.com
 - [ ] `portunix-vscode` Pilot renders its start screen from this component — wired, not
-      yet checked in the running app
+      yet checked in the running app; followed up in `portunix-vscode` issue 125
