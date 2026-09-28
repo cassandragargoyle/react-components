@@ -15,19 +15,21 @@ related:
 
 ## Metadata
 
-- **Status**: 📋 Open
+- **Status**: ✅ Implemented
 - **Type**: enhancement
 - **Priority**: medium
 - **Created**: 2026-09-27
+- **Closed**: 2026-09-28
+- **Version**: 0.2.2
 - **Author**: Zdenek
 - **Target**: `src/BlockDocument/`
 - **GitHub**: [#4](https://github.com/cassandragargoyle/react-components/issues/4)
 - **Related**:
-  - [INT-001 — BlockDocument](done/001-block-document.md) — the format that gains
+  - [INT-001 — BlockDocument](001-block-document.md) — the format that gains
     `language`
-  - [INT-003 — The address block](done/003-address-block.md) — the field labels this issue
+  - [INT-003 — The address block](003-address-block.md) — the field labels this issue
     makes translatable
-  - [GUI Design Guidelines](../architecture/GUI-DESIGN-PRINCIPLES.md) — accessibility of
+  - [GUI Design Guidelines](../../architecture/GUI-DESIGN-PRINCIPLES.md) — accessibility of
     the translated labels
 
 ## Feature Description
@@ -133,25 +135,25 @@ Judgement calls, open to disagreement before they are built:
 
 ## Acceptance Criteria
 
-- [ ] A document with `"language": "cs"` renders every text of the component in Czech: the
+- [x] A document with `"language": "cs"` renders every text of the component in Czech: the
       field labels, the menus, the forms, their errors, the display settings, the
       placeholders and every `aria-label`
-- [ ] `locale="en"` on a Czech document renders the texts in English, and the `<article>`
+- [x] `locale="en"` on a Czech document renders the texts in English, and the `<article>`
       keeps `lang="cs"`
-- [ ] Without `language` and `locale`, the component renders exactly as before (the
+- [x] Without `language` and `locale`, the component renders exactly as before (the
       existing tests pass unchanged)
-- [ ] `cs-CZ` resolves to `cs`, and an unknown tag such as `xx` falls back to `en` without
+- [x] `cs-CZ` resolves to `cs`, and an unknown tag such as `xx` falls back to `en` without
       an error
-- [ ] `messages` overrides a single text of the resolved language, and a complete
+- [x] `messages` overrides a single text of the resolved language, and a complete
       `messages` with `locale="de"` renders German
-- [ ] The Czech dictionary is complete, which the type check enforces, and no English
+- [x] The Czech dictionary is complete, which the type check enforces, and no English
       literal is left in the components under `src/BlockDocument/` (a test checks the
       Czech rendering of each form, the block menu and the display settings)
-- [ ] The address keeps `č.p.`, `č.ev.` and `RÚIAN` and the `gps` format in every language
-- [ ] `validateBlockDocument` rejects a `language` that is not a non-empty string, with the
+- [x] The address keeps `č.p.`, `č.ev.` and `RÚIAN` and the `gps` format in every language
+- [x] `validateBlockDocument` rejects a `language` that is not a non-empty string, with the
       path to it
-- [ ] `BlockDocumentMessages` and `blockDocumentMessages` are exported from `src/index.ts`
-- [ ] A Czech sample has `"language": "cs"`, and the demo switches the sample, the document
+- [x] `BlockDocumentMessages` and `blockDocumentMessages` are exported from `src/index.ts`
+- [x] A Czech sample has `"language": "cs"`, and the demo switches the sample, the document
       `language` and the locale
-- [ ] `README.md` documents `language`, `locale`, `messages` and adding a language
-- [ ] `npm run typecheck`, `npm run build` and `npm test` pass
+- [x] `README.md` documents `language`, `locale`, `messages` and adding a language
+- [x] `npm run typecheck`, `npm run build` and `npm test` pass
