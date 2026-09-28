@@ -36,19 +36,6 @@ export type AddressPatch = { [K in AddressKey]: AddressFields[K] | undefined };
 // A plain key union, so the mapped type above keeps `undefined` in every property
 type AddressKey = keyof AddressFields;
 
-/** A readable name for each field, for labels and messages */
-export const ADDRESS_FIELD_LABELS: Record<AddressField, string> = {
-    street: 'Street',
-    houseNumber: 'House number',
-    orientationNumber: 'Orientation number',
-    municipalityPart: 'Part of municipality',
-    postalCode: 'Postal code',
-    city: 'City',
-    country: 'Country',
-    ruianCode: 'RÚIAN address code',
-    gps: 'GPS coordinates',
-};
-
 export const HOUSE_NUMBER_TYPES: readonly HouseNumberType[] = ['conscription', 'registration'];
 
 /** Whether `value` is a WGS 84 point with both coordinates in range */

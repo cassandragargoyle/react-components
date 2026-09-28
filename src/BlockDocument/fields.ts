@@ -8,7 +8,7 @@
 
 import { createContext, useContext } from 'react';
 
-import { ADDRESS_FIELD_LABELS } from './address';
+import { blockDocumentMessages, type BlockDocumentMessages } from './messages';
 import type { BlockFieldVisibility, DocumentBlock, FieldVisibility, KnownBlockType } from './types';
 
 /**
@@ -33,16 +33,17 @@ export const BLOCK_FIELDS: Readonly<Record<KnownBlockType, Readonly<Record<strin
     },
 };
 
-const FIELD_LABELS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
-    image: { caption: 'Caption' },
-    video: { poster: 'Poster', caption: 'Caption' },
-    address: ADDRESS_FIELD_LABELS,
-};
-
-/** The fields of a block the display settings offer, with their labels; empty for a type with none */
-export function declaredFields(block: DocumentBlock): { field: string; label: string }[] {
+/**
+ * The fields of a block the display settings offer, with their labels from `labels`
+ * (English by default); empty for a type with none
+ */
+export function declaredFields(
+    block: DocumentBlock,
+    labels: BlockDocumentMessages['fields'] = blockDocumentMessages.en.fields,
+): { field: string; label: string }[] {
     const declared = (BLOCK_FIELDS as Record<string, Record<string, boolean> | undefined>)[block.type] ?? {};
-    return Object.keys(declared).map((field) => ({ field, label: FIELD_LABELS[block.type]?.[field] ?? field }));
+    const named = (labels as Readonly<Record<string, Readonly<Record<string, string>> | undefined>>)[block.type];
+    return Object.keys(declared).map((field) => ({ field, label: named?.[field] ?? field }));
 }
 
 /**

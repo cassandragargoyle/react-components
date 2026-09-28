@@ -3,7 +3,7 @@
  *  Licensed under the MIT License - see LICENSE file for details
  */
 
-// The demo page: the family house in BlockDocument, editable, in a light or a dark theme
+// The demo page: the family house in BlockDocument, in English or Czech, editable, light or dark
 // It imports the public entry point, so it shows the library as a consumer sees it
 //
 // The query sets the starting state, for a debug target that opens straight on a block:
@@ -11,12 +11,16 @@
 //   ?readonly        start read-only
 //   ?light           start in the light theme
 //   ?gps             start with the host showing the address GPS and RÚIAN code
+//   ?sample=cs       start with the Czech sample, whose document language is cs
+//   ?language=<tag>  start with the document language set to that tag, e.g. cs
+//   ?locale=<tag>    start with the host setting the language of the texts, e.g. en or cs
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { BlockDocument, validateBlockDocument, type BlockDocumentData } from '../src';
-import sample from '../src/BlockDocument/samples/family-house.blockdocument.json';
+import familyHouse from '../src/BlockDocument/samples/family-house.blockdocument.json';
+import rodinnyDum from '../src/BlockDocument/samples/rodinny-dum.blockdocument.json';
 
 type Theme = 'dark' | 'light';
 
@@ -56,16 +60,29 @@ const THEMES: Record<Theme, Record<string, string>> = {
     },
 };
 
-const initial = sample as BlockDocumentData;
-
 const query = new URLSearchParams(window.location.search);
 
+// The same house written in English, without a document language, and in Czech, with `cs`
+const SAMPLES: Record<'en' | 'cs', BlockDocumentData> = {
+    en: familyHouse as BlockDocumentData,
+    cs: rodinnyDum as BlockDocumentData,
+};
+type SampleName = keyof typeof SAMPLES;
+
+function sampleFor(name: SampleName): BlockDocumentData {
+    const language = query.get('language');
+    return language ? { ...SAMPLES[name], language } : SAMPLES[name];
+}
+
 function Demo(): React.ReactElement {
-    const [doc, setDoc] = useState<BlockDocumentData>(initial);
+    const [sampleName, setSampleName] = useState<SampleName>(query.get('sample') === 'cs' ? 'cs' : 'en');
+    const [doc, setDoc] = useState<BlockDocumentData>(() => sampleFor(sampleName));
     const [editing, setEditing] = useState(!query.has('readonly'));
     const [theme, setTheme] = useState<Theme>(query.has('light') ? 'light' : 'dark');
     const [changes, setChanges] = useState(0);
     const [hostShowsGps, setHostShowsGps] = useState(query.has('gps'));
+    // Empty follows the document language
+    const [locale, setLocale] = useState(query.get('locale') ?? '');
 
     // Once, after the first render: bring the block named in the query into view and focus it
     useEffect(() => {
@@ -114,10 +131,44 @@ function Demo(): React.ReactElement {
                     <input type="checkbox" checked={hostShowsGps} onChange={(e) => setHostShowsGps(e.target.checked)} />{' '}
                     Show GPS and RÚIAN code
                 </label>
+                <label title="Which sample document to show; switching starts it afresh">
+                    Sample:{' '}
+                    <select
+                        value={sampleName}
+                        onChange={(e) => {
+                            const name = e.target.value as SampleName;
+                            setSampleName(name);
+                            setDoc(sampleFor(name));
+                            setChanges(0);
+                        }}
+                    >
+                        <option value="en">English</option>
+                        <option value="cs">Czech</option>
+                    </select>
+                </label>
+                <label title="The document's language: the lang of its content, and of the texts unless the host sets a locale">
+                    Document language:{' '}
+                    <select
+                        value={doc.language ?? ''}
+                        onChange={(e) => setDoc((d) => ({ ...d, language: e.target.value || undefined }))}
+                    >
+                        <option value="">Not set</option>
+                        <option value="en">English</option>
+                        <option value="cs">Czech</option>
+                    </select>
+                </label>
+                <label title="The host's locale prop; without it, the document language decides">
+                    Texts:{' '}
+                    <select value={locale} onChange={(e) => setLocale(e.target.value)}>
+                        <option value="">Document language</option>
+                        <option value="en">English</option>
+                        <option value="cs">Czech</option>
+                    </select>
+                </label>
                 <button
                     type="button"
                     onClick={() => {
-                        setDoc(initial);
+                        setDoc(sampleFor(sampleName));
                         setChanges(0);
                     }}
                 >
@@ -138,6 +189,7 @@ function Demo(): React.ReactElement {
                     }}
                     resolveMediaUrl={(src) => `/${src}`}
                     fieldVisibility={hostShowsGps ? { address: { gps: true, ruianCode: true } } : undefined}
+                    locale={locale || undefined}
                     style={{ flex: '1 1 32rem' }}
                 />
                 <details style={{ flex: '1 1 20rem', minWidth: 0 }}>

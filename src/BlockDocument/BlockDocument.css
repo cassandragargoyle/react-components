@@ -272,12 +272,14 @@ h6.bd-heading { font-size: 14px; }
 .bd-block:hover:not(:has(.bd-block:hover)) > .bd-tools > .bd-tool,
 .bd-block:focus-within:not(:has(.bd-block:focus-within)) > .bd-tools > .bd-tool,
 .bd-tool[aria-expanded='true'],
+.bd-tool[aria-pressed='true'],
 .bd-tool:focus-visible {
     opacity: 1;
 }
 
 .bd-tool:hover,
-.bd-tool[aria-expanded='true'] {
+.bd-tool[aria-expanded='true'],
+.bd-tool[aria-pressed='true'] {
     color: var(--bd-fg);
     background: var(--bd-hover);
 }

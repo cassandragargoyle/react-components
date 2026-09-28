@@ -9,7 +9,6 @@
 import React, { useId, useRef, useState } from 'react';
 
 import {
-    ADDRESS_FIELD_LABELS,
     ADDRESS_FIELDS,
     ADDRESS_TEXT_FIELDS,
     hasAddressContent,
@@ -19,6 +18,7 @@ import {
     type AddressTextField,
 } from './address';
 import { EyeOffIcon } from './icons';
+import { useMessages } from './messages';
 import type { GeoPoint, HouseNumberType } from './types';
 
 /** What the form saves: every data field, `undefined` where it is cleared; never `visibility` */
@@ -43,6 +43,8 @@ function parseNumber(text: string): number | undefined {
 
 export function AddressForm({ mode, initial, visible, onSubmit, onCancel }: AddressFormProps): React.ReactElement {
     const id = useId();
+    const messages = useMessages();
+    const labels = messages.fields.address;
     const [text, setText] = useState<Record<AddressTextField, string>>(() => {
         const out = {} as Record<AddressTextField, string>;
         for (const field of ADDRESS_TEXT_FIELDS) out[field] = initial?.[field] ?? '';
@@ -64,21 +66,21 @@ export function AddressForm({ mode, initial, visible, onSubmit, onCancel }: Addr
         e.preventDefault();
         const ruianCode = parseNumber(ruian);
         if (ruianCode !== undefined && !(Number.isSafeInteger(ruianCode) && ruianCode > 0)) {
-            fail('ruianCode', 'The RÚIAN address code must be a positive whole number');
+            fail('ruianCode', messages.ruianInvalid);
             return;
         }
         const latValue = parseNumber(lat);
         const lonValue = parseNumber(lon);
         if (latValue !== undefined && !(Math.abs(latValue) <= 90)) {
-            fail('lat', 'Latitude must be a number between -90 and 90');
+            fail('lat', messages.latitudeInvalid);
             return;
         }
         if (lonValue !== undefined && !(Math.abs(lonValue) <= 180)) {
-            fail('lon', 'Longitude must be a number between -180 and 180');
+            fail('lon', messages.longitudeInvalid);
             return;
         }
         if ((latValue === undefined) !== (lonValue === undefined)) {
-            fail(latValue === undefined ? 'lat' : 'lon', 'Enter both latitude and longitude, or neither');
+            fail(latValue === undefined ? 'lat' : 'lon', messages.gpsIncomplete);
             return;
         }
         const gps: GeoPoint | undefined =
@@ -87,7 +89,7 @@ export function AddressForm({ mode, initial, visible, onSubmit, onCancel }: Addr
         const values = {} as Record<AddressTextField, string | undefined>;
         for (const field of ADDRESS_TEXT_FIELDS) values[field] = text[field].trim() || undefined;
         if (!hasAddressContent({ ...values, ruianCode, gps })) {
-            fail('street', 'Fill in at least one field of the address');
+            fail('street', messages.addressEmpty);
             return;
         }
 
@@ -132,7 +134,7 @@ export function AddressForm({ mode, initial, visible, onSubmit, onCancel }: Addr
 
     const textRow = (field: AddressTextField, extra: Partial<React.InputHTMLAttributes<HTMLInputElement>> = {}) => (
         <React.Fragment key={field}>
-            {input(field, ADDRESS_FIELD_LABELS[field], text[field], (next) => setText((prev) => ({ ...prev, [field]: next })), field, extra)}
+            {input(field, labels[field], text[field], (next) => setText((prev) => ({ ...prev, [field]: next })), field, extra)}
         </React.Fragment>
     );
 
@@ -141,7 +143,7 @@ export function AddressForm({ mode, initial, visible, onSubmit, onCancel }: Addr
     return (
         <form
             className="bd-media-form bd-address-form"
-            aria-label={`${mode === 'insert' ? 'Insert' : 'Edit'} address`}
+            aria-label={mode === 'insert' ? messages.insert.address : messages.edit.address}
             onSubmit={submit}
             onKeyDown={(e) => {
                 if (e.key === 'Escape') {
@@ -156,29 +158,29 @@ export function AddressForm({ mode, initial, visible, onSubmit, onCancel }: Addr
             <div className="bd-address-grid">
                 {textRow('street', { autoFocus: true })}
                 {textRow('houseNumber')}
-                <label htmlFor={`${id}-numberType`}>House number type</label>
+                <label htmlFor={`${id}-numberType`}>{messages.houseNumberType}</label>
                 <select
                     id={`${id}-numberType`}
                     value={numberType}
                     onChange={(e) => setNumberType(e.target.value as HouseNumberType | '')}
                 >
-                    <option value="">Not specified</option>
-                    <option value="conscription">Conscription number (č.p.)</option>
-                    <option value="registration">Registration number (č.ev.)</option>
+                    <option value="">{messages.notSpecified}</option>
+                    <option value="conscription">{messages.conscriptionNumber}</option>
+                    <option value="registration">{messages.registrationNumber}</option>
                 </select>
                 {textRow('orientationNumber', { placeholder: '14a' })}
                 {textRow('municipalityPart')}
                 {textRow('postalCode')}
                 {textRow('city')}
                 {textRow('country')}
-                {input('ruianCode', ADDRESS_FIELD_LABELS.ruianCode, ruian, setRuian, 'ruianCode', { inputMode: 'numeric' })}
-                {input('lat', 'Latitude', lat, setLat, 'gps', { inputMode: 'decimal', placeholder: '49.9917' })}
-                {input('lon', 'Longitude', lon, setLon, 'gps', { inputMode: 'decimal', placeholder: '14.6543' })}
+                {input('ruianCode', labels.ruianCode, ruian, setRuian, 'ruianCode', { inputMode: 'numeric' })}
+                {input('lat', messages.latitude, lat, setLat, 'gps', { inputMode: 'decimal', placeholder: '49.9917' })}
+                {input('lon', messages.longitude, lon, setLon, 'gps', { inputMode: 'decimal', placeholder: '14.6543' })}
             </div>
             {hidden.map((field) => (
                 <p key={field} className="bd-hidden-note" id={`${id}-${field}-hidden`}>
                     <EyeOffIcon />
-                    {field === 'gps' ? 'Latitude and longitude' : ADDRESS_FIELD_LABELS[field]}: not shown in the document
+                    {messages.fieldNotShown(field === 'gps' ? messages.latitudeAndLongitude : labels[field])}
                 </p>
             ))}
             {error && (
@@ -188,10 +190,10 @@ export function AddressForm({ mode, initial, visible, onSubmit, onCancel }: Addr
             )}
             <div className="bd-form-actions">
                 <button type="submit" className="bd-button bd-button--primary">
-                    {mode === 'insert' ? 'Insert' : 'Save'}
+                    {mode === 'insert' ? messages.insertButton : messages.save}
                 </button>
                 <button type="button" className="bd-button" onClick={onCancel}>
-                    Cancel
+                    {messages.cancel}
                 </button>
             </div>
         </form>

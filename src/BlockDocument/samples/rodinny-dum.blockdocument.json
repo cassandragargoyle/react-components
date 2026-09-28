@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "id": "rodinny-dum-novak",
+  "title": "Rodinný dům Novákových",
+  "language": "cs",
+  "blocks": [
+    {
+      "id": "overview",
+      "type": "chapter",
+      "title": [{ "text": "Přehled" }],
+      "children": [
+        {
+          "id": "overview-address",
+          "type": "address",
+          "street": "Lipová",
+          "houseNumber": "1234",
+          "houseNumberType": "conscription",
+          "orientationNumber": "12",
+          "municipalityPart": "Říčany",
+          "postalCode": "251 01",
+          "city": "Říčany",
+          "country": "Česká republika",
+          "gps": { "lat": 49.9917, "lon": 14.6543 }
+        },
+        {
+          "id": "overview-text",
+          "type": "paragraph",
+          "text": [
+            { "text": "Samostatně stojící dvoupodlažní dům postavený v roce 2019, s " },
+            { "text": "tepelným čerpadlem", "bold": true },
+            { "text": ", podlahovým topením v přízemí a fotovoltaickou elektrárnou na střeše o výkonu 6 kWp." }
+          ]
+        },
+        {
+          "id": "overview-exterior",
+          "type": "image",
+          "src": "plans/exterior.svg",
+          "alt": "Pohled na dům zepředu: dvě podlaží, sedlová střecha se solárními panely, vchod vlevo",
+          "caption": [{ "text": "Strana do ulice" }]
+        },
+        {
+          "id": "overview-note",
+          "type": "paragraph",
+          "text": [
+            { "text": "Tento dokument je návodem k domu: kde co je, jak je co zapojené a kdo smí co dělat. Po každé změně instalace ho " },
+            { "text": "udržujte aktuální", "italic": true },
+            { "text": "." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plans",
+      "type": "chapter",
+      "title": [{ "text": "Půdorysy" }],
+      "children": [
+        {
+          "id": "plans-ground",
+          "type": "chapter",
+          "title": [{ "text": "Přízemí" }],
+          "children": [
+            {
+              "id": "plans-ground-text",
+              "type": "paragraph",
+              "text": [
+                { "text": "V přízemí jsou " },
+                { "text": "tři", "bold": true },
+                { "text": " místnosti a chodba: obývací pokoj s kuchyní, pracovna a technická místnost s kotlem a rozvaděčem." }
+              ]
+            },
+            {
+              "id": "plans-ground-image",
+              "type": "image",
+              "src": "plans/ground-floor.svg",
+              "alt": "Půdorys přízemí: obývací pokoj a kuchyně vpravo, chodba, WC a technická místnost vlevo, pracovna vzadu",
+              "caption": [{ "text": "Přízemí, 1 : 100" }]
+            }
+          ]
+        },
+        {
+          "id": "plans-first",
+          "type": "chapter",
+          "title": [{ "text": "Patro" }],
+          "children": [
+            {
+              "id": "plans-first-text",
+              "type": "paragraph",
+              "text": [{ "text": "Tři ložnice a koupelna kolem schodišťové podesty." }]
+            },
+            {
+              "id": "plans-first-image",
+              "type": "image",
+              "src": "plans/first-floor.svg",
+              "alt": "Půdorys patra: ložnice rodičů, dva dětské pokoje a koupelna kolem podesty",
+              "caption": [{ "text": "Patro, 1 : 100" }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wiring",
+      "type": "chapter",
+      "title": [{ "text": "Elektroinstalace" }],
+      "children": [
+        {
+          "id": "wiring-text",
+          "type": "paragraph",
+          "text": [
+            { "text": "Všechny okruhy začínají v rozvaděči " },
+            { "text": "RD1", "code": true },
+            { "text": " v technické místnosti. Řídicí jednotka chytré domácnosti je na stejné DIN liště." }
+          ]
+        },
+        {
+          "id": "wiring-board",
+          "type": "chapter",
+          "title": [{ "text": "Rozvaděč" }],
+          "children": [
+            {
+              "id": "wiring-board-image",
+              "type": "image",
+              "src": "plans/wiring.svg",
+              "alt": "Jednopólové schéma RD1: hlavní vypínač, proudový chránič a jističe pro světla, zásuvky, kuchyň, tepelné čerpadlo a řídicí jednotku",
+              "caption": [{ "text": "RD1, jednopólové schéma" }]
+            },
+            {
+              "id": "wiring-board-text",
+              "type": "paragraph",
+              "text": [
+                { "text": "Světla jsou na " },
+                { "text": "F1", "code": true },
+                { "text": " a " },
+                { "text": "F2", "code": true },
+                { "text": " (B10), zásuvky na " },
+                { "text": "F3", "code": true },
+                { "text": " až " },
+                { "text": "F5", "code": true },
+                { "text": " (B16), tepelné čerpadlo na vlastním " },
+                { "text": "F8", "code": true },
+                { "text": " (C20)." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "wiring-heating",
+          "type": "chapter",
+          "title": [{ "text": "Topný okruh" }],
+          "children": [
+            {
+              "id": "wiring-heating-text",
+              "type": "paragraph",
+              "text": [
+                { "text": "Řídicí jednotka spíná oběhové čerpadlo relé " },
+                { "text": "K3", "code": true },
+                { "text": "; samotné tepelné čerpadlo se řídí přes Modbus. Mapu registrů najdete v " },
+                { "text": "návodu k tepelnému čerpadlu", "href": "https://example.com/heat-pump-manual.pdf" },
+                { "text": "." }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "residents",
+      "type": "chapter",
+      "title": [{ "text": "Obyvatelé" }],
+      "children": [
+        {
+          "id": "residents-adults",
+          "type": "paragraph",
+          "text": [
+            { "text": "Jana", "bold": true },
+            { "text": " — majitelka, správkyně systému chytré domácnosti.\n" },
+            { "text": "Petr", "bold": true },
+            { "text": " — majitel, smí měnit rozvrhy a scény." }
+          ]
+        },
+        {
+          "id": "residents-children",
+          "type": "paragraph",
+          "text": [
+            { "text": "Eliška", "bold": true },
+            { "text": " (12) a " },
+            { "text": "Tomáš", "bold": true },
+            { "text": " (9) ovládají světla a žaluzie jen ve svých pokojích." }
+          ]
+        },
+        {
+          "id": "residents-contact",
+          "type": "paragraph",
+          "text": [
+            { "text": "Servisní kontakt: " },
+            { "text": "servis@example.com", "href": "mailto:servis@example.com" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "walk-through",
+      "type": "video",
+      "src": "media/walk-through.mp4",
+      "poster": "media/walk-through-poster.svg",
+      "caption": [{ "text": "Prohlídka domu a technické místnosti" }]
+    }
+  ]
+}

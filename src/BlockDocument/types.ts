@@ -141,6 +141,11 @@ export interface BlockDocumentData {
     schemaVersion: number;
     id: string;
     title: string;
+    /**
+     * The language the document is written in, a BCP 47 tag such as `cs` (INT-004): the `lang`
+     * of the rendered content, and the language of the component's texts unless the host sets `locale`
+     */
+    language?: string;
     blocks: DocumentBlock[];
 }
 

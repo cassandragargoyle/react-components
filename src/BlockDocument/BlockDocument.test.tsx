@@ -11,6 +11,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 
 import { BlockDocument } from './BlockDocument';
+import { blockDocumentMessages, type BlockDocumentMessages } from './messages';
 import { findBlock, flattenBlocks } from './operations';
 import { placeCaret } from './richTextDom';
 import sampleJson from './samples/family-house.blockdocument.json';
@@ -474,6 +475,46 @@ describe('BlockDocument address and field visibility (INT-003)', () => {
         );
     });
 
+    it('toggles the address form with the edit button, which shows as pressed', () => {
+        const { block } = edit(withAddress());
+        const pencil = within(block('addr')).getByRole('button', { name: /^Edit address/ });
+        expect(pencil).toHaveAttribute('aria-pressed', 'false');
+        // A real press: the pointer goes down before the click
+        fireEvent.mouseDown(pencil);
+        fireEvent.click(pencil);
+        expect(screen.getByRole('form', { name: 'Edit address' })).toBeInTheDocument();
+        expect(pencil).toHaveAttribute('aria-pressed', 'true');
+        fireEvent.mouseDown(pencil);
+        fireEvent.click(pencil);
+        expect(screen.queryByRole('form', { name: 'Edit address' })).toBeNull();
+        expect(pencil).toHaveAttribute('aria-pressed', 'false');
+        expect(within(block('a')).getByRole('button', { name: 'Edit paragraph' })).not.toHaveAttribute('aria-pressed');
+    });
+
+    it('closes the display settings and the block menu on a second press of their button', () => {
+        const { block } = edit(withAddress());
+        const gear = within(block('addr')).getByRole('button', { name: /^Display settings/ });
+        fireEvent.mouseDown(gear);
+        fireEvent.click(gear);
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        fireEvent.mouseDown(gear);
+        fireEvent.click(gear);
+        expect(screen.queryByRole('dialog')).toBeNull();
+
+        const handle = within(block('addr')).getAllByRole('button', { name: /^Actions for/ })[0];
+        fireEvent.mouseDown(handle);
+        fireEvent.click(handle);
+        expect(screen.getByRole('menu')).toBeInTheDocument();
+        fireEvent.mouseDown(handle);
+        fireEvent.click(handle);
+        expect(screen.queryByRole('menu')).toBeNull();
+
+        // A press elsewhere still closes it
+        fireEvent.click(handle);
+        fireEvent.mouseDown(document.body);
+        expect(screen.queryByRole('menu')).toBeNull();
+    });
+
     it('puts the caret into a paragraph from its edit button', () => {
         const { block } = edit(small());
         fireEvent.click(within(block('a')).getByRole('button', { name: 'Edit paragraph' }));
@@ -518,5 +559,191 @@ describe('BlockDocument address and field visibility (INT-003)', () => {
         const { block } = edit(withAddress(), { fieldVisibility: { address: { gps: true } } });
         fireEvent.click(within(block('addr')).getByRole('button', { name: /^Display settings/ }));
         expect(screen.getByRole('switch', { name: 'Show GPS coordinates in the document' })).toBeChecked();
+    });
+});
+
+describe('BlockDocument localization (INT-004)', () => {
+    // A document written in Czech, with every kind of block, so no English comes from the content
+    function czech(): BlockDocumentData {
+        return {
+            schemaVersion: 1,
+            id: 'cz',
+            title: 'Rodinný dům',
+            language: 'cs',
+            blocks: [
+                {
+                    id: 'addr',
+                    type: 'address',
+                    street: 'Lipová',
+                    houseNumber: '1234',
+                    houseNumberType: 'conscription',
+                    orientationNumber: '12',
+                    postalCode: '251 01',
+                    city: 'Říčany',
+                    country: 'Česko',
+                    ruianCode: 12345678,
+                    gps: { lat: 49.9917, lon: 14.6543 },
+                },
+                { id: 'p', type: 'paragraph', text: [{ text: 'Úvod' }] },
+                { id: 'c', type: 'chapter', title: [{ text: 'Kapitola' }], children: [] },
+                {
+                    id: 'img',
+                    type: 'image',
+                    src: 'pudorys.png',
+                    alt: 'Půdorys',
+                    caption: [{ text: 'Přízemí' }],
+                    visibility: { caption: false },
+                },
+                { id: 'v', type: 'video', src: 'prohlidka.mp4' },
+                { id: 'x', type: 'tabulka' } as DocumentBlock,
+            ],
+        };
+    }
+
+    // The English texts that differ from the Czech ones, templates reduced to their fixed words
+    function englishTexts(): string[] {
+        const leaves = (en: unknown, cs: unknown): string[] => {
+            if (typeof en === 'function') {
+                const [a, b] = [(en as (x: string) => string)('').trim(), (cs as (x: string) => string)('').trim()];
+                return a !== b ? [a] : [];
+            }
+            if (typeof en === 'string') return en !== cs ? [en] : [];
+            return Object.keys(en as object).flatMap((key) =>
+                leaves((en as Record<string, unknown>)[key], (cs as Record<string, unknown>)[key]),
+            );
+        };
+        return leaves(blockDocumentMessages.en, blockDocumentMessages.cs).filter((text) => /[a-z]{3}/i.test(text));
+    }
+
+    // Everything the page says: each text node apart, so neighbouring labels do not run together,
+    // and the names and placeholders of its elements
+    function pageTexts(): string {
+        const texts: string[] = [];
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        while (walker.nextNode()) texts.push(walker.currentNode.textContent ?? '');
+        const attributes = Array.from(document.body.querySelectorAll('*')).flatMap((el) =>
+            ['aria-label', 'placeholder', 'data-placeholder', 'title'].map((name) => el.getAttribute(name) ?? ''),
+        );
+        return [...texts, ...attributes].join('\n');
+    }
+
+    function expectNoEnglish(): void {
+        const page = pageTexts();
+        const found = englishTexts().filter((text) =>
+            new RegExp(`(^|[^\\p{L}])${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^\\p{L}])`, 'u').test(page),
+        );
+        expect(found).toEqual([]);
+    }
+
+    it('renders every text in Czech, in the menus, forms and display settings', () => {
+        const { container, block } = edit(czech());
+        const article = container.querySelector('article')!;
+        expect(article).toHaveAttribute('lang', 'cs');
+        expect(screen.getByRole('textbox', { name: 'Název dokumentu' })).toBeInTheDocument();
+        expect(block('img')).toHaveTextContent('Popisek: v dokumentu se nezobrazuje');
+        expect(block('x')).toHaveTextContent('Nepodporovaný blok: tabulka');
+
+        expectNoEnglish();
+
+        // The menu of each block, one form or panel open at a time, each checked while it is
+        for (const id of ['addr', 'p', 'c', 'img', 'v', 'x']) {
+            fireEvent.click(within(block(id)).getAllByRole('button', { name: /^Akce: / })[0]);
+        }
+        const addressMenu = screen.getByRole('menu', { name: 'Akce: adresa Lipová 1234/12' });
+        expect(within(addressMenu).getAllByRole('menuitem').map((el) => el.textContent)).toEqual([
+            'Vložit odstavec za blok',
+            'Vložit kapitolu za blok',
+            'Vložit obrázek za blok',
+            'Vložit video za blok',
+            'Vložit adresu za blok',
+            'Posunout dolů',
+            'Upravit adresu…',
+            'Smazat',
+        ]);
+
+        // The display settings
+        fireEvent.click(within(block('addr')).getByRole('button', { name: 'Nastavení zobrazení: adresa Lipová 1234/12' }));
+        expect(screen.getByRole('switch', { name: 'Zobrazit v dokumentu: Souřadnice GPS' })).not.toBeChecked();
+        expect(screen.getByRole('button', { name: 'Hotovo' })).toBeInTheDocument();
+        expectNoEnglish();
+
+        // The address form, with its error
+        fireEvent.click(within(addressMenu).getByRole('menuitem', { name: 'Upravit adresu…' }));
+        const addressForm = screen.getByRole('form', { name: 'Upravit adresu' });
+        fireEvent.change(within(addressForm).getByLabelText('Zeměpisná šířka'), { target: { value: '95' } });
+        fireEvent.submit(addressForm);
+        expect(within(addressForm).getByRole('alert')).toHaveTextContent('Zeměpisná šířka musí být číslo od -90 do 90');
+        expect(within(addressForm).getByLabelText('Typ čísla domovního')).toHaveDisplayValue('Číslo popisné (č.p.)');
+        expect(addressForm).toHaveTextContent('Zeměpisná šířka a délka: v dokumentu se nezobrazuje');
+        expectNoEnglish();
+
+        // The image and video forms, from the gap menus
+        const gaps = container.querySelectorAll('.bd-gap');
+        fireEvent.click(within(gaps[0] as HTMLElement).getByRole('button', { name: 'Vložit blok sem' }));
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Vložit obrázek' }));
+        const imageForm = screen.getByRole('form', { name: 'Vložit obrázek' });
+        fireEvent.submit(imageForm);
+        expect(within(imageForm).getByRole('alert')).toHaveTextContent('Zadejte adresu obrázku');
+        expectNoEnglish();
+        fireEvent.click(within(gaps[2] as HTMLElement).getByRole('button', { name: 'Vložit blok sem' }));
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Vložit video' }));
+        expect(screen.getByRole('form', { name: 'Vložit video' })).toHaveTextContent('Adresa náhledu (nepovinné)');
+        expectNoEnglish();
+
+        // The link form of a paragraph
+        const paragraph = within(block('p')).getByRole('textbox', { name: 'Odstavec' });
+        placeCaret(paragraph, 2);
+        fireEvent.keyDown(paragraph, { key: 'k', ctrlKey: true });
+        const linkForm = screen.getByRole('form', { name: 'Odkaz' });
+        fireEvent.change(within(linkForm).getByLabelText('Adresa odkazu'), { target: { value: 'javascript:x' } });
+        fireEvent.submit(linkForm);
+        expect(within(linkForm).getByRole('alert')).toHaveTextContent('Odkazovat lze jen na adresy http, https a mailto');
+
+        expectNoEnglish();
+    });
+
+    it('renders the texts in English with locale="en", and keeps the content language', () => {
+        const { container } = render(<BlockDocument document={czech()} locale="en" onChange={() => undefined} />);
+        expect(container.querySelector('article')).toHaveAttribute('lang', 'cs');
+        expect(screen.getByRole('textbox', { name: 'Document title' })).toBeInTheDocument();
+        expect(screen.getAllByRole('button', { name: /^Actions for/ })).not.toHaveLength(0);
+    });
+
+    it('renders in English without a language or a locale, with no lang attribute', () => {
+        const { container } = render(<BlockDocument document={small()} />);
+        expect(container.querySelector('article')).not.toHaveAttribute('lang');
+        expect(screen.getByText('Unsupported block: table')).toBeInTheDocument();
+    });
+
+    it('resolves cs-CZ to Czech and falls back to English for an unknown tag', () => {
+        const regional = render(<BlockDocument document={{ ...small(), language: 'cs-CZ' }} />);
+        expect(regional.getByText('Nepodporovaný blok: table')).toBeInTheDocument();
+        regional.unmount();
+        render(<BlockDocument document={{ ...small(), language: 'xx' }} />);
+        expect(screen.getByText('Unsupported block: table')).toBeInTheDocument();
+    });
+
+    it('keeps the Czech address prefixes and the coordinate format in every language', () => {
+        const doc: BlockDocumentData = {
+            ...czech(),
+            blocks: [{ id: 'a', type: 'address', houseNumber: '7', houseNumberType: 'registration', city: 'Brno', ruianCode: 42, gps: { lat: 49.5, lon: 16.25 } }],
+        };
+        const visibility = { address: { gps: true, ruianCode: true } };
+        for (const locale of ['cs', 'en']) {
+            const view = render(<BlockDocument document={doc} locale={locale} fieldVisibility={visibility} />);
+            const address = view.container.querySelector('address')!;
+            expect(Array.from(address.children).map((el) => el.textContent)).toEqual(['č.ev. 7', 'Brno', 'RÚIAN 42', '49.5, 16.25']);
+            view.unmount();
+        }
+    });
+
+    it('lets messages reword a single text, or add a whole language', () => {
+        const { unmount } = render(<BlockDocument document={czech()} messages={{ unsupportedBlock: (type) => `Neznámý blok ${type}` }} />);
+        expect(screen.getByText('Neznámý blok tabulka')).toBeInTheDocument();
+        unmount();
+
+        const de: BlockDocumentMessages = { ...blockDocumentMessages.en, unsupportedBlock: (type) => `Nicht unterstützter Block: ${type}` };
+        render(<BlockDocument document={czech()} locale="de" messages={de} />);
+        expect(screen.getByText('Nicht unterstützter Block: tabulka')).toBeInTheDocument();
     });
 });

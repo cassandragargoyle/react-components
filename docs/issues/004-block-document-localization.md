@@ -120,9 +120,14 @@ Judgement calls, open to disagreement before they are built:
 
 ### Sample, demo and documentation
 
-- The family house sample gains `"language": "cs"`
-- The demo gets a switch of the locale, *Document language*, *English* and *Czech*, so that
-  all three levels of the resolution can be tried
+- The family house sample stays without `language`: its content is English, and `"cs"`
+  would make a screen reader read it as Czech. A Czech sample of the same house,
+  `rodinny-dum.blockdocument.json` with `"language": "cs"` and the same block ids, sits beside
+  it, and the demo switches between them. Changed from the first proposal of
+  `"language": "cs"` on the English sample
+- The demo gets two choices, so that all three levels of the resolution can be tried: the
+  document `language` (*Not set*, *English*, *Czech*), and the host's `locale` (*Document
+  language*, *English*, *Czech*)
 - `src/BlockDocument/README.md` documents `language`, `locale` and `messages`, the
   resolution order, and how to add a language
 
@@ -146,6 +151,7 @@ Judgement calls, open to disagreement before they are built:
 - [ ] `validateBlockDocument` rejects a `language` that is not a non-empty string, with the
       path to it
 - [ ] `BlockDocumentMessages` and `blockDocumentMessages` are exported from `src/index.ts`
-- [ ] The family house sample has `"language": "cs"`, and the demo switches the locale
+- [ ] A Czech sample has `"language": "cs"`, and the demo switches the sample, the document
+      `language` and the locale
 - [ ] `README.md` documents `language`, `locale`, `messages` and adding a language
 - [ ] `npm run typecheck`, `npm run build` and `npm test` pass

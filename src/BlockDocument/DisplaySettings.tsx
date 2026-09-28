@@ -9,6 +9,7 @@
 import React, { useEffect, useId, useRef } from 'react';
 
 import { declaredFields, inheritedFieldVisibility, isFieldVisible, withFieldShown } from './fields';
+import { useMessages } from './messages';
 import type { BlockFieldVisibility, DocumentBlock, FieldVisibility } from './types';
 
 export interface DisplaySettingsProps {
@@ -20,6 +21,8 @@ export interface DisplaySettingsProps {
     onChange(visibility: FieldVisibility | undefined): void;
     /** Closes the panel; `restoreFocus` is false when focus is already going elsewhere */
     onClose(restoreFocus: boolean): void;
+    /** The button that toggles the panel: a press on it is left to its own click */
+    anchorRef?: React.RefObject<HTMLElement | null>;
 }
 
 export function DisplaySettings({
@@ -28,18 +31,22 @@ export function DisplaySettings({
     fieldVisibility,
     onChange,
     onClose,
+    anchorRef,
 }: DisplaySettingsProps): React.ReactElement {
     const id = useId();
+    const text = useMessages();
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         ref.current?.querySelector<HTMLInputElement>('input')?.focus();
         const onPointerDown = (e: MouseEvent): void => {
-            if (ref.current && !ref.current.contains(e.target as Node)) onClose(false);
+            const target = e.target as Node;
+            if (anchorRef?.current?.contains(target)) return;
+            if (ref.current && !ref.current.contains(target)) onClose(false);
         };
         document.addEventListener('mousedown', onPointerDown);
         return () => document.removeEventListener('mousedown', onPointerDown);
-    }, [onClose]);
+    }, [onClose, anchorRef]);
 
     return (
         <div
@@ -57,23 +64,23 @@ export function DisplaySettings({
             }}
         >
             <p className="bd-settings-title" id={`${id}-title`}>
-                Show in document<span className="bd-visually-hidden"> — {blockName}</span>
+                {text.showInDocument}<span className="bd-visually-hidden"> — {blockName}</span>
             </p>
-            {declaredFields(block).map(({ field, label }) => {
+            {declaredFields(block, text.fields).map(({ field, label }) => {
                 const shown = isFieldVisible(block, field, fieldVisibility);
                 const own = shown !== inheritedFieldVisibility(block, field, fieldVisibility);
                 return (
                     <label key={field} className="bd-settings-row">
                         <span>
                             {label}
-                            {own && <span className="bd-settings-own"> · this block</span>}
+                            {own && <span className="bd-settings-own"> · {text.thisBlock}</span>}
                         </span>
                         <span className="bd-switch">
                             <input
                                 type="checkbox"
                                 role="switch"
                                 checked={shown}
-                                aria-label={`Show ${label} in the document`}
+                                aria-label={text.showFieldInDocument(label)}
                                 onChange={(e) => onChange(withFieldShown(block, field, e.target.checked, fieldVisibility))}
                             />
                         </span>
@@ -82,7 +89,7 @@ export function DisplaySettings({
             })}
             <div className="bd-form-actions">
                 <button type="button" className="bd-button" onClick={() => onClose(true)}>
-                    Done
+                    {text.done}
                 </button>
             </div>
         </div>

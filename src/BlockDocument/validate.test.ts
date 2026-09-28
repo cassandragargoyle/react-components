@@ -3,12 +3,13 @@
  *  Licensed under the MIT License - see LICENSE file for details
  */
 
-// Unit tests for BlockDocument validation (INT-001, INT-003)
+// Unit tests for BlockDocument validation (INT-001, INT-003, INT-004)
 // The family house sample must pass; each broken shape must name where it is broken
 
 import { describe, expect, it } from 'vitest';
 
 import sample from './samples/family-house.blockdocument.json';
+import czechSample from './samples/rodinny-dum.blockdocument.json';
 import { isBlockDocument, validateBlockDocument } from './validate';
 
 const base = { schemaVersion: 1, id: 'd', title: 'T' };
@@ -18,6 +19,15 @@ describe('validateBlockDocument', () => {
         const result = validateBlockDocument(sample);
         expect(result).toMatchObject({ ok: true });
         expect(isBlockDocument(sample)).toBe(true);
+    });
+
+    it('accepts the Czech family house sample, written in cs', () => {
+        expect(validateBlockDocument(czechSample)).toMatchObject({ ok: true, document: { language: 'cs' } });
+    });
+
+    it('accepts a document language, and a document without one', () => {
+        expect(isBlockDocument({ ...base, language: 'cs-CZ', blocks: [] })).toBe(true);
+        expect(isBlockDocument({ ...base, blocks: [] })).toBe(true);
     });
 
     it('keeps an unknown block type', () => {
@@ -45,6 +55,8 @@ describe('validateBlockDocument', () => {
         ['no schema version', { id: 'd', title: 'T', blocks: [] }, 'schemaVersion'],
         ['a newer schema version', { ...base, schemaVersion: 2, blocks: [] }, 'schemaVersion'],
         ['blocks not an array', { ...base, blocks: {} }, 'blocks'],
+        ['a language not a string', { ...base, language: 7, blocks: [] }, 'language'],
+        ['an empty language', { ...base, language: ' ', blocks: [] }, 'language'],
         ['a block without an id', { ...base, blocks: [{ type: 'paragraph', text: [] }] }, 'blocks[0].id'],
         [
             'a duplicate id',

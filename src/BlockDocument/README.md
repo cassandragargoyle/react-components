@@ -3,8 +3,9 @@
 A document made of **blocks** — chapters, paragraphs, images, videos, addresses — shown as
 one page and edited in place, the way Notion does it. The host owns the document; every edit
 is proposed to it whole through `onChange`. Specified in
-[INT-001](../../docs/issues/done/001-block-document.md) and
-[INT-003](../../docs/issues/done/003-address-block.md).
+[INT-001](../../docs/issues/done/001-block-document.md),
+[INT-003](../../docs/issues/done/003-address-block.md) and
+[INT-004](../../docs/issues/004-block-document-localization.md).
 
 ![BlockDocument visual reference](./BlockDocument.svg)
 
@@ -36,6 +37,8 @@ export function HouseManual({ json }: { json: unknown }): React.ReactElement {
 | `resolveMediaUrl` | `(src) => string` | identity | Maps a stored `src` or `poster` to the URL to load, e.g. a webview URI |
 | `createBlockId` | `() => string` | random | Ids for new blocks |
 | `fieldVisibility` | `BlockFieldVisibility` | — | Which fields the document shows, per block type, e.g. `{ address: { gps: true } }`; see [Field visibility](#field-visibility) |
+| `locale` | `string` | the document `language` | The language of the component's texts, a BCP 47 tag; see [Language](#language) |
+| `messages` | `BlockDocumentMessageOverrides` | — | Texts laid over the dictionary of that language |
 | `className`, `style`, `ref` | | | On the `<article>` |
 
 A document that fails validation is not rendered; the component shows why instead.
@@ -73,7 +76,8 @@ extension recognises it by.
 | `video` | `src`, `poster?`, `caption?` — the browser's native controls |
 | `address` | see [The address](#the-address) |
 
-Any block may carry `visibility`, see [Field visibility](#field-visibility).
+Any block may carry `visibility`, see [Field visibility](#field-visibility). The document may
+carry `language`, the BCP 47 tag of the language it is written in, see [Language](#language).
 
 - Text is an array of spans `{ text, bold?, italic?, code?, href? }` and never HTML. A link is
   rendered only for `http:`, `https:` and `mailto:`
@@ -152,6 +156,45 @@ them from the data before passing the document on.
 
 ![Address block visual reference](./AddressBlock.svg)
 
+## Language
+
+Every text the component renders — the field labels, the menus, the forms and their errors,
+the display settings, the placeholders and every `aria-label` — comes from a dictionary.
+English and Czech are built in. The language is chosen in this order:
+
+1. the `locale` prop, set by the host, e.g. an English user interface over a Czech document
+2. the document `language`, which travels with the document
+3. English
+
+A tag matches exactly first, then by its primary subtag (`cs-CZ` is `cs`), and otherwise
+falls back to English; an unknown language never breaks rendering. The `<article>` takes the
+document `language` as its `lang` attribute, whatever the `locale`, because it describes the
+content and not the tools.
+
+`messages` is laid over the chosen dictionary at any depth, to reword a single text:
+
+```tsx
+<BlockDocument document={doc} messages={{ delete: 'Remove', fields: { address: { city: 'Town' } } }} />
+```
+
+A text with a variable part is a function, because word order differs between languages:
+`` actionsFor: (block) => `Actions for ${block}` ``.
+
+**Adding a language.** Pass a whole `BlockDocumentMessages` together with its `locale`; start
+from a built-in dictionary so the type check tells you what is left:
+
+```tsx
+import { blockDocumentMessages, type BlockDocumentMessages } from '@cassandragargoyle/react-components';
+
+const de: BlockDocumentMessages = { ...blockDocumentMessages.en, delete: 'Löschen', /* … */ };
+
+<BlockDocument document={doc} locale="de" messages={de} />;
+```
+
+Not translated: the data (field names, block types, the content), the Czech address prefixes
+`č.p.` and `č.ev.` and the `RÚIAN` prefix, the coordinate format `49.9917, 14.6543`, and the
+messages of `validateBlockDocument`, which are for the developer and stay in English.
+
 ## Editing
 
 | | Mouse | Keyboard |
@@ -186,9 +229,16 @@ itself (`canMoveBlock` asks first).
 ## Demo
 
 `npm run dev` serves the family house at <http://127.0.0.1:5173/demo/>, editable, with a light
-and a dark theme and a switch that shows the address coordinates through `fieldVisibility`.
-The query sets the starting state: `?block=<id>` scrolls to a block, and `?readonly`,
-`?light` and `?gps` start read-only, in the light theme, and with the coordinates shown.
+and a dark theme, a switch that shows the address coordinates through `fieldVisibility`, and
+choices of the sample, the document `language` and the host's `locale`. The query sets the
+starting state: `?block=<id>` scrolls to a block, `?readonly`, `?light` and `?gps` start
+read-only, in the light theme, and with the coordinates shown, `?sample=cs` opens the Czech
+sample, and `?language=cs` and `?locale=en` set the two languages.
+
+There are two samples of the same house, with the same block ids: the English
+`family-house.blockdocument.json` without a `language`, and the Czech
+`rodinny-dum.blockdocument.json` with `"language": "cs"`. The *Sample* choice switches them.
+Only the texts of the component follow the language; the content is whatever the document says.
 
 In Visual Studio Code, **Run and Debug** offers:
 
@@ -210,12 +260,14 @@ The sample lives in `samples/`; its video is not committed, see `samples/media/R
 - `DisplaySettings.tsx` — the display settings a block's gear opens: a switch per field
 - `address.ts` — the address fields, their layout and checks
 - `fields.ts` — field visibility: the fields each type declares, `isFieldVisible`
+- `messages.ts` — the texts: `BlockDocumentMessages`, the English and Czech dictionaries, the language resolution
 - `EditableText.tsx` — rich text edited in place
 - `editor.ts` — the actions blocks call, and focus hand-over after an edit
 - `operations.ts` — the edits as pure functions
 - `validate.ts` — `validateBlockDocument`, `isBlockDocument`
 - `richText.ts`, `richTextDom.ts` — spans, links, the DOM round trip and the caret
 - `types.ts` — the format
-- `samples/` — the family house document (`family-house.blockdocument.json`), its plans and poster
+- `samples/` — the family house document in English (`family-house.blockdocument.json`) and in
+  Czech (`rodinny-dum.blockdocument.json`), their plans and poster
 - `BlockDocument.svg` — visual reference (this README's image)
 - `AddressBlock.svg` — visual reference of the address and field visibility

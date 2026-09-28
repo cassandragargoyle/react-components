@@ -9,6 +9,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { useEditor } from './editor';
+import { useMessages } from './messages';
 import { plainToRichText, richTextEqual, richTextToPlain, safeHref } from './richText';
 import {
     applyLink,
@@ -64,6 +65,7 @@ export function EditableText({
     id,
 }: EditableTextProps): React.ReactElement {
     const editor = useEditor();
+    const text = useMessages();
     const ref = useRef<HTMLDivElement>(null);
     const valueRef = useRef(value);
     valueRef.current = value;
@@ -152,7 +154,7 @@ export function EditableText({
         if (!link || !el) return;
         const href = link.href.trim();
         if (href && !safeHref(href)) {
-            setLink({ ...link, error: 'Only http, https and mailto addresses can be linked' });
+            setLink({ ...link, error: text.linkInvalid });
             return;
         }
         applyLink(el, link.range, href || undefined);
@@ -192,7 +194,7 @@ export function EditableText({
             {link && (
                 <form
                     className="bd-link-form"
-                    aria-label="Link"
+                    aria-label={text.link}
                     onSubmit={applyLinkForm}
                     onKeyDown={(e) => {
                         e.stopPropagation();
@@ -203,12 +205,12 @@ export function EditableText({
                     }}
                 >
                     <label>
-                        Link address
+                        {text.linkAddress}
                         <input
                             type="text"
                             autoFocus
                             value={link.href}
-                            placeholder="https://…  (empty removes the link)"
+                            placeholder={text.linkPlaceholder}
                             onChange={(e) => setLink({ ...link, href: e.target.value, error: undefined })}
                         />
                     </label>
@@ -219,10 +221,10 @@ export function EditableText({
                     )}
                     <div className="bd-form-actions">
                         <button type="submit" className="bd-button bd-button--primary">
-                            Apply
+                            {text.applyLink}
                         </button>
                         <button type="button" className="bd-button" onClick={closeLinkForm}>
-                            Cancel
+                            {text.cancel}
                         </button>
                     </div>
                 </form>

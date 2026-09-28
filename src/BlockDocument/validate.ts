@@ -164,6 +164,7 @@ export function validateBlockDocument(data: unknown): BlockDocumentValidation {
         }
         requireString(data, 'id', '');
         requireString(data, 'title', '');
+        if (data.language !== undefined) requireString(data, 'language', '', false);
         checkBlocks(data.blocks, 'blocks', new Set());
         return { ok: true, document: data as unknown as BlockDocumentData };
     } catch (err) {
