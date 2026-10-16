@@ -6,7 +6,7 @@
 // Container component for the GraphLens 3D viewer — state, adjacency, selection
 // Orchestrates the left toolbar, the 3D viewport, and the node/link detail panel
 
-import React, { useMemo, useState, useCallback, useRef } from 'react';
+import React, { type JSX, useMemo, useState, useCallback, useRef } from 'react';
 import { GraphLens3DViewport } from './GraphLens3DViewport';
 import { GraphLensDetailPanel } from './GraphLensDetailPanel';
 import { GraphLensNodeTable } from './GraphLensNodeTable';

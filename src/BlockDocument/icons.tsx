@@ -38,3 +38,45 @@ export function PlusIcon(): React.ReactElement {
         </svg>
     );
 }
+
+/** An address: a map pin */
+export function PinIcon(): React.ReactElement {
+    return (
+        <svg {...SVG_PROPS}>
+            <path d="M10 17.5s-5.5-5.2-5.5-9.5a5.5 5.5 0 0 1 11 0c0 4.3-5.5 9.5-5.5 9.5z" />
+            <circle cx="10" cy="8" r="2" />
+        </svg>
+    );
+}
+
+/** A field the document does not show: a crossed-out eye */
+export function EyeOffIcon(): React.ReactElement {
+    return (
+        <svg {...SVG_PROPS}>
+            <path d="M2.5 10s2.7-5 7.5-5 7.5 5 7.5 5-2.7 5-7.5 5-7.5-5-7.5-5z" />
+            <circle cx="10" cy="10" r="2.2" />
+            <path d="M3.5 16.5l13-13" />
+        </svg>
+    );
+}
+
+/** Edit a block: a pencil */
+export function PencilIcon(): React.ReactElement {
+    return (
+        <svg {...SVG_PROPS}>
+            <path d="M13.5 3.5l3 3-9 9H4.5v-3z" />
+            <path d="M11.5 5.5l3 3" />
+        </svg>
+    );
+}
+
+/** The display settings of a block: a gear */
+export function GearIcon(): React.ReactElement {
+    return (
+        <svg {...SVG_PROPS}>
+            <circle cx="10" cy="10" r="2.5" />
+            <path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4" />
+            <circle cx="10" cy="10" r="5.5" />
+        </svg>
+    );
+}

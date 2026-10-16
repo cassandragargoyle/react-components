@@ -7,7 +7,7 @@
 // Sizes nodes by degree, colors by kind, highlights neighbors, filters by
 // visibility (search + kind filters), and focuses the camera on selection
 
-import React, { useRef, useEffect } from 'react';
+import React, { type JSX, useRef, useEffect } from 'react';
 import ForceGraph3D from '3d-force-graph';
 import {
     GraphLensNode,

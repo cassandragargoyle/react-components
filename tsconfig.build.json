@@ -6,6 +6,6 @@
     "emitDeclarationOnly": true,
     "outDir": "dist"
   },
-  "include": ["types/modules.d.ts", "types/jsx.d.ts", "src/**/*.ts", "src/**/*.tsx"],
+  "include": ["types/modules.d.ts", "src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"]
 }

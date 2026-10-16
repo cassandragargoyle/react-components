@@ -6,7 +6,7 @@
 // Right sidebar panel showing details of the selected node or link
 // Ports showDetail (node) and showLinkDetail (link) from the original app.js
 
-import React from 'react';
+import React, { type JSX } from 'react';
 import {
     GraphLensDocument,
     GraphLensSelection,

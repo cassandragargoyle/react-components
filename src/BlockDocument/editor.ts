@@ -17,12 +17,14 @@ import {
     updateBlock,
     canMoveBlock,
 } from './operations';
+import type { AddressFields } from './address';
 import { concatRichText, splitRichText } from './richText';
 import {
     isChapterBlock,
     isParagraphBlock,
     type BlockDocumentData,
     type BlockLocation,
+    type AddressBlock,
     type BlockPatch,
     type ChapterBlock,
     type DocumentBlock,
@@ -42,9 +44,9 @@ export interface FocusTarget {
     caret(): number | undefined;
 }
 
-/** The media form open in the document: inserting a new block, or editing one */
+/** The block form open in the document — media or address: inserting a new block, or editing one */
 export type MediaFormState =
-    | { kind: 'insert'; type: 'image' | 'video'; location: BlockLocation }
+    | { kind: 'insert'; type: 'image' | 'video' | 'address'; location: BlockLocation }
     | { kind: 'edit'; blockId: string };
 
 /** Fields the media form collects */
@@ -58,6 +60,8 @@ export interface Editor {
     registerFocus(blockId: string, target: FocusTarget): () => void;
     /** Focus a block once it is rendered */
     requestFocus(blockId: string, caret: Caret): void;
+    /** Focus a block that is already rendered, now */
+    focusBlock(blockId: string, caret: Caret): void;
 
     draggingId: string | null;
     setDraggingId(id: string | null): void;
@@ -67,6 +71,7 @@ export interface Editor {
     insertText(type: 'paragraph' | 'chapter', location: BlockLocation): void;
     insertMedia(type: 'image' | 'video', location: BlockLocation, fields: MediaFields): void;
     editMedia(id: string, fields: MediaFields): void;
+    insertAddress(location: BlockLocation, fields: AddressFields): void;
     update(id: string, patch: BlockPatch): void;
     remove(id: string): void;
     /** Moves a block among its siblings; -1 is up, 1 is down */
@@ -104,7 +109,7 @@ interface EditorDeps {
 
 type EditorActions = Omit<
     Editor,
-    'registerFocus' | 'requestFocus' | 'draggingId' | 'setDraggingId' | 'mediaForm' | 'setMediaForm'
+    'registerFocus' | 'requestFocus' | 'focusBlock' | 'draggingId' | 'setDraggingId' | 'mediaForm' | 'setMediaForm'
 >;
 
 /** Builds the document-changing half of the editor over a document ref */
@@ -163,6 +168,15 @@ export function createEditorActions(deps: EditorDeps): EditorActions {
                     ? { src: fields.src, alt: fields.alt ?? '' }
                     : { src: fields.src, poster: fields.poster || undefined };
             commit(updateBlock(getDocument(), id, patch));
+            requestFocus(id, 'start');
+        },
+
+        insertAddress(location, fields) {
+            const id = freshId();
+            // Only the fields that are set, so the stored block carries no empty keys
+            const set = Object.entries(fields).filter(([, value]) => value !== undefined);
+            const block = { id, type: 'address', ...Object.fromEntries(set) } as AddressBlock;
+            commit(insertBlock(getDocument(), block, location));
             requestFocus(id, 'start');
         },
 

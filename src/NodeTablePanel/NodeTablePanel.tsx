@@ -6,7 +6,7 @@
 // Shared bottom table panel: AG Grid with All/Selected filter, count, selection
 // sync, and a top-left minimize toggle — reused by all viewer node tables
 
-import React, { useMemo, useRef, useCallback, useEffect } from 'react';
+import { type JSX, useMemo, useRef, useCallback, useEffect } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { AllCommunityModule, ModuleRegistry, themeQuartz, type ColDef, type RowClickedEvent, type GridReadyEvent, type GridApi } from 'ag-grid-community';
 import nodeTablePanelStyles from './NodeTablePanel.css';

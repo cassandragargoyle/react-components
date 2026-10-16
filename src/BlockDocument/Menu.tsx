@@ -19,19 +19,23 @@ export interface MenuProps {
     items: MenuItem[];
     /** Closes the menu; `restoreFocus` is false when focus is already going elsewhere */
     onClose(restoreFocus: boolean): void;
+    /** The button that toggles the menu: a press on it is left to its own click */
+    anchorRef?: React.RefObject<HTMLElement | null>;
 }
 
-export function Menu({ label, items, onClose }: MenuProps): React.ReactElement {
+export function Menu({ label, items, onClose, anchorRef }: MenuProps): React.ReactElement {
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         ref.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
         const onPointerDown = (e: MouseEvent): void => {
-            if (ref.current && !ref.current.contains(e.target as Node)) onClose(false);
+            const target = e.target as Node;
+            if (anchorRef?.current?.contains(target)) return;
+            if (ref.current && !ref.current.contains(target)) onClose(false);
         };
         document.addEventListener('mousedown', onPointerDown);
         return () => document.removeEventListener('mousedown', onPointerDown);
-    }, [onClose]);
+    }, [onClose, anchorRef]);
 
     const onKeyDown = (e: React.KeyboardEvent): void => {
         const buttons = Array.from(ref.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? []);

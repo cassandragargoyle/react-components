@@ -6,7 +6,7 @@
 // Reusable async-progress panel with an npm-style spinner
 // Configurable title, message, key/value fields, step checklist, and error display
 
-import React, { useEffect, useState } from 'react';
+import { type JSX, useEffect, useState } from 'react';
 import progressPanelStyles from './ProgressPanel.css';
 
 // Inject styles once under the 'text' loader (single-file bundles); under the 'css'

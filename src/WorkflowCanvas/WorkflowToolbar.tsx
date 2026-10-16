@@ -6,7 +6,7 @@
 // Toolbar for Workflow Canvas — zoom controls, undo/redo, find input, status
 // Top bar with grouped controls separated by vertical dividers
 
-import React from 'react';
+import React, { type JSX } from 'react';
 
 interface WorkflowToolbarProps {
     onFit: () => void;

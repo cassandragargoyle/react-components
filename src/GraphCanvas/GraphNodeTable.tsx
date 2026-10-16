@@ -5,7 +5,7 @@
 
 // Graph node table — maps graph nodes to rows/columns for NodeTablePanel
 
-import React, { useMemo } from 'react';
+import React, { type JSX, useMemo } from 'react';
 import type { ColDef } from 'ag-grid-community';
 import { NodeTablePanel } from '../NodeTablePanel';
 import { GraphNode, TableFilter } from './types';

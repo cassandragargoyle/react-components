@@ -5,7 +5,7 @@
 // Toolbar for Graph Canvas — layout selector, zoom controls, find input
 // Top bar with grouped controls separated by vertical dividers
 
-import React from 'react';
+import React, { type JSX } from 'react';
 import { LayoutAlgorithm } from './types';
 
 interface GraphToolbarProps {

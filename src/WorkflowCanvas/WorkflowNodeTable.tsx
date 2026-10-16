@@ -5,7 +5,7 @@
 
 // Workflow node table — maps workflow nodes to rows/columns for NodeTablePanel
 
-import React, { useMemo } from 'react';
+import React, { type JSX, useMemo } from 'react';
 import type { ColDef } from 'ag-grid-community';
 import { NodeTablePanel } from '../NodeTablePanel';
 import { WorkflowNode, TableFilter } from './types';

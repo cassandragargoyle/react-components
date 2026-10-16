@@ -6,7 +6,7 @@
 // Right sidebar panel showing properties of selected workflow node or edge
 // Displays ID, type, label, custom properties, and connections
 
-import React from 'react';
+import React, { type JSX } from 'react';
 import { WorkflowNode, WorkflowEdge } from './types';
 
 interface WorkflowPropertyPanelProps {

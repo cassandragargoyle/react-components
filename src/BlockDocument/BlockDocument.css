@@ -3,7 +3,7 @@
  *  Licensed under the MIT License - see LICENSE file for details
  */
 
-/* BlockDocument (INT-001): one page of blocks, and its editing chrome */
+/* BlockDocument (INT-001, INT-003): one page of blocks, and its editing chrome */
 /* Every colour falls back through the VS Code theme to a literal, per the GUI guidelines */
 
 .bd-document {
@@ -44,9 +44,10 @@
     box-sizing: border-box;
 }
 
-/* Room on the left for the handles */
+/* Room on the left for the handles, on the right for the edit and settings buttons */
 .bd-document--editable {
     padding-left: 40px;
+    padding-right: 64px;
 }
 
 .bd-title {
@@ -108,6 +109,64 @@ h6.bd-heading { font-size: 14px; }
     color: var(--bd-muted);
     font-size: 12px;
     font-style: italic;
+}
+
+/* The address: a pin beside the lines, in the text colour (the browser's italic is dropped) */
+.bd-address-block {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin: 0 0 12px;
+}
+
+.bd-address-block > svg {
+    flex: none;
+    margin-top: 3px;
+    color: var(--bd-muted);
+}
+
+.bd-address {
+    font-style: normal;
+}
+
+.bd-address-line {
+    display: block;
+}
+
+/* A field the document does not show, as seen while editing (ADR-001) */
+.bd-field--hidden {
+    color: var(--bd-placeholder);
+}
+
+.bd-hidden-note {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    margin: 0;
+    color: var(--bd-placeholder);
+    font-size: 11px;
+    font-style: italic;
+}
+
+.bd-hidden-note > svg {
+    width: 12px;
+    height: 12px;
+}
+
+.bd-address-line > .bd-hidden-note {
+    margin-left: 8px;
+}
+
+.bd-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .bd-unknown,
@@ -180,8 +239,95 @@ h6.bd-heading { font-size: 14px; }
     margin-top: 0;
 }
 
-.bd-block--chapter > .bd-handle-slot {
+.bd-block--chapter > .bd-handle-slot,
+.bd-block--chapter > .bd-tools {
     top: 16px;
+}
+
+/* Edit and display settings, right of the block that is selected */
+.bd-tools {
+    position: absolute;
+    top: 0;
+    right: -60px;
+    z-index: 2;
+    display: flex;
+    gap: 4px;
+}
+
+.bd-tool {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    color: var(--bd-muted);
+    background: transparent;
+    cursor: pointer;
+    opacity: 0;
+}
+
+.bd-block:hover:not(:has(.bd-block:hover)) > .bd-tools > .bd-tool,
+.bd-block:focus-within:not(:has(.bd-block:focus-within)) > .bd-tools > .bd-tool,
+.bd-tool[aria-expanded='true'],
+.bd-tool[aria-pressed='true'],
+.bd-tool:focus-visible {
+    opacity: 1;
+}
+
+.bd-tool:hover,
+.bd-tool[aria-expanded='true'],
+.bd-tool[aria-pressed='true'] {
+    color: var(--bd-fg);
+    background: var(--bd-hover);
+}
+
+.bd-tool:focus-visible {
+    outline: 2px solid var(--bd-focus);
+    outline-offset: -2px;
+}
+
+/* The display settings, dropped from the settings button towards the page */
+.bd-settings {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 10;
+    display: grid;
+    gap: 4px;
+    min-width: 240px;
+    padding: 8px 12px;
+    border: 1px solid var(--bd-menu-border);
+    border-radius: 4px;
+    background: var(--bd-surface);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    font-size: 12px;
+}
+
+.bd-settings-title {
+    margin: 0 0 4px;
+    color: var(--bd-muted);
+    font-size: 11px;
+}
+
+.bd-settings-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.bd-settings-own {
+    color: var(--bd-muted);
+    font-style: italic;
+}
+
+.bd-settings .bd-form-actions {
+    justify-content: flex-end;
+    margin-top: 4px;
 }
 
 .bd-handle,
@@ -339,6 +485,77 @@ h6.bd-heading { font-size: 14px; }
 .bd-link-form input:focus {
     outline: 1px solid var(--bd-focus);
     outline-offset: -1px;
+}
+
+/* The address form: a label beside each input */
+.bd-address-grid {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 4px 12px;
+    align-items: center;
+}
+
+.bd-address-form select {
+    padding: 4px 8px;
+    border: 1px solid var(--bd-border);
+    border-radius: 2px;
+    color: var(--bd-input-fg);
+    background: var(--bd-input-bg);
+    font: inherit;
+}
+
+.bd-address-form select:focus {
+    outline: 1px solid var(--bd-focus);
+    outline-offset: -1px;
+}
+
+.bd-address-form input[aria-invalid='true'] {
+    border-color: var(--bd-danger);
+}
+
+.bd-switch {
+    display: flex;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.bd-switch > input {
+    appearance: none;
+    position: relative;
+    width: 28px;
+    height: 14px;
+    margin: 0;
+    border: 1px solid var(--bd-muted);
+    border-radius: 7px;
+    background: var(--bd-input-bg);
+    cursor: pointer;
+}
+
+.bd-switch > input::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--bd-fg);
+    transition: transform 0.1s;
+}
+
+.bd-switch > input:checked {
+    border-color: transparent;
+    background: var(--bd-button-bg);
+}
+
+.bd-switch > input:checked::after {
+    transform: translateX(14px);
+    background: var(--bd-button-fg);
+}
+
+.bd-switch > input:focus-visible {
+    outline: 2px solid var(--bd-focus);
+    outline-offset: 1px;
 }
 
 .bd-form-error {

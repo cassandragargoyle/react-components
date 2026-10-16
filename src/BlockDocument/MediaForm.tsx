@@ -9,6 +9,7 @@
 import React, { useId, useState } from 'react';
 
 import type { MediaFields } from './editor';
+import { useMessages } from './messages';
 
 export interface MediaFormProps {
     type: 'image' | 'video';
@@ -20,20 +21,20 @@ export interface MediaFormProps {
 
 export function MediaForm({ type, mode, initial, onSubmit, onCancel }: MediaFormProps): React.ReactElement {
     const id = useId();
+    const text = useMessages();
     const [src, setSrc] = useState(initial?.src ?? '');
     const [alt, setAlt] = useState(initial?.alt ?? '');
     const [poster, setPoster] = useState(initial?.poster ?? '');
     const [error, setError] = useState<string | null>(null);
-    const noun = type === 'image' ? 'image' : 'video';
 
     const submit = (e: React.FormEvent): void => {
         e.preventDefault();
         if (!src.trim()) {
-            setError(`Enter the address of the ${noun}`);
+            setError(text.srcRequired[type]);
             return;
         }
         if (type === 'image' && !alt.trim()) {
-            setError('Describe the image in the alternative text');
+            setError(text.altRequired);
             return;
         }
         onSubmit(
@@ -46,7 +47,7 @@ export function MediaForm({ type, mode, initial, onSubmit, onCancel }: MediaForm
     return (
         <form
             className="bd-media-form"
-            aria-label={`${mode === 'insert' ? 'Insert' : 'Edit'} ${noun}`}
+            aria-label={mode === 'insert' ? text.insert[type] : text.edit[type]}
             onSubmit={submit}
             onKeyDown={(e) => {
                 if (e.key === 'Escape') {
@@ -58,7 +59,7 @@ export function MediaForm({ type, mode, initial, onSubmit, onCancel }: MediaForm
                 e.stopPropagation();
             }}
         >
-            <label htmlFor={`${id}-src`}>{type === 'image' ? 'Image address' : 'Video address'}</label>
+            <label htmlFor={`${id}-src`}>{type === 'image' ? text.imageAddress : text.videoAddress}</label>
             <input
                 id={`${id}-src`}
                 type="text"
@@ -68,12 +69,12 @@ export function MediaForm({ type, mode, initial, onSubmit, onCancel }: MediaForm
             />
             {type === 'image' ? (
                 <>
-                    <label htmlFor={`${id}-alt`}>Alternative text</label>
+                    <label htmlFor={`${id}-alt`}>{text.altText}</label>
                     <input id={`${id}-alt`} type="text" value={alt} onChange={(e) => setAlt(e.target.value)} />
                 </>
             ) : (
                 <>
-                    <label htmlFor={`${id}-poster`}>Poster address (optional)</label>
+                    <label htmlFor={`${id}-poster`}>{text.posterAddress}</label>
                     <input
                         id={`${id}-poster`}
                         type="text"
@@ -89,10 +90,10 @@ export function MediaForm({ type, mode, initial, onSubmit, onCancel }: MediaForm
             )}
             <div className="bd-form-actions">
                 <button type="submit" className="bd-button bd-button--primary">
-                    {mode === 'insert' ? 'Insert' : 'Save'}
+                    {mode === 'insert' ? text.insertButton : text.save}
                 </button>
                 <button type="button" className="bd-button" onClick={onCancel}>
-                    Cancel
+                    {text.cancel}
                 </button>
             </div>
         </form>

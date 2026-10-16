@@ -9,6 +9,19 @@
       "title": [{ "text": "Overview" }],
       "children": [
         {
+          "id": "overview-address",
+          "type": "address",
+          "street": "Lipová",
+          "houseNumber": "1234",
+          "houseNumberType": "conscription",
+          "orientationNumber": "12",
+          "municipalityPart": "Říčany",
+          "postalCode": "251 01",
+          "city": "Říčany",
+          "country": "Czech Republic",
+          "gps": { "lat": 49.9917, "lon": 14.6543 }
+        },
+        {
           "id": "overview-text",
           "type": "paragraph",
           "text": [

@@ -6,7 +6,7 @@
 // Main Graph Canvas component — three-panel layout with state management
 // Orchestrates graph viewport, property panel, node table, and toolbar
 
-import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import React, { type JSX, useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { GraphViewport, GraphViewportHandle } from './GraphViewport';
 import { GraphPropertyPanel } from './GraphPropertyPanel';
 import { GraphNodeTable } from './GraphNodeTable';

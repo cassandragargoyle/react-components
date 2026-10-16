@@ -16,6 +16,7 @@ const EXPECTED = [
     'canMoveBlock',
     'insertBlock',
     'isBlockDocument',
+    'isFieldVisible',
     'moveBlock',
     'removeBlock',
     'updateBlock',
@@ -46,7 +47,14 @@ describe('package entry point', () => {
         expect(api.DEFAULT_OPEN_PANEL_LABELS.title).toBe('Open a File or Project');
     });
 
+    it('exports the BlockDocument dictionaries', () => {
+        expect(api.blockDocumentMessages.en.delete).toBe('Delete');
+        expect(api.blockDocumentMessages.cs.delete).toBe('Smazat');
+    });
+
     it('exports nothing beyond the declared surface', () => {
-        expect(Object.keys(api).sort()).toEqual([...EXPECTED, 'DEFAULT_OPEN_PANEL_LABELS'].sort());
+        expect(Object.keys(api).sort()).toEqual(
+            [...EXPECTED, 'DEFAULT_OPEN_PANEL_LABELS', 'blockDocumentMessages'].sort(),
+        );
     });
 });

@@ -1,0 +1,258 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1256" viewBox="0 0 960 1256" font-family="'Segoe UI', system-ui, sans-serif">
+  <!--
+    BlockDocument address block (INT-003, ADR-001)
+    Visual reference — the default view, a host override, and the same block while editing
+  -->
+  <defs>
+    <!-- monochrome icons, drawn with the text colour of the place they sit in -->
+    <symbol id="pin" viewBox="0 0 14 18">
+      <path d="M7 17 C7 17 1 10.5 1 6.5 A6 6 0 0 1 13 6.5 C13 10.5 7 17 7 17 Z" fill="none" stroke="currentColor" stroke-width="1.3"/>
+      <circle cx="7" cy="6.5" r="2" fill="none" stroke="currentColor" stroke-width="1.3"/>
+    </symbol>
+    <symbol id="eye-off" viewBox="0 0 14 10">
+      <path d="M1 5 C3.5 1 10.5 1 13 5 C10.5 9 3.5 9 1 5 Z" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="7" cy="5" r="1.8" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="2" y1="9.5" x2="12" y2="0.5" stroke="currentColor" stroke-width="1.2"/>
+    </symbol>
+    <symbol id="pencil" viewBox="0 0 20 20">
+      <path d="M13.5 3.5l3 3-9 9H4.5v-3z M11.5 5.5l3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="gear" viewBox="0 0 20 20">
+      <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <circle cx="10" cy="10" r="2.5"/><circle cx="10" cy="10" r="5.5"/>
+        <path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4"/>
+      </g>
+    </symbol>
+  </defs>
+
+  <rect width="960" height="1256" fill="#f6f8fb"/>
+  <text x="24" y="40" font-size="20" font-weight="700" fill="#1a2230">BlockDocument · address block</text>
+  <text x="24" y="62" font-size="13" fill="#667">A postal address with GPS coordinates · the document shows a default set of fields · editing shows all of them</text>
+
+  <text x="24" y="98" font-size="12" font-weight="700" fill="#667">READ-ONLY (the type default: RÚIAN code and gps hidden)</text>
+  <text x="24" y="438" font-size="12" font-weight="700" fill="#667">READ-ONLY, HOST fieldVisibility={{ address: { gps: true } }}</text>
+  <text x="496" y="98" font-size="12" font-weight="700" fill="#667">EDITING (the pencil opens the form: every field, the hidden ones marked)</text>
+
+  <!-- ===== Read-only, default view ===== -->
+  <g transform="translate(24,110)">
+    <rect width="440" height="300" fill="#1e1e1e" stroke="#3c3c3c"/>
+
+    <text x="24" y="44" font-size="20" font-weight="700" fill="#e0e0e0">Family house Novák</text>
+    <text x="24" y="84" font-size="16" font-weight="700" fill="#cccccc">Overview</text>
+
+    <!-- address block: <address>, gps not rendered -->
+    <use href="#pin" x="24" y="99" width="12" height="16" color="#858585"/>
+    <g font-size="12" fill="#cccccc">
+      <text x="44" y="110">Lipová 1234/12</text>
+      <text x="44" y="128">251 01 Říčany</text>
+      <text x="44" y="146">Czech Republic</text>
+    </g>
+
+    <text x="24" y="180" font-size="12" fill="#cccccc">A detached two-storey house built in 2019, with a <tspan font-weight="700">heat pump</tspan>,</text>
+    <text x="24" y="198" font-size="12" fill="#cccccc">underfloor heating and a rooftop photovoltaic array of 6 kWp.</text>
+
+    <text x="24" y="240" font-size="16" font-weight="700" fill="#cccccc">Floor plans</text>
+    <text x="24" y="266" font-size="12" fill="#cccccc">The ground floor has <tspan font-weight="700">three</tspan> rooms and a <tspan font-style="italic">hall</tspan>.</text>
+  </g>
+
+  <!-- ===== Read-only, host override; the cottage block overrides it back ===== -->
+  <g transform="translate(24,450)">
+    <rect width="440" height="430" fill="#1e1e1e" stroke="#3c3c3c"/>
+
+    <text x="24" y="40" font-size="16" font-weight="700" fill="#cccccc">Overview</text>
+    <use href="#pin" x="24" y="55" width="12" height="16" color="#858585"/>
+    <g font-size="12" fill="#cccccc">
+      <text x="44" y="66">Lipová 1234/12</text>
+      <text x="44" y="84">251 01 Říčany</text>
+      <text x="44" y="102">Czech Republic</text>
+      <text x="44" y="120">49.9917, 14.6543</text>
+    </g>
+
+    <text x="24" y="164" font-size="16" font-weight="700" fill="#cccccc">Cottage</text>
+    <use href="#pin" x="24" y="179" width="12" height="16" color="#858585"/>
+    <g font-size="12" fill="#cccccc">
+      <text x="44" y="190">Zahradní 3</text>
+      <text x="44" y="208">543 71 Hostinné</text>
+      <text x="44" y="226">Czech Republic</text>
+    </g>
+    <text x="416" y="190" font-size="10" font-family="Consolas, monospace" fill="#6a6a6a" text-anchor="end">"visibility": { "gps": false }</text>
+    <text x="416" y="206" font-size="10" font-style="italic" fill="#6a6a6a" text-anchor="end">the block wins over the host</text>
+
+    <!-- a Prague address: the cadastral area as the part of municipality, on its own line -->
+    <text x="24" y="288" font-size="16" font-weight="700" fill="#cccccc">Office</text>
+    <use href="#pin" x="24" y="303" width="12" height="16" color="#858585"/>
+    <g font-size="12" fill="#cccccc">
+      <text x="44" y="314">Studentská 1903/14a</text>
+      <text x="44" y="332">Dejvice</text>
+      <text x="44" y="350">16000 Praha 6</text>
+      <text x="44" y="368">50.1043, 14.3903</text>
+    </g>
+    <text x="416" y="314" font-size="10" font-style="italic" fill="#6a6a6a" text-anchor="end">č.p. 1903 / orientation number 14a</text>
+    <text x="416" y="330" font-size="10" font-style="italic" fill="#6a6a6a" text-anchor="end">the part differs from the city, so it is shown</text>
+  </g>
+
+  <!-- ===== Editing ===== -->
+  <g transform="translate(496,110)">
+    <rect width="440" height="770" fill="#1e1e1e" stroke="#3c3c3c"/>
+
+    <text x="40" y="44" font-size="20" font-weight="700" fill="#e0e0e0">Family house Novák</text>
+    <text x="40" y="84" font-size="16" font-weight="700" fill="#cccccc">Overview</text>
+
+    <!-- focused address block: handle, outline, hidden field dimmed and marked -->
+    <rect x="34" y="94" width="386" height="90" rx="2" fill="none" stroke="#007fd4"/>
+    <rect x="8" y="97" width="20" height="18" rx="3" fill="#2a2d2e"/>
+    <g fill="#cccccc">
+      <circle cx="15" cy="101" r="1.3"/><circle cx="21" cy="101" r="1.3"/>
+      <circle cx="15" cy="106" r="1.3"/><circle cx="21" cy="106" r="1.3"/>
+      <circle cx="15" cy="111" r="1.3"/><circle cx="21" cy="111" r="1.3"/>
+    </g>
+    <use href="#pin" x="44" y="101" width="12" height="16" color="#858585"/>
+    <!-- edit and display settings, right of the selected block -->
+    <rect x="366" y="98" width="22" height="22" rx="4" fill="#2a2d2e"/>
+    <use href="#pencil" x="369" y="101" width="16" height="16" color="#cccccc"/>
+    <rect x="392" y="98" width="22" height="22" rx="4" fill="#2a2d2e"/>
+    <use href="#gear" x="395" y="101" width="16" height="16" color="#cccccc"/>
+    <g font-size="12" fill="#cccccc">
+      <text x="64" y="112">Lipová 1234/12</text>
+      <text x="64" y="130">251 01 Říčany</text>
+      <text x="64" y="148">Czech Republic</text>
+    </g>
+    <use href="#eye-off" x="64" y="162" width="14" height="10" color="#6a6a6a"/>
+    <text x="84" y="171" font-size="12" fill="#6a6a6a">49.9917, 14.6543</text>
+    <text x="412" y="171" font-size="10" font-style="italic" fill="#6a6a6a" text-anchor="end">Not shown in the document</text>
+
+    <!-- address form, opened by "Edit address" in the block menu -->
+    <rect x="40" y="196" width="376" height="424" rx="3" fill="#252526" stroke="#454545"/>
+    <text x="56" y="218" font-size="12" font-weight="700" fill="#e0e0e0">Edit address</text>
+    <g font-size="10" fill="#cccccc">
+      <text x="56" y="260">Street</text>
+      <text x="56" y="288">House number</text>
+      <text x="56" y="316">House number type</text>
+      <text x="56" y="344">Orientation number</text>
+      <text x="56" y="372">Part of municipality</text>
+      <text x="56" y="400">Postal code</text>
+      <text x="56" y="428">City</text>
+      <text x="56" y="456">Country</text>
+      <text x="56" y="484">RÚIAN address code</text>
+      <text x="56" y="512">Latitude</text>
+      <text x="56" y="540">Longitude</text>
+    </g>
+    <g fill="#3c3c3c" stroke="#3c3c3c">
+      <rect x="160" y="246" width="240" height="20" rx="2"/>
+      <rect x="160" y="274" width="240" height="20" rx="2"/>
+      <rect x="160" y="302" width="240" height="20" rx="2"/>
+      <rect x="160" y="330" width="240" height="20" rx="2"/>
+      <rect x="160" y="358" width="240" height="20" rx="2"/>
+      <rect x="160" y="386" width="240" height="20" rx="2"/>
+      <rect x="160" y="414" width="240" height="20" rx="2"/>
+      <rect x="160" y="442" width="240" height="20" rx="2"/>
+      <rect x="160" y="470" width="240" height="20" rx="2"/>
+      <rect x="160" y="498" width="240" height="20" rx="2"/>
+      <rect x="160" y="526" width="240" height="20" rx="2"/>
+    </g>
+    <!-- the latitude input has the focus -->
+    <rect x="160" y="498" width="240" height="20" rx="2" fill="none" stroke="#007fd4"/>
+    <g font-size="11" fill="#cccccc">
+      <text x="168" y="260">Lipová</text>
+      <text x="168" y="288">1234</text>
+      <text x="168" y="316">Conscription number (č.p.)</text>
+      <text x="168" y="344">12</text>
+      <text x="168" y="372">Říčany</text>
+      <text x="168" y="400">251 01</text>
+      <text x="168" y="428">Říčany</text>
+      <text x="168" y="456">Czech Republic</text>
+      <text x="168" y="512">49.9917</text>
+      <text x="168" y="540">14.6543</text>
+    </g>
+    <path d="M384 310 l4 4 l4 -4" fill="none" stroke="#cccccc" stroke-width="1.2"/>
+    <line x1="209" y1="502" x2="209" y2="514" stroke="#e0e0e0"/>
+
+    <use href="#eye-off" x="56" y="556" width="14" height="10" color="#6a6a6a"/>
+    <text x="76" y="565" font-size="10" font-style="italic" fill="#6a6a6a">RÚIAN address code: not shown in the document</text>
+    <use href="#eye-off" x="56" y="572" width="14" height="10" color="#6a6a6a"/>
+    <text x="76" y="581" font-size="10" font-style="italic" fill="#6a6a6a">Latitude and longitude: not shown in the document</text>
+
+    <rect x="284" y="590" width="56" height="20" rx="2" fill="#0e639c"/>
+    <text x="312" y="604" font-size="11" fill="#ffffff" text-anchor="middle">Save</text>
+    <rect x="348" y="590" width="56" height="20" rx="2" fill="#3c3c3c"/>
+    <text x="376" y="604" font-size="11" fill="#cccccc" text-anchor="middle">Cancel</text>
+
+    <!-- insertion gap with its menu: the address is a new insertable type -->
+    <line x1="40" y1="644" x2="416" y2="644" stroke="#007fd4" stroke-width="2"/>
+    <circle cx="18" cy="644" r="9" fill="#2a2d2e" stroke="#007fd4"/>
+    <path d="M18 639 V649 M13 644 H23" stroke="#cccccc" stroke-width="1.5" stroke-linecap="round"/>
+    <g transform="translate(8,656)">
+      <rect width="206" height="96" rx="3" fill="#252526" stroke="#454545"/>
+      <g font-size="11" fill="#cccccc">
+        <text x="12" y="16">Insert paragraph</text>
+        <text x="12" y="34">Insert chapter</text>
+        <text x="12" y="52">Insert image</text>
+        <text x="12" y="70">Insert video</text>
+        <rect x="4" y="75" width="198" height="18" rx="2" fill="#04395e"/>
+        <text x="12" y="88" fill="#ffffff">Insert address</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ===== Display settings ===== -->
+  <text x="24" y="918" font-size="12" font-weight="700" fill="#667">DISPLAY SETTINGS (the gear: a switch per field, written to the block at once)</text>
+  <g transform="translate(24,930)">
+    <rect width="912" height="250" fill="#1e1e1e" stroke="#3c3c3c"/>
+    <use href="#pin" x="24" y="21" width="12" height="16" color="#858585"/>
+    <g font-size="12" fill="#cccccc">
+      <text x="44" y="32">Lipová 1234/12</text>
+      <text x="44" y="50">251 01 Říčany</text>
+      <text x="44" y="68">49.9917, 14.6543</text>
+    </g>
+    <text x="44" y="96" font-size="10" font-style="italic" fill="#6a6a6a">the country hidden, the coordinates shown, for this block only</text>
+
+    <!-- the pencil and the gear; the gear holds its panel open -->
+    <rect x="370" y="14" width="22" height="22" rx="4" fill="#2a2d2e"/>
+    <use href="#pencil" x="373" y="17" width="16" height="16" color="#cccccc"/>
+    <rect x="396" y="14" width="22" height="22" rx="4" fill="#04395e"/>
+    <use href="#gear" x="399" y="17" width="16" height="16" color="#ffffff"/>
+    <g transform="translate(430,14)">
+      <rect width="256" height="226" rx="4" fill="#252526" stroke="#454545"/>
+      <text x="16" y="22" font-size="10" fill="#858585">Show in document</text>
+      <g font-size="11" fill="#cccccc">
+        <text x="16" y="46">Street</text>
+        <rect x="214" y="36" width="26" height="12" rx="6" fill="#007fd4"/><circle cx="234" cy="42" r="4" fill="#ffffff"/>
+        <text x="16" y="64">House number</text>
+        <rect x="214" y="54" width="26" height="12" rx="6" fill="#007fd4"/><circle cx="234" cy="60" r="4" fill="#ffffff"/>
+        <text x="16" y="82">Orientation number</text>
+        <rect x="214" y="72" width="26" height="12" rx="6" fill="#007fd4"/><circle cx="234" cy="78" r="4" fill="#ffffff"/>
+        <text x="16" y="100">Part of municipality</text>
+        <rect x="214" y="90" width="26" height="12" rx="6" fill="#007fd4"/><circle cx="234" cy="96" r="4" fill="#ffffff"/>
+        <text x="16" y="118">Postal code</text>
+        <rect x="214" y="108" width="26" height="12" rx="6" fill="#007fd4"/><circle cx="234" cy="114" r="4" fill="#ffffff"/>
+        <text x="16" y="136">City</text>
+        <rect x="214" y="126" width="26" height="12" rx="6" fill="#007fd4"/><circle cx="234" cy="132" r="4" fill="#ffffff"/>
+        <text x="16" y="154">Country <tspan fill="#858585" font-style="italic">· this block</tspan></text>
+        <rect x="214" y="144" width="26" height="12" rx="6" fill="#3c3c3c" stroke="#858585"/><circle cx="220" cy="150" r="4" fill="#cccccc"/>
+        <text x="16" y="172">RÚIAN address code</text>
+        <rect x="214" y="162" width="26" height="12" rx="6" fill="#3c3c3c" stroke="#858585"/><circle cx="220" cy="168" r="4" fill="#cccccc"/>
+        <text x="16" y="190">GPS coordinates <tspan fill="#858585" font-style="italic">· this block</tspan></text>
+        <rect x="214" y="180" width="26" height="12" rx="6" fill="#007fd4"/><circle cx="234" cy="186" r="4" fill="#ffffff"/>
+      </g>
+      <rect x="186" y="198" width="54" height="20" rx="2" fill="none" stroke="#3c3c3c"/>
+      <text x="213" y="212" font-size="11" fill="#cccccc" text-anchor="middle">Done</text>
+    </g>
+
+    <!-- what the switches wrote -->
+    <g font-size="10" font-family="Consolas, monospace" fill="#6a6a6a">
+      <text x="706" y="40">"visibility": {</text>
+      <text x="718" y="56">"country": false,</text>
+      <text x="718" y="72">"gps": true</text>
+      <text x="706" y="88">}</text>
+    </g>
+    <text x="706" y="116" font-size="10" font-style="italic" fill="#6a6a6a">a switch set back to what the</text>
+    <text x="706" y="130" font-size="10" font-style="italic" fill="#6a6a6a">host and type give drops its key</text>
+  </g>
+
+  <!-- ===== Legend ===== -->
+  <g font-size="11" fill="#1a2230">
+    <text x="24" y="1208"><tspan font-weight="700">Visibility</tspan> — the type declares a default view (address: RÚIAN code and gps hidden) · the host prop fieldVisibility overrides it per type · the block's visibility overrides both</text>
+    <text x="24" y="1226"><tspan font-weight="700">Editing</tspan> — the pencil edits the data, the gear what the document shows · a hidden field is dimmed and marked, also for a screen reader</text>
+    <text x="24" y="1244" fill="#667">Hidden is not private: gps stays in the JSON, in onChange and in updateBlock (ADR-001) · lines per decree 359/2011 Sb., § 6 · colours from the host theme, Dark+</text>
+  </g>
+</svg>

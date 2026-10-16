@@ -11,9 +11,11 @@ import blockDocumentStyles from './BlockDocument.css';
 
 import { BlockList, MediaUrlContext } from './BlockView';
 import { EditableText } from './EditableText';
+import { FieldVisibilityContext } from './fields';
+import { MessagesContext, resolveMessages, type BlockDocumentMessageOverrides } from './messages';
 import { createEditorActions, EditorContext, type Caret, type Editor, type FocusTarget, type MediaFormState } from './editor';
 import { richTextToPlain, plainToRichText } from './richText';
-import type { BlockDocumentData } from './types';
+import type { BlockDocumentData, BlockFieldVisibility } from './types';
 import { validateBlockDocument } from './validate';
 
 // Inject styles once when bundled as a string; under test the import is '' and this is skipped
@@ -40,6 +42,21 @@ export interface BlockDocumentProps {
     resolveMediaUrl?: (src: string) => string;
     /** Makes ids for new blocks; a random id by default */
     createBlockId?: () => string;
+    /**
+     * Which fields the document shows, per block type, over each type's default (ADR-001),
+     * e.g. `{ address: { gps: true } }`; a block's own `visibility` still wins. Editing shows every field
+     */
+    fieldVisibility?: BlockFieldVisibility;
+    /**
+     * The language of the component's texts, a BCP 47 tag such as `cs` or `cs-CZ` (INT-004);
+     * the document `language` by default, else English. The content keeps the document `language`
+     */
+    locale?: string;
+    /**
+     * Texts laid over the dictionary of the resolved language, to reword one or, passed whole
+     * with a `locale` the library does not ship, to add a language
+     */
+    messages?: BlockDocumentMessageOverrides;
     className?: string;
     style?: React.CSSProperties;
     ref?: React.Ref<HTMLElement>;
@@ -61,12 +78,18 @@ export function BlockDocument({
     readOnly = false,
     resolveMediaUrl = identity,
     createBlockId = defaultBlockId,
+    fieldVisibility,
+    locale,
+    messages,
     className,
     style,
     ref,
 }: BlockDocumentProps): React.ReactElement {
     const editable = !!onChange && !readOnly;
     const validation = useMemo(() => validateBlockDocument(doc), [doc]);
+    // An invalid document may hold anything under `language`; only a string is used
+    const language = typeof doc?.language === 'string' && doc.language.trim() ? doc.language : undefined;
+    const text = useMemo(() => resolveMessages(locale, language, messages), [locale, language, messages]);
 
     // The latest document, ahead of the host's next render, so edits in one event compose
     const docRef = useRef(doc);
@@ -122,6 +145,10 @@ export function BlockDocument({
                       requestFocus(blockId, caret) {
                           pendingFocus.current = { blockId, caret };
                       },
+                      focusBlock(blockId, caret) {
+                          pendingFocus.current = { blockId, caret };
+                          flushFocus();
+                      },
                       draggingId,
                       setDraggingId,
                       mediaForm,
@@ -142,51 +169,61 @@ export function BlockDocument({
 
     if (!validation.ok) {
         return (
-            <article ref={ref} className={classes} style={style}>
+            <article ref={ref} className={classes} style={style} lang={language}>
                 <div className="bd-error" role="alert">
-                    This document cannot be shown. {validation.error}
+                    {text.cannotShow(validation.error)}
                 </div>
             </article>
         );
     }
 
     return (
-        <MediaUrlContext.Provider value={resolveMediaUrl}>
-            <EditorContext.Provider value={editor}>
-                <article ref={ref} className={classes} style={style} aria-label={doc.title || 'Document'}>
-                    {editor ? (
-                        <EditableText
-                            as="h1"
-                            className="bd-title"
-                            plain
-                            value={plainToRichText(doc.title)}
-                            label="Document title"
-                            placeholder="Untitled"
-                            onChange={(title) => {
-                                const next = { ...docRef.current, title: richTextToPlain(title) };
-                                docRef.current = next;
-                                onChangeRef.current?.(next);
-                            }}
-                            onEnter={() => {
-                                actions.insertText('paragraph', { index: 0 });
-                                return true;
-                            }}
-                        />
-                    ) : (
-                        doc.title && <h1 className="bd-title">{doc.title}</h1>
-                    )}
-                    <BlockList blocks={doc.blocks} depth={0} />
-                    {editor && doc.blocks.length === 0 && (
-                        <button
-                            type="button"
-                            className="bd-button bd-add-first"
-                            onClick={() => actions.insertText('paragraph', { index: 0 })}
+        <MessagesContext.Provider value={text}>
+            <MediaUrlContext.Provider value={resolveMediaUrl}>
+                <FieldVisibilityContext.Provider value={fieldVisibility}>
+                    <EditorContext.Provider value={editor}>
+                        <article
+                            ref={ref}
+                            className={classes}
+                            style={style}
+                            lang={language}
+                            aria-label={doc.title || text.document}
                         >
-                            Add a paragraph
-                        </button>
-                    )}
-                </article>
-            </EditorContext.Provider>
-        </MediaUrlContext.Provider>
+                            {editor ? (
+                                <EditableText
+                                    as="h1"
+                                    className="bd-title"
+                                    plain
+                                    value={plainToRichText(doc.title)}
+                                    label={text.documentTitle}
+                                    placeholder={text.untitled}
+                                    onChange={(title) => {
+                                        const next = { ...docRef.current, title: richTextToPlain(title) };
+                                        docRef.current = next;
+                                        onChangeRef.current?.(next);
+                                    }}
+                                    onEnter={() => {
+                                        actions.insertText('paragraph', { index: 0 });
+                                        return true;
+                                    }}
+                                />
+                            ) : (
+                                doc.title && <h1 className="bd-title">{doc.title}</h1>
+                            )}
+                            <BlockList blocks={doc.blocks} depth={0} />
+                            {editor && doc.blocks.length === 0 && (
+                                <button
+                                    type="button"
+                                    className="bd-button bd-add-first"
+                                    onClick={() => actions.insertText('paragraph', { index: 0 })}
+                                >
+                                    {text.addParagraph}
+                                </button>
+                            )}
+                        </article>
+                    </EditorContext.Provider>
+                </FieldVisibilityContext.Provider>
+            </MediaUrlContext.Provider>
+        </MessagesContext.Provider>
     );
 }

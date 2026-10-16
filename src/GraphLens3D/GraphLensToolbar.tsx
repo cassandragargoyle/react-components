@@ -7,7 +7,7 @@
 // Ports the original app.js panels: nav history, search, kind filters,
 // visible-node count, line legend, and the statistics panel
 
-import React from 'react';
+import React, { type JSX } from 'react';
 
 /** One selectable kind filter (e.g. a VoX type or 'tag') */
 export interface KindFilter {
