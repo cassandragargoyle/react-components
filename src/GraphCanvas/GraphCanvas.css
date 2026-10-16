@@ -1,0 +1,285 @@
+/*
+ *  This file is part of CassandraGargoyle Community Project
+ *  Licensed under the MIT License - see LICENSE file for details
+ */
+ 
+/* Layout styles for Graph Canvas three-panel component */
+/* Follows GUI Design Principles: 4px grid, theme variables, monochrome */
+
+.graph-canvas {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--vscode-editor-background, #1e1e1e);
+    color: var(--vscode-foreground, #cccccc);
+    font-family: var(--vscode-font-family, 'Segoe UI', sans-serif);
+    font-size: 13px;
+}
+
+/* Toolbar — matches Document Canvas toolbar styling */
+
+.graph-toolbar {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    min-height: 32px;
+    flex-shrink: 0;
+    padding: 0 8px;
+    gap: 8px;
+    background: var(--vscode-editorGroupHeader-tabsBackground, #252526);
+    border-bottom: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    z-index: 60;
+}
+
+.graph-toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.graph-toolbar-separator {
+    width: 1px;
+    height: 16px;
+    background: var(--vscode-sideBar-border, #3c3c3c);
+    margin: 0 4px;
+}
+
+.graph-toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    padding: 0 8px;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--vscode-foreground, #cccccc);
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.graph-toolbar-btn:hover {
+    background: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.05));
+}
+
+.graph-toolbar-btn:active {
+    background: var(--vscode-list-activeSelectionBackground, rgba(255, 255, 255, 0.1));
+}
+
+.graph-toolbar-select {
+    height: 22px;
+    padding: 0 4px;
+    border: 1px solid var(--vscode-dropdown-border, #3c3c3c);
+    border-radius: 2px;
+    background: var(--vscode-dropdown-background, #3c3c3c);
+    color: var(--vscode-dropdown-foreground, #cccccc);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.graph-toolbar-label {
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground, #858585);
+    white-space: nowrap;
+}
+
+.graph-toolbar-status {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground, #858585);
+    white-space: nowrap;
+}
+
+.graph-find-input {
+    width: 140px;
+    height: 20px;
+    padding: 0 4px;
+    border: 1px solid var(--vscode-input-border, #3c3c3c);
+    border-radius: 2px;
+    background: var(--vscode-input-background, #3c3c3c);
+    color: var(--vscode-input-foreground, #cccccc);
+    font-size: 12px;
+    outline: none;
+}
+
+.graph-find-input:focus {
+    border-color: var(--vscode-focusBorder, #007fd4);
+}
+
+.graph-find-input::placeholder {
+    color: var(--vscode-input-placeholderForeground, #858585);
+}
+
+/* Main content — horizontal split: center + right panel */
+
+.graph-content {
+    display: flex;
+    flex-direction: row;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Center column — vertical split: viewport + splitter + table */
+
+.graph-center {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+}
+
+/* Cytoscape viewport — takes remaining space above splitter+table */
+
+.graph-viewport {
+    flex: 1 1 0;
+    min-height: 80px;
+    position: relative;
+}
+
+.graph-viewport-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.graph-viewport-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--vscode-descriptionForeground, #858585);
+    font-size: 13px;
+}
+
+/* Splitter between viewport and table — always visible */
+
+.graph-resize-handle {
+    height: 5px;
+    flex: 0 0 5px;
+    cursor: ns-resize;
+    background: var(--vscode-panelSection-border, #585858);
+    position: relative;
+    z-index: 10;
+}
+
+.graph-resize-handle::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+}
+
+.graph-resize-handle:hover,
+.graph-resize-handle:active {
+    background: var(--vscode-focusBorder, #007fd4);
+}
+
+/* Property panel (right sidebar) — styled like Document Canvas detail panel */
+
+.graph-property-panel {
+    width: 260px;
+    flex: 0 0 260px;
+    height: 100%;
+    border-left: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    background: var(--vscode-sideBar-background, #252526);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.graph-property-panel-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 16px;
+    color: var(--vscode-descriptionForeground, #858585);
+    font-size: 12px;
+    text-align: center;
+}
+
+.graph-property-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.graph-property-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.graph-property-section {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+}
+
+.graph-property-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--vscode-descriptionForeground, #858585);
+    margin-bottom: 4px;
+}
+
+.graph-property-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 2px 0;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.graph-property-key {
+    color: var(--vscode-descriptionForeground, #858585);
+    white-space: nowrap;
+    font-size: 11px;
+}
+
+.graph-property-value {
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--vscode-foreground, #cccccc);
+}
+
+.graph-property-connection {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 0;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.graph-property-connection:hover {
+    color: var(--vscode-textLink-foreground, #75beff);
+}
+
+.graph-property-connection-arrow {
+    color: var(--vscode-descriptionForeground, #858585);
+    font-size: 11px;
+}
+
+.graph-property-connection-type {
+    color: var(--vscode-descriptionForeground, #858585);
+    font-size: 11px;
+}
+
