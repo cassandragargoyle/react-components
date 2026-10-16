@@ -65,7 +65,7 @@ export function GraphLens3DViewport(props: GraphLens3DViewportProps): JSX.Elemen
     useEffect(() => {
         if (!containerRef.current) return;
 
-        const graph = ForceGraph3D()(containerRef.current);
+        const graph = new ForceGraph3D(containerRef.current);
         graphRef.current = graph;
 
         const resolve = (endpoint: unknown): GraphLensNode | undefined =>

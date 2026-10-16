@@ -12,3 +12,6 @@ declare module '*.css' {
     const content: string;
     export default content;
 }
+
+// Optional peer that ships no type declarations of its own
+declare module 'cytoscape-dagre';

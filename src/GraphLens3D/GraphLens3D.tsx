@@ -11,12 +11,12 @@ import { GraphLens3DViewport } from './GraphLens3DViewport';
 import { GraphLensDetailPanel } from './GraphLensDetailPanel';
 import { GraphLensNodeTable } from './GraphLensNodeTable';
 import { GraphLensToolbar, KindFilter, StatRow } from './GraphLensToolbar';
-import { ProgressPanel, ProgressPanelProps, ProgressStep } from '@cassandragargoyle/react-components';
-import { useRadialMenu } from '@cassandragargoyle/react-components';
-import type { RadialMenuAction } from '@cassandragargoyle/react-components';
+import { ProgressPanel, ProgressPanelProps, ProgressStep } from '../Progress';
+import { useRadialMenu } from '../RadialMenu';
+import type { RadialMenuAction } from '../RadialMenu';
 import { nodeIcons } from './nodeActionIcons';
 import {
-    GraphLensFile,
+    GraphLensDocument,
     GraphLensNode,
     GraphLensSelection,
     GraphLensStatus,
@@ -92,7 +92,7 @@ if (
 
 export interface GraphLens3DProps {
     /** Graphlens document to render, or null while loading */
-    data: GraphLensFile | null;
+    data: GraphLensDocument | null;
     /** Optional detailed load status shown (with progress + errors) until data arrives */
     status?: GraphLensStatus;
 }

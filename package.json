@@ -1,6 +1,6 @@
 {
   "name": "@cassandragargoyle/react-components",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Reusable, extensible React components shared across the CassandraGargoyle ecosystem",
   "license": "MIT",
   "type": "module",
@@ -10,7 +10,9 @@
     "typescript",
     "block-editor",
     "vscode-webview",
-    "cassandragargoyle"
+    "cassandragargoyle",
+    "graph",
+    "code-editor"
   ],
   "homepage": "https://github.com/cassandragargoyle/react-components#readme",
   "bugs": {
@@ -26,6 +28,7 @@
   "files": [
     "dist"
   ],
+  "sideEffects": false,
   "scripts": {
     "build": "vite build",
     "dev": "vite --config demo/vite.config.ts",
@@ -46,13 +49,19 @@
     "access": "public"
   },
   "devDependencies": {
+    "3d-force-graph": "^1.80.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
+    "@types/cytoscape": "^3.21.9",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@xyflow/react": "^12.11.2",
     "ag-grid-community": "^35.3.1",
     "ag-grid-react": "^35.3.1",
+    "cytoscape": "^3.34.0",
+    "cytoscape-dagre": "^4.0.0",
     "jsdom": "^25.0.1",
+    "monaco-editor": "^0.55.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5.9.3",
@@ -64,13 +73,33 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "ag-grid-community": "^35.2.0",
-    "ag-grid-react": "^35.2.0"
+    "ag-grid-react": "^35.2.0",
+    "@xyflow/react": "^12.11.0",
+    "3d-force-graph": "^1.80.0",
+    "cytoscape": "^3.34.0",
+    "cytoscape-dagre": "^4.0.0",
+    "monaco-editor": "^0.55.0"
   },
   "peerDependenciesMeta": {
     "ag-grid-community": {
       "optional": true
     },
     "ag-grid-react": {
+      "optional": true
+    },
+    "@xyflow/react": {
+      "optional": true
+    },
+    "3d-force-graph": {
+      "optional": true
+    },
+    "cytoscape": {
+      "optional": true
+    },
+    "cytoscape-dagre": {
+      "optional": true
+    },
+    "monaco-editor": {
       "optional": true
     }
   }

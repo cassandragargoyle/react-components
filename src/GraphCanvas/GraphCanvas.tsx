@@ -12,37 +12,48 @@ import { GraphPropertyPanel } from './GraphPropertyPanel';
 import { GraphNodeTable } from './GraphNodeTable';
 import { GraphToolbar } from './GraphToolbar';
 import {
-    GraphFile,
+    GraphDocument,
     GraphNode,
     GraphEdge,
     LayoutAlgorithm,
     SelectedElement,
     TableFilter,
 } from './types';
-import './GraphCanvas.css';
+import graphCanvasStyles from './GraphCanvas.css';
 
-/** VS Code API interface injected into webview */
-export interface VsCodeApi {
+// Inject styles once when bundled with the 'text' loader (single-file bundle, the
+// published package). Under the 'css' loader the import resolves to a non-string and
+// a sibling stylesheet is emitted instead, so this injection is skipped.
+if (
+    typeof document !== 'undefined' &&
+    typeof graphCanvasStyles === 'string' &&
+    graphCanvasStyles &&
+    !document.getElementById('graph-canvas-styles')
+) {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'graph-canvas-styles';
+    styleEl.textContent = graphCanvasStyles;
+    document.head.appendChild(styleEl);
+}
+
+/** Message port the canvas posts its events to; a VS Code webview API satisfies it */
+export interface GraphCanvasPort {
     postMessage(message: unknown): void;
-    getState(): unknown;
-    setState(state: unknown): void;
 }
 
-/** Acquire VS Code API — available only inside webview */
-declare function acquireVsCodeApi(): VsCodeApi;
-
-/** Props for hosting GraphCanvas outside a VS Code webview (e.g. the Electron viewer) */
+/** Props for GraphCanvas; the host binds the port, the canvas never looks one up itself */
 export interface GraphCanvasProps {
-    /** Message port to use instead of the global acquireVsCodeApi() (VS Code webview default) */
-    api?: VsCodeApi;
+    /** Where the canvas posts ready, selection, change and save messages */
+    api: GraphCanvasPort;
 }
 
-export function GraphCanvas({ api }: GraphCanvasProps = {}): JSX.Element {
+export function GraphCanvas({ api }: GraphCanvasProps): JSX.Element {
     const viewportRef = useRef<GraphViewportHandle>(null);
-    const [vscodeApi] = useState<VsCodeApi>(() => api ?? acquireVsCodeApi());
+    // First port wins, like the previous one-time acquisition; a new prop does not rewire listeners
+    const [port] = useState<GraphCanvasPort>(() => api);
 
     // Graph data
-    const [graphData, setGraphData] = useState<GraphFile | null>(null);
+    const [graphData, setGraphData] = useState<GraphDocument | null>(null);
     const [layout, setLayout] = useState<LayoutAlgorithm>('dagre');
 
     // Selection state
@@ -69,7 +80,7 @@ export function GraphCanvas({ api }: GraphCanvasProps = {}): JSX.Element {
             const message = event.data;
             switch (message.type) {
                 case 'setGraphData':
-                    setGraphData(message.data as GraphFile);
+                    setGraphData(message.data as GraphDocument);
                     break;
                 case 'selectNode':
                     if (viewportRef.current && message.ids?.length > 0) {
@@ -81,7 +92,7 @@ export function GraphCanvas({ api }: GraphCanvasProps = {}): JSX.Element {
         window.addEventListener('message', handler);
 
         // Signal readiness
-        vscodeApi.postMessage({ type: 'ready' });
+        port.postMessage({ type: 'ready' });
 
         return () => window.removeEventListener('message', handler);
     }, []);
@@ -122,7 +133,7 @@ export function GraphCanvas({ api }: GraphCanvasProps = {}): JSX.Element {
     // Selection change from viewport
     const handleSelectionChange = useCallback((elements: SelectedElement[]) => {
         setSelectedElements(elements);
-        vscodeApi.postMessage({
+        port.postMessage({
             type: 'selectionChanged',
             elements,
         });
@@ -138,7 +149,7 @@ export function GraphCanvas({ api }: GraphCanvasProps = {}): JSX.Element {
                     n.id === nodeId ? { ...n, position: { x: Math.round(x), y: Math.round(y) } } : n
                 ),
             };
-            vscodeApi.postMessage({ type: 'graphDataChanged', data: updated });
+            port.postMessage({ type: 'graphDataChanged', data: updated });
             return updated;
         });
     }, []);
@@ -172,7 +183,7 @@ export function GraphCanvas({ api }: GraphCanvasProps = {}): JSX.Element {
     const handleSave = useCallback(() => {
         if (!graphData || !viewportRef.current) return;
         const positions = viewportRef.current.getNodePositions();
-        const updated: GraphFile = {
+        const updated: GraphDocument = {
             ...graphData,
             nodes: graphData.nodes.map((n) => {
                 const pos = positions.get(n.id);
@@ -180,7 +191,7 @@ export function GraphCanvas({ api }: GraphCanvasProps = {}): JSX.Element {
             }),
         };
         setGraphData(updated);
-        vscodeApi.postMessage({ type: 'requestSave', data: updated });
+        port.postMessage({ type: 'requestSave', data: updated });
     }, [graphData]);
 
     // Resize handle for table

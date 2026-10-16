@@ -1,17 +1,16 @@
 # CodeEditor
 
 Reusable code/text editing surface backed by [`monaco-editor`](https://microsoft.github.io/monaco-editor/)
-(the editor that powers VS Code). This is the standard component for
-syntax-highlighted code display and editing across the Pilot UI component
-library — new consumers (in-app JSON config editing, Explorer file preview,
-etc.) should adopt `CodeEditor` rather than hand-rolling `<pre>` blocks or a
-different editor. Current adopters: `CodeBlock.tsx` (chat code blocks) and
-the Electron Explorer's file preview pane (`index.explorer.electron.tsx`).
+(the editor that powers VS Code). It is the standard component for
+syntax-highlighted code display and editing — new consumers should adopt
+`CodeEditor` rather than hand-rolling `<pre>` blocks or a different editor. It
+came from Pilot, the `portunix-vscode` desktop app, where the chat code blocks
+and the file preview pane use it.
 
 ## Usage
 
 ```tsx
-import { CodeEditor } from '@cassandragargoyle/pilot-ui';
+import { CodeEditor } from '@cassandragargoyle/react-components';
 
 // Read-only display (e.g. a chat code block) — grows to fit its content
 <CodeEditor value={code} language="python" readOnly maxHeight={400} />
@@ -104,7 +103,7 @@ page controls — no path in this component is hardcoded to a runtime:
 
 | Runtime | `workerBaseUrl` source |
 | ------- | ---------------------- |
-| VS Code webview | `window.__portunixCodeEditorBaseUrl__` set by the extension host to `webview.asWebviewUri(.../dist/pilot/code-editor)` before `pilot.js` loads (see `PilotChatProvider.ts`) |
+| VS Code webview | `configureCodeEditor({ baseUrl })` called by the host with `webview.asWebviewUri(.../code-editor)` before the first editor mounts |
 | Electron / standalone bundle | Defaults to the relative path `./code-editor` next to the main bundle — place the `code-editor/` build output alongside the entry's output file |
 
 No `monaco-editor` asset is ever fetched from a CDN.
@@ -135,14 +134,27 @@ script came from. A failure here (fetch error, bad URL) rejects the returned
 `Promise<Worker>` — which Monaco handles as a non-fatal, degraded worker
 service — rather than throwing synchronously.
 
-## Wired-up hosts
+## Host configuration
 
-`App.tsx` (the shared Pilot Chat root) is rendered both by the VS Code
-webview (`ui/index.tsx`) and by the Electron `ExplorerWorkspace`
-(`ui/index.explorer.electron.tsx`, the chat pane of the three-pane Explorer
-workspace) — so any host that renders `App` picks up `CodeEditor` (and its
-preflight check) automatically. Both currently have their own
-`esbuild.code-editor.mjs` producing a `code-editor/` folder next to that
+```ts
+import { configureCodeEditor } from '@cassandragargoyle/react-components';
+
+configureCodeEditor({
+    // Where code-editor.js, code-editor.css and workers/ are served; default './code-editor'
+    baseUrl: webviewUri,
+    // Extra destination for diagnostics; the console always gets them
+    onDiagnostic: (level, message, detail) => hostLog(level, message, detail),
+});
+```
+
+Call it once before the first editor mounts. Every field is optional, so a host
+that serves the chunk next to its main bundle needs no call at all.
+
+## Wired-up hosts in portunix-vscode
+
+Pilot's chat root is rendered both by the VS Code webview and by the Electron
+`ExplorerWorkspace`, and each has its own `esbuild.code-editor.mjs` that bundles
+this directory's `monacoLoader.ts` into a `code-editor/` folder next to that
 host's main bundle:
 
 | Host | `code-editor/` build script | Output location |
@@ -152,13 +164,13 @@ host's main bundle:
 
 ## Adopting this component in a further host (a new standalone bundle)
 
-1. Add `monaco-editor` to that host package's `dependencies` (see
-   `src/vscode-extension/package.json` for the pinned version).
+1. Add `monaco-editor` to that host package's `dependencies` — it is an
+   optional peer of this library.
 2. Add an esbuild step that runs the same pattern as the two configs above
    (bundle `monacoLoader.ts` + the worker entry points to a `code-editor/`
    folder next to the host's main output file).
 3. If the host serves resources through a custom scheme (like VS Code's
-   `asWebviewUri`), set `window.__portunixCodeEditorBaseUrl__` before the app
+   `asWebviewUri`), call `configureCodeEditor({ baseUrl })` before the app
    mounts. Otherwise the default relative path (`./code-editor` next to the
    main bundle) is used, as Electron does.
 
@@ -166,14 +178,14 @@ host's main bundle:
 
 `monacoLoader.ts` derives a Monaco theme (`pilot-theme`) from the current
 `--pilot-code-bg` / `--pilot-fg` / `--pilot-border` CSS custom properties (see
-[GUI Design Principles](../../../../../docs/architecture/GUI-DESIGN-PRINCIPLES.md))
+[GUI Design Principles](../../docs/architecture/GUI-DESIGN-PRINCIPLES.md))
 at mount time, so it automatically matches the active VS Code theme (or the
 standalone dark fallback) without any separate light/dark toggle logic.
 
 ## Startup preflight check and diagnostic logging
 
-`App.tsx` runs `preflight.ts`'s `runPreflightCheck()` once when the React app
-boots, independent of whether any `CodeEditor` is shown yet. It checks, in
+A host can run `runPreflightCheck()` once when its app boots (Pilot does so in
+`App.tsx`), independent of whether any `CodeEditor` is shown yet. It checks, in
 order: Worker API availability, whether `code-editor.js` loads at all, and
 whether `monaco.editor.create()` actually succeeds (via a throwaway,
 detached, invisible probe editor that is immediately disposed) — so the
@@ -181,12 +193,12 @@ concrete failure reason is known up front rather than only discovered the
 first time a real code block fails.
 
 Every diagnostic step always logs to the devtools console via
-`diagnosticLog()`. To additionally persist these entries to a log file (e.g.
-to investigate an issue without needing to reproduce it live, or to attach it
-to a bug report), enable the **`portunix.pilotChat.codeEditorDebugLog`**
-setting. `PilotChatProvider` then:
+`diagnosticLog()`, and to the `onDiagnostic` sink when the host configured one.
+In `portunix-vscode`, the **`portunix.pilotChat.codeEditorDebugLog`** setting
+persists these entries to a log file. `PilotChatProvider` then:
 
-1. Injects `window.__portunixCodeEditorDebugLog__ = true` into the webview.
+1. Injects `window.__portunixCodeEditorDebugLog__ = true` into the webview, and
+   Pilot's sink forwards each entry to the extension host.
 2. Shows an information message with the resolved log file path when the
    panel opens.
 3. Appends every `codeEditorDiagnostic` message it receives to

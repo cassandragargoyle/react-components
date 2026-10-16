@@ -21,12 +21,19 @@ const EXPECTED = [
     'updateBlock',
     'validateBlockDocument',
     'Carousel',
+    'CodeEditor',
+    'configureCodeEditor',
+    'resolveMonacoLanguage',
+    'runPreflightCheck',
+    'GraphCanvas',
+    'GraphLens3D',
     'NodeTablePanel',
     'OpenPanel',
     'shortenHomePath',
     'ProgressPanel',
     'RadialMenu',
     'useRadialMenu',
+    'WorkflowCanvas',
 ] as const;
 
 describe('package entry point', () => {

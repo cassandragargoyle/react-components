@@ -6,23 +6,22 @@
 // Shared runtime loader for the lazy-loaded Monaco chunk (code-editor.js)
 // Used by both CodeEditor.tsx (actual mounts) and preflight.ts (startup capability check)
 
+import { codeEditorConfig } from './config';
 import type { MountHandle, MountOptions } from './monacoLoader';
 
-// Base URL for the code-editor.js chunk + its worker scripts. Hosts that need a
-// different location (VS Code webview -> asWebviewUri) set this before the app
-// mounts, e.g. `window.__portunixCodeEditorBaseUrl__ = someAsWebviewUri`
+// Registration slot of the code-editor.js chunk and the shared load promise
 declare global {
     interface Window {
-        __portunixCodeEditorBaseUrl__?: string;
         __portunixCodeEditor?: { mount: (container: HTMLElement, options: MountOptions) => MountHandle };
         __portunixCodeEditorLoad__?: Promise<void>;
-        /** Set by the extension host when the codeEditorDebugLog setting is enabled */
-        __portunixCodeEditorDebugLog__?: boolean;
     }
 }
 
+// Base URL for the code-editor.js chunk + its worker scripts. Hosts that need a
+// different location (VS Code webview -> asWebviewUri) set it through
+// configureCodeEditor({ baseUrl }) before the first editor mounts
 export function baseUrl(): string {
-    return window.__portunixCodeEditorBaseUrl__ ?? './code-editor';
+    return codeEditorConfig().baseUrl ?? './code-editor';
 }
 
 export function workerBaseUrl(): string {

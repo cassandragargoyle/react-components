@@ -7,7 +7,7 @@
 
 import React, { useMemo } from 'react';
 import type { ColDef } from 'ag-grid-community';
-import { NodeTablePanel } from '@cassandragargoyle/react-components';
+import { NodeTablePanel } from '../NodeTablePanel';
 import { WorkflowNode, TableFilter } from './types';
 
 interface WorkflowNodeTableProps {

@@ -3,17 +3,57 @@
  *  Licensed under the MIT License - see LICENSE file for details
  */
 
-// Type definitions and shared helpers for the GraphLens 3D viewer components
-// Re-exports the graphlens contract and adds UI selection/coloring utilities
+// Type definitions and helpers for the GraphLens 3D viewer components
+// The graph shape the viewer renders (meta + nodes + links) and UI selection/coloring utilities
 
-import {
-    GraphLensFile,
-    GraphLensNode,
-    GraphLensLink,
-    GraphLensMeta,
-} from '../../../../shared/types/graphLensFile';
+/** Graph the viewer renders: nodes and links with optional document metadata */
+export interface GraphLensDocument {
+    /** Optional document format version (semver), independent of the schema version */
+    version?: string;
+    /** Optional document metadata (title shown in header) */
+    meta?: GraphLensMeta;
+    /** Node definitions */
+    nodes: GraphLensNode[];
+    /** Link definitions (note: links, not edges) */
+    links: GraphLensLink[];
+}
 
-export type { GraphLensFile, GraphLensNode, GraphLensLink, GraphLensMeta };
+/** Free-form document metadata; `title` is the known key, others are allowed */
+export interface GraphLensMeta {
+    /** Document title */
+    title?: string;
+    [key: string]: unknown;
+}
+
+/** Single node in the graph */
+export interface GraphLensNode {
+    /** Unique node identifier, referenced by link.source and link.target */
+    id: string;
+    /** Node kind, e.g. 'tag' or 'voice' (drives coloring) */
+    type: string;
+    /** Display label */
+    label: string;
+    /** Voice subtype for voice nodes, e.g. 'VoC' */
+    voice?: string;
+    /** Optional title shown in the detail panel */
+    title?: string;
+    /** Optional long-form description */
+    description?: string;
+    /** Arbitrary free-form metadata shown in the detail panel */
+    meta?: Record<string, unknown>;
+}
+
+/** Single link between two nodes */
+export interface GraphLensLink {
+    /** Source node id (string in the source document; resolved to a node by the renderer) */
+    source: string;
+    /** Target node id */
+    target: string;
+    /** Optional human-readable description */
+    description?: string;
+    /** Optional relation kind, e.g. 'related' */
+    rel?: string;
+}
 
 /** Current selection — either a node or a link */
 export type GraphLensSelection =

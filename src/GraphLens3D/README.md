@@ -9,18 +9,30 @@ Below the 3D viewport, a resizable `GraphLensNodeTable` (AG Grid) lists the
 nodes of the currently loaded document — sortable, filterable by All/Selected,
 and bidirectionally synced with the viewport selection.
 
+## Usage
+
+```tsx
+import { GraphLens3D } from '@cassandragargoyle/react-components';
+
+// Pure and prop-driven: the host loads the document and passes it in
+<GraphLens3D data={doc} status={loadStatus} />
+```
+
+`data` is `null` while loading; `status` (optional) drives the detailed loading
+screen. Optional peers: `3d-force-graph`, `ag-grid-community`, `ag-grid-react`.
+
 ## Source of truth
 
 This component is the **single source of truth** for the GUI of the `graphlens`
 Portunix plugin (portunix-plugins #086). The plugin must **not** maintain a
-hand-written `static/app.js`; it vendors the built bundle produced here instead.
+hand-written `static/app.js`; it vendors the bundle `portunix-vscode` builds
+from this component instead.
 
 ## Data contract
 
-The component renders the graphlens contract defined in
-[`src/shared/types/graphLensFile.ts`](../../../../shared/types/graphLensFile.ts)
+The component renders a `GraphLensDocument` declared in [`types.ts`](./types.ts)
 — note `links` (not `edges`) and `meta` (not `metadata`). This is intentionally
-a separate type from `GraphFile`; do not overload `GraphFile`.
+a separate type from `GraphCanvas`'s `GraphDocument`; do not overload that one.
 
 The TS type mirrors the **canonical, language-independent GraphView schema**
 (`Api #011`, `contract/schemas/graph-view.schema.json`): `id`, `type` and
@@ -28,7 +40,7 @@ The TS type mirrors the **canonical, language-independent GraphView schema**
 document level. Documents at rest use the `.glens.json` filename suffix. Align
 the TS type to that schema rather than inventing a parallel shape.
 
-## Consumption modes
+## Consumption modes in portunix-vscode
 
 | Mode | Entry | Data source |
 | ---- | ----- | ----------- |
@@ -42,6 +54,8 @@ a dedicated entry that reads `*.glens.json` via the main process and delivers it
 over IPC, mirroring the existing Canvas viewer.
 
 ## Building the standalone bundle
+
+In `portunix-vscode`:
 
 ```bash
 make graphlens-bundle

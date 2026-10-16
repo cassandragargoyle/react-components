@@ -3,14 +3,31 @@
 <!-- Component overview for the Cytoscape.js-based Graph Canvas -->
 <!-- Explains structure, data flow, and visual appearance -->
 
-Interactive read/edit viewer for `*.graph.json` files, built on
-[Cytoscape.js](https://js.cytoscape.org/). It renders node-edge graphs inside a
-VS Code Custom Editor webview with a three-panel layout: graph viewport, node
-table, and property panel. See issue
-[030](../../../../../docs/issues/030-graph-canvas-cytoscape-viewer.md)
-and ADR [006](../../../../../docs/adr/006-react-flow-for-workflow-canvas.md)
-for the design rationale (Cytoscape for generic graphs, React Flow for
-editable workflows).
+Interactive read/edit viewer for node-edge graphs, built on
+[Cytoscape.js](https://js.cytoscape.org/). It renders a `GraphDocument` with a
+three-panel layout: graph viewport, node table, and property panel. It came from
+Pilot, the `portunix-vscode` desktop app, where it shows `*.graph.json` files; see
+issue [030](https://github.com/cassandragargoyle/portunix-vscode/blob/main/docs/issues/done/030-graph-canvas-cytoscape-viewer.md) and
+ADR [006](https://github.com/cassandragargoyle/portunix-vscode/blob/main/docs/adr/006-react-flow-for-workflow-canvas.md) for the design
+rationale (Cytoscape for generic graphs, React Flow for editable workflows).
+
+## Usage
+
+```tsx
+import { GraphCanvas } from '@cassandragargoyle/react-components';
+
+// VS Code webview: the webview API is the port
+<GraphCanvas api={acquireVsCodeApi()} />
+
+// Any other host: an object with postMessage(message) receives the canvas events
+<GraphCanvas api={{ postMessage: (message) => bridge.send(message) }} />
+```
+
+The canvas **receives** its document as `window` `message` events
+(`setGraphData`, `selectNode`) and **sends** its events to the `api` port. It
+never looks a host API up on its own; a host outside a webview re-dispatches its
+own transport onto `window` and passes a port. Optional peers: `cytoscape`,
+`cytoscape-dagre`, `ag-grid-community`, `ag-grid-react`.
 
 ## 1. Panel Layout
 
@@ -73,10 +90,11 @@ graph TD
 callbacks out). `GraphViewport` is the only stateful child — it holds the
 imperative Cytoscape `Core` instance via a ref.
 
-## 3. Extension ↔ Webview Messaging
+## 3. Host ↔ Canvas Messaging
 
-The component runs in a webview sandbox and talks to the VS Code extension host
-only through `postMessage`.
+The component talks to its host only through messages: the host posts to
+`window`, the canvas posts to its `api` port. In a VS Code webview the host is
+the extension and the port is the webview API.
 
 ```mermaid
 sequenceDiagram
@@ -85,7 +103,7 @@ sequenceDiagram
     participant CY as Cytoscape
 
     WV->>Ext: { type: 'ready' }
-    Ext->>WV: { type: 'setGraphData', data: GraphFile }
+    Ext->>WV: { type: 'setGraphData', data: GraphDocument }
     WV->>CY: build nodes + edges, run layout, fit
 
     Note over WV,CY: user drags a node
@@ -192,5 +210,5 @@ the SVG to match.
 | `GraphNodeTable.tsx` | Maps nodes → rows/columns for shared `NodeTablePanel` |
 | `GraphPropertyPanel.tsx` | Property + connections view for selection |
 | `GraphCanvas.css` | Three-panel layout, VS Code theme variables |
-| `types.ts` | UI types + extension/webview message contracts |
+| `types.ts` | `GraphDocument` shape, UI types and the host/canvas message contracts |
 | `index.ts` | Public export |

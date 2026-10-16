@@ -12,38 +12,49 @@ import { WorkflowPropertyPanel } from './WorkflowPropertyPanel';
 import { WorkflowNodeTable } from './WorkflowNodeTable';
 import { WorkflowToolbar } from './WorkflowToolbar';
 import {
-    WorkflowFile,
+    WorkflowDocument,
     WorkflowNode,
     WorkflowEdge,
     SelectedElement,
     TableFilter,
 } from './types';
-import './WorkflowCanvas.css';
+import workflowCanvasStyles from './WorkflowCanvas.css';
 
-/** VS Code API interface injected into webview */
-export interface VsCodeApi {
-    postMessage(message: unknown): void;
-    getState(): unknown;
-    setState(state: unknown): void;
+// Inject styles once when bundled with the 'text' loader (single-file bundle, the
+// published package). Under the 'css' loader the import resolves to a non-string and
+// a sibling stylesheet is emitted instead, so this injection is skipped.
+if (
+    typeof document !== 'undefined' &&
+    typeof workflowCanvasStyles === 'string' &&
+    workflowCanvasStyles &&
+    !document.getElementById('workflow-canvas-styles')
+) {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'workflow-canvas-styles';
+    styleEl.textContent = workflowCanvasStyles;
+    document.head.appendChild(styleEl);
 }
 
-/** Acquire VS Code API — available only inside webview */
-declare function acquireVsCodeApi(): VsCodeApi;
+/** Message port the canvas posts its events to; a VS Code webview API satisfies it */
+export interface WorkflowCanvasPort {
+    postMessage(message: unknown): void;
+}
 
-/** Props for hosting WorkflowCanvas outside a VS Code webview (e.g. the Electron viewer) */
+/** Props for WorkflowCanvas; the host binds the port, the canvas never looks one up itself */
 export interface WorkflowCanvasProps {
-    /** Message port to use instead of the global acquireVsCodeApi() (VS Code webview default) */
-    api?: VsCodeApi;
+    /** Where the canvas posts ready, selection, change and save messages */
+    api: WorkflowCanvasPort;
 }
 
 const MAX_UNDO = 50;
 
-export function WorkflowCanvas({ api }: WorkflowCanvasProps = {}): JSX.Element {
+export function WorkflowCanvas({ api }: WorkflowCanvasProps): JSX.Element {
     const viewportRef = useRef<WorkflowViewportHandle>(null);
-    const [vscodeApi] = useState<VsCodeApi>(() => api ?? acquireVsCodeApi());
+    // First port wins, like the previous one-time acquisition; a new prop does not rewire listeners
+    const [port] = useState<WorkflowCanvasPort>(() => api);
 
     // Workflow data
-    const [workflowData, setWorkflowData] = useState<WorkflowFile | null>(null);
+    const [workflowData, setWorkflowData] = useState<WorkflowDocument | null>(null);
 
     // Selection state
     const [selectedElements, setSelectedElements] = useState<SelectedElement[]>([]);
@@ -61,8 +72,8 @@ export function WorkflowCanvas({ api }: WorkflowCanvasProps = {}): JSX.Element {
     const [findQuery, setFindQuery] = useState('');
 
     // Undo/redo stacks
-    const undoStack = useRef<WorkflowFile[]>([]);
-    const redoStack = useRef<WorkflowFile[]>([]);
+    const undoStack = useRef<WorkflowDocument[]>([]);
+    const redoStack = useRef<WorkflowDocument[]>([]);
     const [canUndo, setCanUndo] = useState(false);
     const [canRedo, setCanRedo] = useState(false);
 
@@ -70,7 +81,7 @@ export function WorkflowCanvas({ api }: WorkflowCanvasProps = {}): JSX.Element {
     const resizeRef = useRef<{ startY: number; startHeight: number } | null>(null);
 
     /** Push current state to undo stack before making changes */
-    const pushUndo = useCallback((data: WorkflowFile) => {
+    const pushUndo = useCallback((data: WorkflowDocument) => {
         undoStack.current.push(JSON.parse(JSON.stringify(data)));
         if (undoStack.current.length > MAX_UNDO) {
             undoStack.current.shift();
@@ -81,12 +92,12 @@ export function WorkflowCanvas({ api }: WorkflowCanvasProps = {}): JSX.Element {
     }, []);
 
     /** Apply a workflow data change with undo tracking */
-    const applyChange = useCallback((newData: WorkflowFile) => {
+    const applyChange = useCallback((newData: WorkflowDocument) => {
         setWorkflowData((prev) => {
             if (prev) pushUndo(prev);
             return newData;
         });
-        vscodeApi.postMessage({ type: 'workflowDataChanged', data: newData });
+        port.postMessage({ type: 'workflowDataChanged', data: newData });
     }, [pushUndo]);
 
     // Listen for messages from extension
@@ -95,7 +106,7 @@ export function WorkflowCanvas({ api }: WorkflowCanvasProps = {}): JSX.Element {
             const message = event.data;
             switch (message.type) {
                 case 'setWorkflowData':
-                    setWorkflowData(message.data as WorkflowFile);
+                    setWorkflowData(message.data as WorkflowDocument);
                     undoStack.current = [];
                     redoStack.current = [];
                     setCanUndo(false);
@@ -111,7 +122,7 @@ export function WorkflowCanvas({ api }: WorkflowCanvasProps = {}): JSX.Element {
         window.addEventListener('message', handler);
 
         // Signal readiness
-        vscodeApi.postMessage({ type: 'ready' });
+        port.postMessage({ type: 'ready' });
 
         return () => window.removeEventListener('message', handler);
     }, []);
@@ -138,7 +149,7 @@ export function WorkflowCanvas({ api }: WorkflowCanvasProps = {}): JSX.Element {
             }
             return prev;
         });
-        vscodeApi.postMessage({ type: 'workflowDataChanged', data: prev });
+        port.postMessage({ type: 'workflowDataChanged', data: prev });
         setCanUndo(undoStack.current.length > 0);
         setCanRedo(true);
     }, []);
@@ -153,7 +164,7 @@ export function WorkflowCanvas({ api }: WorkflowCanvasProps = {}): JSX.Element {
             }
             return next;
         });
-        vscodeApi.postMessage({ type: 'workflowDataChanged', data: next });
+        port.postMessage({ type: 'workflowDataChanged', data: next });
         setCanUndo(true);
         setCanRedo(redoStack.current.length > 0);
     }, []);
@@ -161,7 +172,7 @@ export function WorkflowCanvas({ api }: WorkflowCanvasProps = {}): JSX.Element {
     // Save — write workflow data back to file
     const handleSave = useCallback(() => {
         if (!workflowData) return;
-        vscodeApi.postMessage({ type: 'requestSave', data: workflowData });
+        port.postMessage({ type: 'requestSave', data: workflowData });
     }, [workflowData]);
 
     // Keyboard shortcuts
@@ -196,7 +207,7 @@ export function WorkflowCanvas({ api }: WorkflowCanvasProps = {}): JSX.Element {
     // Selection change from viewport
     const handleSelectionChange = useCallback((elements: SelectedElement[]) => {
         setSelectedElements(elements);
-        vscodeApi.postMessage({ type: 'selectionChanged', elements });
+        port.postMessage({ type: 'selectionChanged', elements });
     }, []);
 
     // Node drag repositioning
@@ -210,7 +221,7 @@ export function WorkflowCanvas({ api }: WorkflowCanvasProps = {}): JSX.Element {
                     n.id === nodeId ? { ...n, position: { x, y } } : n
                 ),
             };
-            vscodeApi.postMessage({ type: 'workflowDataChanged', data: updated });
+            port.postMessage({ type: 'workflowDataChanged', data: updated });
             return updated;
         });
     }, [pushUndo]);
@@ -221,7 +232,7 @@ export function WorkflowCanvas({ api }: WorkflowCanvasProps = {}): JSX.Element {
             if (!prev) return prev;
             if (prev) pushUndo(prev);
             const updated = { ...prev, nodes: newNodes };
-            vscodeApi.postMessage({ type: 'workflowDataChanged', data: updated });
+            port.postMessage({ type: 'workflowDataChanged', data: updated });
             return updated;
         });
     }, [pushUndo]);
@@ -232,7 +243,7 @@ export function WorkflowCanvas({ api }: WorkflowCanvasProps = {}): JSX.Element {
             if (!prev) return prev;
             if (prev) pushUndo(prev);
             const updated = { ...prev, edges: newEdges };
-            vscodeApi.postMessage({ type: 'workflowDataChanged', data: updated });
+            port.postMessage({ type: 'workflowDataChanged', data: updated });
             return updated;
         });
     }, [pushUndo]);
@@ -250,7 +261,7 @@ export function WorkflowCanvas({ api }: WorkflowCanvasProps = {}): JSX.Element {
                 position: { x, y },
             };
             const updated = { ...prev, nodes: [...prev.nodes, newNode] };
-            vscodeApi.postMessage({ type: 'workflowDataChanged', data: updated });
+            port.postMessage({ type: 'workflowDataChanged', data: updated });
             return updated;
         });
     }, [pushUndo]);

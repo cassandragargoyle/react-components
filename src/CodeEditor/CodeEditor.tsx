@@ -11,7 +11,22 @@ import { resolveMonacoLanguage } from './languageMap';
 import { loadMonacoBundle, workerBaseUrl } from './bundleLoader';
 import { diagnosticLog } from './diagnosticLog';
 import type { MountHandle } from './monacoLoader';
-import './CodeEditor.css';
+import codeEditorStyles from './CodeEditor.css';
+
+// Inject styles once when bundled with the 'text' loader (single-file bundle, the
+// published package). Under the 'css' loader the import resolves to a non-string and
+// a sibling stylesheet is emitted instead, so this injection is skipped.
+if (
+    typeof document !== 'undefined' &&
+    typeof codeEditorStyles === 'string' &&
+    codeEditorStyles &&
+    !document.getElementById('code-editor-styles')
+) {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'code-editor-styles';
+    styleEl.textContent = codeEditorStyles;
+    document.head.appendChild(styleEl);
+}
 
 export interface CodeEditorProps {
     /** Source text to display or edit */

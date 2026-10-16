@@ -4,22 +4,18 @@
  */
 
 // Diagnostic logging for CodeEditor's Monaco loading/preflight — always mirrors
-// to the devtools console, and additionally to the extension host's log file
-// when the user enables the portunix.pilotChat.codeEditorDebugLog setting
+// to the devtools console, and additionally to the host's sink when one is configured
 
-import { getVsCodeApi } from '../../../adapters/vscodeApi';
-import type { DiagnosticLevel } from '../../../core/messageTypes';
+import { codeEditorConfig, type CodeEditorDiagnosticLevel } from './config';
 
-const CONSOLE_METHOD: Record<DiagnosticLevel, 'log' | 'warn' | 'error'> = {
+const CONSOLE_METHOD: Record<CodeEditorDiagnosticLevel, 'log' | 'warn' | 'error'> = {
     info: 'log',
     warn: 'warn',
     error: 'error',
 };
 
 /** Log a CodeEditor diagnostic entry (preflight result, load/mount failure) */
-export function diagnosticLog(level: DiagnosticLevel, message: string, detail?: string): void {
+export function diagnosticLog(level: CodeEditorDiagnosticLevel, message: string, detail?: string): void {
     console[CONSOLE_METHOD[level]](`[CodeEditor] ${message}`, detail ?? '');
-
-    if (!window.__portunixCodeEditorDebugLog__) return;
-    getVsCodeApi()?.postMessage({ type: 'codeEditorDiagnostic', level, message, detail });
+    codeEditorConfig().onDiagnostic?.(level, message, detail);
 }

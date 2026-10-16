@@ -4,7 +4,16 @@
  */
 
 // Public exports for the GraphLens3D component
-// Re-exports the main component for use by entry points
+// Re-exports the component, its props, the graph shape it renders and the load status
 
 export { GraphLens3D } from './GraphLens3D';
 export type { GraphLens3DProps } from './GraphLens3D';
+export type {
+    GraphLensDocument,
+    GraphLensMeta,
+    GraphLensNode,
+    GraphLensLink,
+    GraphLensStatus,
+    GraphLensSource,
+    GraphLensPhase,
+} from './types';

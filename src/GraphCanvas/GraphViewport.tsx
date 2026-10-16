@@ -32,7 +32,7 @@ interface GraphViewportProps {
 }
 
 /** Build Cytoscape stylesheet using VS Code theme-compatible colors */
-function buildStylesheet(): cytoscape.Stylesheet[] {
+function buildStylesheet(): cytoscape.StylesheetJsonBlock[] {
     return [
         {
             selector: 'node',

@@ -35,8 +35,16 @@ npm install @cassandragargoyle/react-components
 ```
 
 No registry setup and no token: the package is public on npmjs.com. React 19 is a peer
-dependency; `NodeTablePanel` also needs `ag-grid-community` and `ag-grid-react`, which are
-optional for everything else.
+dependency. The heavy libraries are **optional** peers, needed only by the components that
+use them:
+
+| Optional peer | Needed by |
+| ------------- | --------- |
+| `ag-grid-community`, `ag-grid-react` | `NodeTablePanel` and the three graph components that embed it |
+| `cytoscape`, `cytoscape-dagre` | `GraphCanvas` |
+| `3d-force-graph` | `GraphLens3D` |
+| `@xyflow/react` | `WorkflowCanvas` |
+| `monaco-editor` | `CodeEditor` (built by the host as a separate, lazy-loaded chunk) |
 
 ```tsx
 import { BlockDocument, type BlockDocumentData } from '@cassandragargoyle/react-components';
@@ -56,10 +64,14 @@ to import.
 | [`Avatar`](https://github.com/cassandragargoyle/react-components/tree/main/src/Avatar) | A participant avatar: photo or initials, a ring cue for the actor kind, a click-to-open menu |
 | [`BlockDocument`](https://github.com/cassandragargoyle/react-components/tree/main/src/BlockDocument) | A document of blocks — chapters, paragraphs, images, videos — shown as one page and edited in place |
 | [`Carousel`](https://github.com/cassandragargoyle/react-components/tree/main/src/Carousel) | A three-card fan carousel around a centred hero card |
+| [`CodeEditor`](https://github.com/cassandragargoyle/react-components/tree/main/src/CodeEditor) | A Monaco code editor, lazy-loaded on first use, with a plain-text fallback |
+| [`GraphCanvas`](https://github.com/cassandragargoyle/react-components/tree/main/src/GraphCanvas) | A 2D node-edge graph viewer and editor over Cytoscape, with a node table and property panel |
+| [`GraphLens3D`](https://github.com/cassandragargoyle/react-components/tree/main/src/GraphLens3D) | A 3D force-directed graph explorer with search, filters and a detail panel |
 | [`NodeTablePanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/NodeTablePanel) | A bottom table panel over AG Grid with an All/Selected filter and selection sync |
 | [`OpenPanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/OpenPanel) | A launcher card: Open File / Open Folder and a filterable list of recent items |
 | [`ProgressPanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/Progress) | An async-progress panel: spinner, message, fields, a step checklist and errors |
 | [`RadialMenu`](https://github.com/cassandragargoyle/react-components/tree/main/src/RadialMenu) | A radial (pie) action menu with nested rings and keyboard navigation |
+| [`WorkflowCanvas`](https://github.com/cassandragargoyle/react-components/tree/main/src/WorkflowCanvas) | A workflow editor over React Flow with undo/redo, a node table and property panel |
 
 ## Development
 

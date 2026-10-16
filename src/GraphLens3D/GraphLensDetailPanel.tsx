@@ -8,7 +8,7 @@
 
 import React from 'react';
 import {
-    GraphLensFile,
+    GraphLensDocument,
     GraphLensSelection,
     endId,
     nodeKindColor,
@@ -16,7 +16,7 @@ import {
 
 interface GraphLensDetailPanelProps {
     selection: GraphLensSelection | null;
-    data: GraphLensFile;
+    data: GraphLensDocument;
     degreeOf: (id: string) => number;
     onNodeClick: (id: string) => void;
 }

@@ -4,6 +4,8 @@
  */
 
 // Public exports for GraphCanvas component
-// Re-exports main component for use by entry point
+// Re-exports the component, its props and port, and the graph shape it renders
 
 export { GraphCanvas } from './GraphCanvas';
+export type { GraphCanvasProps, GraphCanvasPort } from './GraphCanvas';
+export type { GraphDocument, GraphNode, GraphEdge, LayoutAlgorithm } from './types';
