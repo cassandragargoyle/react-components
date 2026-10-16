@@ -1,0 +1,21 @@
+/* Theme-aware container for the CodeEditor component and its plain-text fallback */
+
+.code-editor {
+    width: 100%;
+    transition: height 0.1s ease;
+}
+
+.code-editor-fallback {
+    margin: 0;
+    padding: 12px;
+    overflow-x: auto;
+    background: var(--pilot-code-bg);
+    color: var(--pilot-fg);
+    font-family: var(--vscode-editor-font-family, monospace);
+    font-size: var(--vscode-editor-font-size, 13px);
+    line-height: 1.4;
+}
+
+.code-editor-fallback code {
+    font-family: inherit;
+}
