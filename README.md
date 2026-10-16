@@ -46,6 +46,11 @@ use them:
 | `@xyflow/react` | `WorkflowCanvas` |
 | `monaco-editor` | `CodeEditor` (built by the host as a separate, lazy-loaded chunk) |
 
+The package ships as one ES module, so importing anything from it loads every peer in the
+table except `monaco-editor`. Install them all, or let your bundler drop the unused ones —
+the package is `"sideEffects": false`. Per-component entry points that make the peers truly
+optional are tracked in [INT-005](docs/issues/005-per-component-entry-points.md).
+
 ```tsx
 import { BlockDocument, type BlockDocumentData } from '@cassandragargoyle/react-components';
 

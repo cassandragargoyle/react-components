@@ -17,9 +17,13 @@ const root = dirname(fileURLToPath(import.meta.url));
 
 // Any bare specifier (react and every optional peer a component may pull in) is a
 // dependency the consumer installs — keep it external. Only this package's own
-// source, reached by relative import, gets inlined into the bundle
+// source, reached by relative import, gets inlined into the bundle. A peer's
+// stylesheet is the exception: it is inlined as text by cssAsString, because an
+// external `import 'pkg/x.css'` breaks every consumer that runs the package in
+// Node (Vitest, SSR), where a .css file cannot be imported
 function isExternal(id: string): boolean {
     if (id.startsWith('.') || id.startsWith('\0') || isAbsolute(id)) return false;
+    if (id.endsWith('.css')) return false;
     return true;
 }
 

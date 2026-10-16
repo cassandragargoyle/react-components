@@ -23,11 +23,26 @@ import {
     type NodeMouseHandler,
     type EdgeMouseHandler,
 } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
+import xyflowStyles from '@xyflow/react/dist/style.css';
 import { TaskNode } from './nodes/TaskNode';
 import { TriggerNode } from './nodes/TriggerNode';
 import { GatewayNode } from './nodes/GatewayNode';
 import { WorkflowNode, WorkflowEdge, SelectedElement } from './types';
+
+// React Flow's own stylesheet, injected like the component stylesheets: the published
+// package carries it as text, so no consumer has to load a .css file from node_modules.
+// Under the 'css' loader the import resolves to a non-string and is bundled instead
+if (
+    typeof document !== 'undefined' &&
+    typeof xyflowStyles === 'string' &&
+    xyflowStyles &&
+    !document.getElementById('xyflow-styles')
+) {
+    const styleEl = document.createElement('style');
+    styleEl.id = 'xyflow-styles';
+    styleEl.textContent = xyflowStyles;
+    document.head.appendChild(styleEl);
+}
 
 const nodeTypes = {
     task: TaskNode,
