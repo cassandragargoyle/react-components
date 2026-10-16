@@ -1,0 +1,364 @@
+/*
+ *  This file is part of CassandraGargoyle Community Project
+ *  Licensed under the MIT License - see LICENSE file for details
+ */
+
+/* Layout styles for the GraphLens 3D viewer */
+/* Follows GUI Design Principles: 4px grid, theme variables, monochrome chrome */
+
+.graphlens {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--vscode-editor-background, #1e1e1e);
+    color: var(--vscode-foreground, #cccccc);
+    font-family: var(--vscode-font-family, 'Segoe UI', sans-serif);
+    font-size: 13px;
+}
+
+.graphlens-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--vscode-descriptionForeground, #858585);
+}
+
+/* Header — document title from meta.title */
+
+.graphlens-header {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    min-height: 32px;
+    flex-shrink: 0;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--vscode-editorGroupHeader-tabsBackground, #252526);
+    border-bottom: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+}
+
+/* Main content — horizontal split: 3D viewport + detail panel */
+
+.graphlens-content {
+    display: flex;
+    flex-direction: row;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.graphlens-center {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+}
+
+.graphlens-viewport-wrap {
+    flex: 1 1 0;
+    min-height: 0;
+    position: relative;
+}
+
+.graphlens-viewport {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+}
+
+/* Left overlay toolbar — nav, search, filters, count, legend, stats */
+
+.graphlens-toolbar {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 230px;
+    max-width: 70%;
+}
+
+.graphlens-nav {
+    display: flex;
+    gap: 6px;
+}
+
+.graphlens-nav-btn {
+    background: var(--vscode-editorWidget-background, #252526);
+    color: var(--vscode-foreground, #cccccc);
+    border: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.graphlens-nav-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.graphlens-nav-btn:hover:not(:disabled) {
+    border-color: var(--vscode-focusBorder, #007fd4);
+}
+
+.graphlens-search {
+    width: 100%;
+    background: var(--vscode-input-background, #3c3c3c);
+    color: var(--vscode-input-foreground, #cccccc);
+    border: 1px solid var(--vscode-input-border, #3c3c3c);
+    border-radius: 4px;
+    padding: 6px 9px;
+    font-size: 13px;
+    outline: none;
+}
+
+.graphlens-search:focus {
+    border-color: var(--vscode-focusBorder, #007fd4);
+}
+
+.graphlens-search::placeholder {
+    color: var(--vscode-input-placeholderForeground, #858585);
+}
+
+.graphlens-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    padding: 8px 10px;
+    background: var(--vscode-editorWidget-background, #252526);
+    border: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--vscode-descriptionForeground, #858585);
+}
+
+.graphlens-filter {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.graphlens-swatch {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.graphlens-filter-count {
+    color: var(--vscode-descriptionForeground, #858585);
+    font-size: 11px;
+}
+
+.graphlens-legend,
+.graphlens-stats {
+    background: var(--vscode-editorWidget-background, #252526);
+    border: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 12px;
+}
+
+.graphlens-stats {
+    max-height: 38vh;
+    overflow-y: auto;
+}
+
+.graphlens-legend-title,
+.graphlens-stats-title {
+    color: var(--vscode-descriptionForeground, #858585);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 10px;
+    margin-bottom: 6px;
+}
+
+.graphlens-legend-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+    color: var(--vscode-foreground, #cccccc);
+}
+
+.graphlens-legend-row svg {
+    flex: none;
+}
+
+.graphlens-stat-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 2px 0;
+}
+
+.graphlens-stat-k {
+    color: var(--vscode-descriptionForeground, #858585);
+    text-transform: capitalize;
+}
+
+.graphlens-stat-v {
+    color: var(--vscode-foreground, #cccccc);
+    font-variant-numeric: tabular-nums;
+    word-break: break-word;
+    text-align: right;
+}
+
+/* Detail panel (right sidebar) */
+
+.graphlens-detail {
+    width: 280px;
+    flex: 0 0 280px;
+    height: 100%;
+    border-left: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    background: var(--vscode-sideBar-background, #252526);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.graphlens-detail-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 16px;
+    color: var(--vscode-descriptionForeground, #858585);
+    font-size: 12px;
+    text-align: center;
+}
+
+.graphlens-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    font-size: 13px;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.graphlens-detail-badge {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.graphlens-detail-section {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+}
+
+.graphlens-detail-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--vscode-descriptionForeground, #858585);
+    margin-bottom: 4px;
+}
+
+.graphlens-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    padding: 2px 0;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.graphlens-detail-key {
+    color: var(--vscode-descriptionForeground, #858585);
+    white-space: nowrap;
+    font-size: 11px;
+}
+
+.graphlens-detail-value {
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    color: var(--vscode-foreground, #cccccc);
+}
+
+.graphlens-detail-text {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--vscode-foreground, #cccccc);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.graphlens-detail-link {
+    cursor: pointer;
+}
+
+.graphlens-detail-link:hover {
+    color: var(--vscode-textLink-foreground, #75beff);
+}
+
+.graphlens-detail-connection {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 0;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.graphlens-detail-connection:hover {
+    color: var(--vscode-textLink-foreground, #75beff);
+}
+
+.graphlens-detail-connection-arrow {
+    color: var(--vscode-descriptionForeground, #858585);
+    font-size: 11px;
+}
+
+/* Resize handle between the 3D viewport and the node table */
+
+.graphlens-resize-handle {
+    height: 5px;
+    flex: 0 0 5px;
+    cursor: ns-resize;
+    background: var(--vscode-panelSection-border, #585858);
+    position: relative;
+    z-index: 10;
+}
+
+.graphlens-resize-handle::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+}
+
+.graphlens-resize-handle:hover,
+.graphlens-resize-handle:active {
+    background: var(--vscode-focusBorder, #007fd4);
+}
+
+.graphlens-node-table-kind {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
