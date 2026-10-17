@@ -36,28 +36,45 @@ npm install @cassandragargoyle/react-components
 
 No registry setup and no token: the package is public on npmjs.com. React 19 is a peer
 dependency. The heavy libraries are **optional** peers, needed only by the components that
-use them:
+use them.
 
-| Optional peer | Needed by |
-| ------------- | --------- |
-| `ag-grid-community`, `ag-grid-react` | `NodeTablePanel` and the three graph components that embed it |
-| `cytoscape`, `cytoscape-dagre` | `GraphCanvas` |
-| `3d-force-graph` | `GraphLens3D` |
-| `@xyflow/react` | `WorkflowCanvas` |
-| `monaco-editor` | `CodeEditor` (built by the host as a separate, lazy-loaded chunk) |
+### Entry Points
 
-The package ships as one ES module, so importing anything from it loads every peer in the
-table except `monaco-editor`. Install them all, or let your bundler drop the unused ones —
-the package is `"sideEffects": false`. Per-component entry points that make the peers truly
-optional are tracked in [INT-005](docs/issues/005-per-component-entry-points.md).
+Each component has its own entry point, and importing it loads only the peers that
+component needs. Under Vitest, in Node and in server-side rendering, where no bundler drops
+the unused peers, this is what makes them truly optional:
+
+| Subpath | Exports | Optional peers it loads |
+| ------- | ------- | ----------------------- |
+| `/avatar` | `Avatar` | — |
+| `/block-document` | `BlockDocument` and its functions | — |
+| `/carousel` | `Carousel` | — |
+| `/code-editor` | `CodeEditor` and its functions | — (the host builds `monaco-editor` as a separate, lazy-loaded chunk) |
+| `/graph-canvas` | `GraphCanvas` | `cytoscape`, `cytoscape-dagre`, `ag-grid-community`, `ag-grid-react` |
+| `/graph-lens-3d` | `GraphLens3D` | `3d-force-graph`, `ag-grid-community`, `ag-grid-react` |
+| `/node-table-panel` | `NodeTablePanel` | `ag-grid-community`, `ag-grid-react` |
+| `/open-panel` | `OpenPanel` and its helpers | — |
+| `/progress` | `ProgressPanel` | — |
+| `/radial-menu` | `RadialMenu`, `useRadialMenu` | — |
+| `/workflow-canvas` | `WorkflowCanvas` | `@xyflow/react`, `ag-grid-community`, `ag-grid-react` |
+
+The three graph components embed `NodeTablePanel`, hence AG Grid.
 
 ```tsx
-import { BlockDocument, type BlockDocumentData } from '@cassandragargoyle/react-components';
+import { BlockDocument, type BlockDocumentData } from '@cassandragargoyle/react-components/block-document';
 
 export function Manual({ doc }: { doc: BlockDocumentData }): React.ReactElement {
     return <BlockDocument document={doc} />;
 }
 ```
+
+The root entry `@cassandragargoyle/react-components` still exports everything, and so loads
+every optional peer above. It suits a bundled browser build, where the package is
+`"sideEffects": false` and the bundler drops what is not used.
+
+A host that embeds the sources instead of the published package, through a bundler alias to
+`src/index.ts`, maps the subpaths too: `@cassandragargoyle/react-components/<subpath>` to
+`src/<Component>/index.ts`.
 
 Stylesheets are bundled into the JavaScript and injected on first use; there is no CSS file
 to import.
@@ -87,7 +104,8 @@ cd react-components
 npm install
 npm run build
 npm test
-npm run dev        # the demo at http://127.0.0.1:5173/demo/
+npm run test:entries   # after a build: each entry point loads only its own peers
+npm run dev            # the demo at http://127.0.0.1:5173/demo/
 ```
 
 ## Project Structure
@@ -95,9 +113,10 @@ npm run dev        # the demo at http://127.0.0.1:5173/demo/
 ```text
 react-components/
 ├── src/                # Component sources, one directory per component
-│   └── index.ts        # Public entry point — every exported component
+│   └── index.ts        # Root entry point — every exported component
 ├── demo/               # The demo page served by npm run dev
-├── vite.config.ts      # Library build (ESM + .d.ts tree)
+├── scripts/            # check-entry-points.mjs, run by npm run test:entries
+├── vite.config.ts      # Library build: an entry per package.json export, plus the .d.ts tree
 ├── vitest.config.ts    # jsdom test environment
 └── .github/workflows/  # Publish to npmjs.com on a v* tag
 ```
