@@ -62,6 +62,9 @@ export type {
     GraphLensPhase,
 } from './GraphLens3D';
 
+export { MarkdownView, slugify } from './MarkdownView';
+export type { MarkdownViewProps } from './MarkdownView';
+
 export { NodeTablePanel } from './NodeTablePanel';
 export type { TableFilter, NodeTableRow } from './NodeTablePanel';
 

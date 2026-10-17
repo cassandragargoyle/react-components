@@ -1,0 +1,180 @@
+/*
+ *  This file is part of CassandraGargoyle Community Project
+ *  Licensed under the MIT License - see LICENSE file for details
+ */
+
+/* Markdown view: a read-only rendered document that scrolls inside its parent
+   Colours read the VS Code theme variables and fall back to a dark theme outside a webview */
+
+/* Scroll container and readable column */
+.markdown-view {
+    box-sizing: border-box;
+    height: 100%;
+    overflow: auto;
+    padding: 16px 24px;
+    color: var(--vscode-editor-foreground, #cccccc);
+    background: var(--vscode-editor-background, #1e1e1e);
+    font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.markdown-view *,
+.markdown-view *::before,
+.markdown-view *::after {
+    box-sizing: border-box;
+}
+
+.markdown-view-body {
+    max-width: 880px;
+    margin: 0 auto;
+    overflow-wrap: break-word;
+}
+
+.markdown-view-body > :first-child {
+    margin-top: 0;
+}
+
+/* Block spacing on the 8px grid */
+.markdown-view-body p,
+.markdown-view-body ul,
+.markdown-view-body ol,
+.markdown-view-body blockquote,
+.markdown-view-body pre,
+.markdown-view-body table {
+    margin: 0 0 16px 0;
+}
+
+/* Headings */
+.markdown-view-body h1,
+.markdown-view-body h2,
+.markdown-view-body h3,
+.markdown-view-body h4,
+.markdown-view-body h5,
+.markdown-view-body h6 {
+    margin: 24px 0 16px 0;
+    font-weight: 600;
+    line-height: 1.25;
+    scroll-margin-top: 16px;
+}
+
+.markdown-view-body h1,
+.markdown-view-body h2 {
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
+}
+
+.markdown-view-body h1 { font-size: 2em; }
+.markdown-view-body h2 { font-size: 1.5em; }
+.markdown-view-body h3 { font-size: 1.25em; }
+.markdown-view-body h4 { font-size: 1em; }
+.markdown-view-body h5 { font-size: 0.875em; }
+.markdown-view-body h6 { font-size: 0.85em; opacity: 0.8; }
+
+/* Links */
+.markdown-view-body a {
+    color: var(--vscode-textLink-foreground, #3794ff);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.markdown-view-body a:hover {
+    color: var(--vscode-textLink-activeForeground, #3794ff);
+    text-decoration: underline;
+}
+
+.markdown-view-body a:focus-visible {
+    outline: 1px solid var(--vscode-focusBorder, #007fd4);
+    outline-offset: 2px;
+}
+
+/* Lists, including GFM task lists */
+.markdown-view-body ul,
+.markdown-view-body ol {
+    padding-left: 32px;
+}
+
+.markdown-view-body li + li {
+    margin-top: 4px;
+}
+
+.markdown-view-body li > ul,
+.markdown-view-body li > ol {
+    margin-bottom: 0;
+}
+
+.markdown-view-body .contains-task-list {
+    padding-left: 8px;
+    list-style: none;
+}
+
+.markdown-view-body .task-list-item input {
+    margin: 0 8px 0 0;
+    vertical-align: middle;
+}
+
+/* Quotes and rules */
+.markdown-view-body blockquote {
+    padding: 0 16px;
+    border-left: 4px solid var(--vscode-textBlockQuote-border, rgba(128, 128, 128, 0.5));
+    color: var(--vscode-descriptionForeground, #a0a0a0);
+}
+
+.markdown-view-body hr {
+    height: 1px;
+    margin: 24px 0;
+    border: 0;
+    background: var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
+}
+
+/* Code */
+.markdown-view-body code {
+    font-family: var(--vscode-editor-font-family, Consolas, 'Courier New', monospace);
+    font-size: 0.9em;
+    padding: 2px 4px;
+    border-radius: 4px;
+    background: var(--vscode-textCodeBlock-background, rgba(128, 128, 128, 0.15));
+}
+
+.markdown-view-body pre {
+    padding: 16px;
+    overflow: auto;
+    border-radius: 4px;
+    background: var(--vscode-textCodeBlock-background, rgba(128, 128, 128, 0.15));
+    line-height: 1.45;
+}
+
+.markdown-view-body pre code {
+    padding: 0;
+    font-size: 0.9em;
+    background: transparent;
+    white-space: pre;
+}
+
+/* Tables */
+.markdown-view-body table {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    overflow: auto;
+    border-collapse: collapse;
+}
+
+.markdown-view-body th,
+.markdown-view-body td {
+    padding: 4px 12px;
+    border: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
+}
+
+.markdown-view-body th {
+    font-weight: 600;
+}
+
+.markdown-view-body tbody tr:nth-child(2n) {
+    background: var(--vscode-list-hoverBackground, rgba(128, 128, 128, 0.08));
+}
+
+/* Images never overflow the column */
+.markdown-view-body img {
+    max-width: 100%;
+}

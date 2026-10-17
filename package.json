@@ -1,6 +1,6 @@
 {
   "name": "@cassandragargoyle/react-components",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Reusable, extensible React components shared across the CassandraGargoyle ecosystem",
   "license": "MIT",
   "type": "module",
@@ -12,7 +12,8 @@
     "vscode-webview",
     "cassandragargoyle",
     "graph",
-    "code-editor"
+    "code-editor",
+    "markdown"
   ],
   "homepage": "https://github.com/cassandragargoyle/react-components#readme",
   "bugs": {
@@ -67,6 +68,10 @@
       "types": "./dist/GraphLens3D/index.d.ts",
       "import": "./dist/graph-lens-3d.js"
     },
+    "./markdown-view": {
+      "types": "./dist/MarkdownView/index.d.ts",
+      "import": "./dist/markdown-view.js"
+    },
     "./node-table-panel": {
       "types": "./dist/NodeTablePanel/index.d.ts",
       "import": "./dist/node-table-panel.js"
@@ -94,13 +99,13 @@
     "access": "public"
   },
   "devDependencies": {
-    "3d-force-graph": "^1.80.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@types/cytoscape": "^3.21.9",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@xyflow/react": "^12.11.2",
+    "3d-force-graph": "^1.80.0",
     "ag-grid-community": "^35.3.1",
     "ag-grid-react": "^35.3.1",
     "cytoscape": "^3.34.0",
@@ -109,6 +114,8 @@
     "monaco-editor": "^0.55.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "typescript": "^5.9.3",
     "vite": "^8.1.4",
     "vite-plugin-dts": "^5.0.3",
@@ -123,7 +130,9 @@
     "3d-force-graph": "^1.80.0",
     "cytoscape": "^3.34.0",
     "cytoscape-dagre": "^4.0.0",
-    "monaco-editor": "^0.55.0"
+    "monaco-editor": "^0.55.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
   "peerDependenciesMeta": {
     "ag-grid-community": {
@@ -145,6 +154,12 @@
       "optional": true
     },
     "monaco-editor": {
+      "optional": true
+    },
+    "react-markdown": {
+      "optional": true
+    },
+    "remark-gfm": {
       "optional": true
     }
   }

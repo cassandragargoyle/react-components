@@ -40,6 +40,8 @@ const EXPECTED = [
     'runPreflightCheck',
     'GraphCanvas',
     'GraphLens3D',
+    'MarkdownView',
+    'slugify',
     'NodeTablePanel',
     'OpenPanel',
     'shortenHomePath',

@@ -52,6 +52,7 @@ the unused peers, this is what makes them truly optional:
 | `/code-editor` | `CodeEditor` and its functions | — (the host builds `monaco-editor` as a separate, lazy-loaded chunk) |
 | `/graph-canvas` | `GraphCanvas` | `cytoscape`, `cytoscape-dagre`, `ag-grid-community`, `ag-grid-react` |
 | `/graph-lens-3d` | `GraphLens3D` | `3d-force-graph`, `ag-grid-community`, `ag-grid-react` |
+| `/markdown-view` | `MarkdownView`, `slugify` | `react-markdown`, `remark-gfm` |
 | `/node-table-panel` | `NodeTablePanel` | `ag-grid-community`, `ag-grid-react` |
 | `/open-panel` | `OpenPanel` and its helpers | — |
 | `/progress` | `ProgressPanel` | — |
@@ -89,6 +90,7 @@ to import.
 | [`CodeEditor`](https://github.com/cassandragargoyle/react-components/tree/main/src/CodeEditor) | A Monaco code editor, lazy-loaded on first use, with a plain-text fallback |
 | [`GraphCanvas`](https://github.com/cassandragargoyle/react-components/tree/main/src/GraphCanvas) | A 2D node-edge graph viewer and editor over Cytoscape, with a node table and property panel |
 | [`GraphLens3D`](https://github.com/cassandragargoyle/react-components/tree/main/src/GraphLens3D) | A 3D force-directed graph explorer with search, filters and a detail panel |
+| [`MarkdownView`](https://github.com/cassandragargoyle/react-components/tree/main/src/MarkdownView) | A read-only GitHub-flavoured Markdown document; links and image paths are resolved by the host |
 | [`NodeTablePanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/NodeTablePanel) | A bottom table panel over AG Grid with an All/Selected filter and selection sync |
 | [`OpenPanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/OpenPanel) | A launcher card: Open File / Open Folder and a filterable list of recent items |
 | [`ProgressPanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/Progress) | An async-progress panel: spinner, message, fields, a step checklist and errors |
