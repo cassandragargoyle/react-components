@@ -14,7 +14,7 @@ and bidirectionally synced with the viewport selection.
 ## Usage
 
 ```tsx
-import { GraphLens3D } from '@cassandragargoyle/react-components';
+import { GraphLens3D } from '@cassandragargoyle/react-components/graph-lens-3d';
 
 // Pure and prop-driven: the host loads the document and passes it in
 <GraphLens3D data={doc} status={loadStatus} />

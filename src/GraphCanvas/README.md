@@ -16,7 +16,7 @@ rationale (Cytoscape for generic graphs, React Flow for editable workflows).
 ## Usage
 
 ```tsx
-import { GraphCanvas } from '@cassandragargoyle/react-components';
+import { GraphCanvas } from '@cassandragargoyle/react-components/graph-canvas';
 
 // VS Code webview: the webview API is the port
 <GraphCanvas api={acquireVsCodeApi()} />
