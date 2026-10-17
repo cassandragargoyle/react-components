@@ -15,10 +15,11 @@ related:
 
 ## Metadata
 
-- **Status**: 📋 Open
+- **Status**: ✅ Implemented
 - **Type**: enhancement
 - **Priority**: medium
 - **Created**: 2026-10-17
+- **Closed**: 2026-10-17
 - **Version**: 0.3.2
 - **Author**: Zdenek
 - **Target**: `package.json` `exports`, `vite.config.ts`, `src/index.ts`
