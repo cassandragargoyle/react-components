@@ -101,39 +101,43 @@
   <!-- ============ Resize handle (5px) ============ -->
   <rect x="0" y="446" width="700" height="5" fill="#585858"/>
 
-  <!-- ============ Node table (ag-grid), bottom of center ============ -->
+  <!-- ============ Node table (NodeTablePanel, ag-grid), bottom of center ============ -->
   <rect x="0" y="451" width="700" height="149" fill="#1e1e1e"/>
-  <!-- table header row -->
+  <!-- panel header bar: collapse, All/Selected filter, row count -->
   <rect x="0" y="451" width="700" height="26" fill="#252526"/>
   <line x1="0" y1="477" x2="700" y2="477" stroke="#3c3c3c" stroke-width="1"/>
-  <text x="12" y="468" fill="#858585" font-size="11" font-weight="600">ID</text>
-  <text x="140" y="468" fill="#858585" font-size="11" font-weight="600">Label</text>
-  <text x="300" y="468" fill="#858585" font-size="11" font-weight="600">Type</text>
-  <text x="420" y="468" fill="#858585" font-size="11" font-weight="600">zone</text>
-  <line x1="128" y1="451" x2="128" y2="600" stroke="#2b2b2b" stroke-width="1"/>
-  <line x1="288" y1="451" x2="288" y2="600" stroke="#2b2b2b" stroke-width="1"/>
-  <line x1="408" y1="451" x2="408" y2="600" stroke="#2b2b2b" stroke-width="1"/>
+  <text x="10" y="471" font-size="17" fill="#cccccc">&#9662;</text>
+  <rect x="34" y="456" width="30" height="17" rx="2" fill="#0e639c"/>
+  <text x="41" y="468" font-size="10" fill="#ffffff">All</text>
+  <text x="74" y="468" font-size="10" fill="#858585">Selected</text>
+  <text x="690" y="468" font-size="10" fill="#858585" text-anchor="end">Showing: 5 of 5 nodes</text>
+  <!-- column header row -->
+  <rect x="0" y="477" width="700" height="26" fill="#2d2d2d"/>
+  <rect x="0" y="501" width="700" height="2" fill="#007fd4"/>
+  <text x="12" y="494" fill="#cccccc" font-size="9" font-weight="600" letter-spacing="0.5">ID</text>
+  <text x="140" y="494" fill="#cccccc" font-size="9" font-weight="600" letter-spacing="0.5">LABEL</text>
+  <text x="300" y="494" fill="#cccccc" font-size="9" font-weight="600" letter-spacing="0.5">TYPE</text>
+  <text x="420" y="494" fill="#cccccc" font-size="9" font-weight="600" letter-spacing="0.5">ZONE</text>
+  <line x1="128" y1="477" x2="128" y2="575" stroke="#2b2b2b" stroke-width="1"/>
+  <line x1="288" y1="477" x2="288" y2="575" stroke="#2b2b2b" stroke-width="1"/>
+  <line x1="408" y1="477" x2="408" y2="575" stroke="#2b2b2b" stroke-width="1"/>
   <!-- selected row (server-01) -->
-  <rect x="0" y="477" width="700" height="24" fill="#094771"/>
-  <text x="12" y="493" fill="#ffffff" font-size="12">server-01</text>
-  <text x="140" y="493" fill="#ffffff" font-size="12">Server 01</text>
-  <text x="300" y="493" fill="#ffffff" font-size="12">compute</text>
-  <text x="420" y="493" fill="#ffffff" font-size="12">eu-west-1</text>
-  <!-- other rows -->
-  <text x="12" y="517" fill="#cccccc" font-size="12">server-02</text>
-  <text x="140" y="517" fill="#cccccc" font-size="12">Server 02</text>
-  <text x="300" y="517" fill="#cccccc" font-size="12">compute</text>
-  <text x="420" y="517" fill="#cccccc" font-size="12">eu-west-1</text>
-  <line x1="0" y1="525" x2="700" y2="525" stroke="#2b2b2b" stroke-width="1"/>
-  <text x="12" y="541" fill="#cccccc" font-size="12">db-primary</text>
-  <text x="140" y="541" fill="#cccccc" font-size="12">DB Primary</text>
-  <text x="300" y="541" fill="#cccccc" font-size="12">database</text>
-  <text x="420" y="541" fill="#cccccc" font-size="12">eu-west-1</text>
-  <line x1="0" y1="549" x2="700" y2="549" stroke="#2b2b2b" stroke-width="1"/>
-  <text x="12" y="565" fill="#cccccc" font-size="12">gateway</text>
-  <text x="140" y="565" fill="#cccccc" font-size="12">Gateway</text>
-  <text x="300" y="565" fill="#cccccc" font-size="12">network</text>
-  <text x="420" y="565" fill="#cccccc" font-size="12">—</text>
+  <rect x="0" y="503" width="700" height="24" fill="#094771"/>
+  <text x="12" y="519" fill="#ffffff" font-size="12">server-01</text>
+  <text x="140" y="519" fill="#ffffff" font-size="12">Server 01</text>
+  <text x="300" y="519" fill="#ffffff" font-size="12">compute</text>
+  <text x="420" y="519" fill="#ffffff" font-size="12">eu-west-1</text>
+  <!-- other rows (the grid scrolls for the rest) -->
+  <text x="12" y="543" fill="#cccccc" font-size="12">server-02</text>
+  <text x="140" y="543" fill="#cccccc" font-size="12">Server 02</text>
+  <text x="300" y="543" fill="#cccccc" font-size="12">compute</text>
+  <text x="420" y="543" fill="#cccccc" font-size="12">eu-west-1</text>
+  <line x1="0" y1="551" x2="700" y2="551" stroke="#2b2b2b" stroke-width="1"/>
+  <text x="12" y="567" fill="#cccccc" font-size="12">db-primary</text>
+  <text x="140" y="567" fill="#cccccc" font-size="12">DB Primary</text>
+  <text x="300" y="567" fill="#cccccc" font-size="12">database</text>
+  <text x="420" y="567" fill="#cccccc" font-size="12">eu-west-1</text>
+  <line x1="0" y1="575" x2="700" y2="575" stroke="#2b2b2b" stroke-width="1"/>
 
   <!-- legend caption -->
   <text x="12" y="592" fill="#585858" font-size="10">◆ database  ⬡ network  ▢ compute  ● default   — selected = light-blue (#75beff)</text>

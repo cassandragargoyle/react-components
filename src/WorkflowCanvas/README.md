@@ -11,10 +11,12 @@ property panel — and supports undo/redo. It came from Pilot, the
 [ADR-006](https://github.com/cassandragargoyle/portunix-vscode/blob/main/docs/adr/006-react-flow-for-workflow-canvas.md)
 for why React Flow rather than Cytoscape.
 
+![WorkflowCanvas visual reference](./WorkflowCanvas.svg)
+
 ## Usage
 
 ```tsx
-import { WorkflowCanvas } from '@cassandragargoyle/react-components';
+import { WorkflowCanvas } from '@cassandragargoyle/react-components/workflow-canvas';
 
 // VS Code webview: the webview API is the port
 <WorkflowCanvas api={acquireVsCodeApi()} />
@@ -53,4 +55,5 @@ The contracts are `ExtensionToWebviewMessage` / `WebviewToExtensionMessage` in
 | `nodes/` | Custom node renderers per node type |
 | `WorkflowCanvas.css` | Three-panel layout, VS Code theme variables |
 | `types.ts` | `WorkflowDocument` shape, UI types and the message contracts |
+| `WorkflowCanvas.svg` | Visual reference (this README's image) |
 | `index.ts` | Public export |

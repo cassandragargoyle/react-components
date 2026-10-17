@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="680" viewBox="0 0 1100 680" font-family="'Segoe UI', system-ui, sans-serif">
+  <!-- WorkflowCanvas visual reference (VS Code dark theme), a task node selected -->
+  <!-- Mirrors WorkflowCanvas.css, the node renderers in nodes/ and WorkflowViewport.tsx -->
+  <defs>
+    <!-- React Flow Background: dots, gap 16, size 1 -->
+    <pattern id="dots" x="0" y="33" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="8" cy="8" r="0.8" fill="#404040"/>
+    </pattern>
+  </defs>
+
+  <!-- Root background (editor) -->
+  <rect x="0" y="0" width="1100" height="680" fill="#1e1e1e"/>
+
+  <!-- ============ Toolbar (32px) ============ -->
+  <rect x="0" y="0" width="1100" height="32" fill="#252526"/>
+  <line x1="0" y1="32.5" x2="1100" y2="32.5" stroke="#3c3c3c"/>
+  <g fill="#cccccc" font-size="13" text-anchor="middle">
+    <text x="20" y="21">⤢</text>
+    <text x="48" y="21">+</text>
+    <text x="74" y="21">−</text>
+  </g>
+  <line x1="94" y1="8" x2="94" y2="24" stroke="#3c3c3c"/>
+  <!-- undo available, redo disabled -->
+  <text x="116" y="21" fill="#cccccc" font-size="13" text-anchor="middle">↶</text>
+  <text x="144" y="21" fill="#cccccc" font-size="13" text-anchor="middle" opacity="0.4">↷</text>
+  <line x1="164" y1="8" x2="164" y2="24" stroke="#3c3c3c"/>
+  <!-- find -->
+  <rect x="176" y="6" width="140" height="20" rx="2" fill="#3c3c3c"/>
+  <text x="181" y="20" fill="#858585" font-size="12">Find node...</text>
+  <text x="1092" y="20" fill="#858585" font-size="11" text-anchor="end">6 nodes, 5 edges</text>
+
+  <!-- ============ React Flow viewport ============ -->
+  <rect x="0" y="33" width="840" height="462" fill="url(#dots)"/>
+
+  <!-- Edges: default (bezier), #cccccc at 50 %, no arrow markers -->
+  <g stroke="#cccccc" stroke-opacity="0.5" stroke-width="1" fill="none">
+    <path d="M330,99 C330,120 330,120 330,141"/>
+    <path d="M330,189 C330,215 330,220 330,245"/>
+    <path d="M370,285 C440,285 520,215 520,259"/>
+    <path d="M290,285 C220,285 140,215 140,259"/>
+    <path d="M520,311 C520,340 520,345 520,371"/>
+  </g>
+  <!-- Edge labels (11px) -->
+  <rect x="440" y="246" width="30" height="16" rx="2" fill="#1e1e1e"/>
+  <text x="455" y="258" fill="#cccccc" font-size="11" text-anchor="middle">pass</text>
+  <rect x="198" y="246" width="26" height="16" rx="2" fill="#1e1e1e"/>
+  <text x="211" y="258" fill="#cccccc" font-size="11" text-anchor="middle">fail</text>
+
+  <!-- Trigger node: green border, play icon, output handle only -->
+  <rect x="261" y="51" width="138" height="48" rx="6" fill="#1e1e1e" stroke="#4ae699" stroke-width="2"/>
+  <text x="330" y="70" fill="#4ae699" fill-opacity="0.7" font-size="12" text-anchor="middle">▶</text>
+  <text x="330" y="88" fill="#cccccc" font-size="12" text-anchor="middle">Push to main</text>
+
+  <!-- Task node: blue border, square icon, input + output handles -->
+  <rect x="265" y="141" width="130" height="48" rx="6" fill="#1e1e1e" stroke="#4a9eff" stroke-width="2"/>
+  <text x="330" y="160" fill="#cccccc" fill-opacity="0.7" font-size="12" text-anchor="middle">■</text>
+  <text x="330" y="178" fill="#cccccc" font-size="12" text-anchor="middle">Run tests</text>
+
+  <!-- Gateway node: 80px diamond, handles on the unrotated box (top, left, right, bottom) -->
+  <rect x="290" y="245" width="80" height="80" fill="#1e1e1e" stroke="#e6994a" stroke-width="2" transform="rotate(45 330 285)"/>
+  <text x="330" y="289" fill="#cccccc" font-size="11" text-anchor="middle">Tests pass?</text>
+
+  <!-- Task node: Notify team (fail branch) -->
+  <rect x="75" y="259" width="130" height="48" rx="6" fill="#1e1e1e" stroke="#4a9eff" stroke-width="2"/>
+  <text x="140" y="278" fill="#cccccc" fill-opacity="0.7" font-size="12" text-anchor="middle">■</text>
+  <text x="140" y="296" fill="#cccccc" font-size="12" text-anchor="middle">Notify team</text>
+
+  <!-- Task node, selected: focus border + 2px glow -->
+  <rect x="448" y="257" width="144" height="52" rx="8" fill="none" stroke="#007fd4" stroke-opacity="0.3" stroke-width="4"/>
+  <rect x="450" y="259" width="140" height="48" rx="6" fill="#1e1e1e" stroke="#007fd4" stroke-width="2"/>
+  <text x="520" y="278" fill="#cccccc" fill-opacity="0.7" font-size="12" text-anchor="middle">■</text>
+  <text x="520" y="296" fill="#cccccc" font-size="12" text-anchor="middle">Deploy to staging</text>
+
+  <!-- Task node: Smoke test -->
+  <rect x="455" y="371" width="130" height="48" rx="6" fill="#1e1e1e" stroke="#4a9eff" stroke-width="2"/>
+  <text x="520" y="390" fill="#cccccc" fill-opacity="0.7" font-size="12" text-anchor="middle">■</text>
+  <text x="520" y="408" fill="#cccccc" font-size="12" text-anchor="middle">Smoke test</text>
+
+  <!-- Handles: 8px dot, 2px editor-colored ring -->
+  <g fill="#3c3c3c" stroke="#1e1e1e" stroke-width="2">
+    <circle cx="330" cy="99" r="5"/>
+    <circle cx="330" cy="141" r="5"/><circle cx="330" cy="189" r="5"/>
+    <circle cx="330" cy="245" r="5"/><circle cx="290" cy="285" r="5"/><circle cx="370" cy="285" r="5"/><circle cx="330" cy="325" r="5"/>
+    <circle cx="140" cy="259" r="5"/><circle cx="140" cy="307" r="5"/>
+    <circle cx="520" cy="259" r="5"/><circle cx="520" cy="307" r="5"/>
+    <circle cx="520" cy="371" r="5"/><circle cx="520" cy="419" r="5"/>
+  </g>
+
+  <!-- MiniMap (bottom right): node silhouettes, mask outside the visible area -->
+  <rect x="625" y="330" width="200" height="150" rx="3" fill="#1e1e1e" stroke="#3c3c3c"/>
+  <g fill="#cccccc">
+    <rect x="707" y="358" width="27" height="9" rx="1"/>
+    <rect x="708" y="375" width="25" height="9" rx="1"/>
+    <rect x="714" y="393" width="13" height="13" rx="1"/>
+    <rect x="671" y="397" width="25" height="9" rx="1"/>
+    <rect x="744" y="397" width="27" height="9" rx="1"/>
+    <rect x="745" y="418" width="25" height="9" rx="1"/>
+  </g>
+  <path d="M626,331 H824 V479 H626 Z M664,349 V438 H786 V349 Z" fill="#000000" fill-opacity="0.6" fill-rule="evenodd"/>
+
+  <!-- ============ Splitter (5px) ============ -->
+  <rect x="0" y="495" width="840" height="5" fill="#585858"/>
+
+  <!-- ============ Node table (NodeTablePanel, multiple selection) ============ -->
+  <rect x="0" y="500" width="840" height="180" fill="#1e1e1e"/>
+  <rect x="0" y="500" width="840" height="26" fill="#252526"/>
+  <line x1="0" y1="526" x2="840" y2="526" stroke="#3c3c3c"/>
+  <text x="10" y="520" font-size="17" fill="#cccccc">▾</text>
+  <rect x="34" y="505" width="30" height="17" rx="2" fill="#0e639c"/>
+  <text x="41" y="517" font-size="10" fill="#ffffff">All</text>
+  <text x="74" y="517" font-size="10" fill="#858585">Selected</text>
+  <text x="830" y="517" font-size="10" fill="#858585" text-anchor="end">Showing: 6 of 6 nodes</text>
+  <!-- column header: ID, Label, Type, then the property keys -->
+  <rect x="0" y="526" width="840" height="26" fill="#2d2d2d"/>
+  <rect x="0" y="550" width="840" height="2" fill="#007fd4"/>
+  <g font-size="9" font-weight="600" letter-spacing="0.5" fill="#cccccc">
+    <text x="12" y="543">ID</text>
+    <text x="132" y="543">LABEL</text>
+    <text x="282" y="543">TYPE</text>
+    <text x="382" y="543">ENVIRONMENT</text>
+    <text x="502" y="543">TIMEOUT</text>
+  </g>
+  <g font-size="12" fill="#cccccc">
+    <text x="12" y="568">push</text><text x="132" y="568">Push to main</text><text x="282" y="568">trigger</text>
+    <line x1="0" y1="576" x2="840" y2="576" stroke="#2b2b2b"/>
+    <text x="12" y="592">tests</text><text x="132" y="592">Run tests</text><text x="282" y="592">task</text><text x="502" y="592">300</text>
+    <line x1="0" y1="600" x2="840" y2="600" stroke="#2b2b2b"/>
+    <text x="12" y="616">gate</text><text x="132" y="616">Tests pass?</text><text x="282" y="616">gateway</text>
+    <!-- selected row -->
+    <rect x="0" y="624" width="840" height="24" fill="#094771"/>
+    <g fill="#ffffff">
+      <text x="12" y="640">deploy</text><text x="132" y="640">Deploy to staging</text><text x="282" y="640">task</text><text x="382" y="640">staging</text><text x="502" y="640">600</text>
+    </g>
+    <text x="12" y="664">notify</text><text x="132" y="664">Notify team</text><text x="282" y="664">task</text>
+    <line x1="0" y1="672" x2="840" y2="672" stroke="#2b2b2b"/>
+  </g>
+
+  <!-- ============ Property panel (right, 260px) ============ -->
+  <rect x="840" y="33" width="260" height="647" fill="#252526"/>
+  <line x1="840.5" y1="33" x2="840.5" y2="680" stroke="#3c3c3c"/>
+  <!-- header: type dot + node label -->
+  <circle cx="856" cy="51" r="4" fill="#4a9eff"/>
+  <text x="868" y="55" fill="#cccccc" font-size="13" font-weight="600">Node: Deploy to staging</text>
+  <line x1="840" y1="69" x2="1100" y2="69" stroke="#3c3c3c"/>
+  <g font-size="12">
+    <text x="852" y="89" fill="#858585" font-size="11">ID</text><text x="1088" y="89" fill="#cccccc" text-anchor="end">deploy</text>
+    <text x="852" y="107" fill="#858585" font-size="11">Type</text><text x="1088" y="107" fill="#cccccc" text-anchor="end">task</text>
+    <text x="852" y="125" fill="#858585" font-size="11">Label</text><text x="1088" y="125" fill="#cccccc" text-anchor="end">Deploy to staging</text>
+    <text x="852" y="143" fill="#858585" font-size="11">Position</text><text x="1088" y="143" fill="#cccccc" text-anchor="end">440, 240</text>
+  </g>
+  <line x1="840" y1="155" x2="1100" y2="155" stroke="#3c3c3c"/>
+  <!-- properties -->
+  <text x="852" y="175" fill="#858585" font-size="11" font-weight="600" letter-spacing="0.5">PROPERTIES</text>
+  <g font-size="12">
+    <text x="852" y="195" fill="#858585" font-size="11">environment</text><text x="1088" y="195" fill="#cccccc" text-anchor="end">staging</text>
+    <text x="852" y="213" fill="#858585" font-size="11">timeout</text><text x="1088" y="213" fill="#cccccc" text-anchor="end">600</text>
+  </g>
+  <line x1="840" y1="225" x2="1100" y2="225" stroke="#3c3c3c"/>
+  <!-- connections: outgoing, then incoming with the edge label -->
+  <text x="852" y="245" fill="#858585" font-size="11" font-weight="600" letter-spacing="0.5">CONNECTIONS</text>
+  <g font-size="12" fill="#cccccc">
+    <text x="852" y="265"><tspan fill="#858585" font-size="11">→</tspan> Smoke test</text>
+    <text x="852" y="284"><tspan fill="#858585" font-size="11">←</tspan> Tests pass? <tspan fill="#858585" font-size="11">(pass)</tspan></text>
+  </g>
+  <line x1="840" y1="296" x2="1100" y2="296" stroke="#3c3c3c"/>
+</svg>

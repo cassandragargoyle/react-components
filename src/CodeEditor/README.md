@@ -10,7 +10,7 @@ and the file preview pane use it.
 ## Usage
 
 ```tsx
-import { CodeEditor } from '@cassandragargoyle/react-components';
+import { CodeEditor } from '@cassandragargoyle/react-components/code-editor';
 
 // Read-only display (e.g. a chat code block) — grows to fit its content
 <CodeEditor value={code} language="python" readOnly maxHeight={400} />
@@ -137,7 +137,7 @@ service — rather than throwing synchronously.
 ## Host configuration
 
 ```ts
-import { configureCodeEditor } from '@cassandragargoyle/react-components';
+import { configureCodeEditor } from '@cassandragargoyle/react-components/code-editor';
 
 configureCodeEditor({
     // Where code-editor.js, code-editor.css and workers/ are served; default './code-editor'

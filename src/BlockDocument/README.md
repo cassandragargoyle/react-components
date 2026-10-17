@@ -13,7 +13,7 @@ is proposed to it whole through `onChange`. Specified in
 
 ```tsx
 import { useState } from 'react';
-import { BlockDocument, validateBlockDocument, type BlockDocumentData } from '@cassandragargoyle/react-components';
+import { BlockDocument, validateBlockDocument, type BlockDocumentData } from '@cassandragargoyle/react-components/block-document';
 
 export function HouseManual({ json }: { json: unknown }): React.ReactElement {
     const checked = validateBlockDocument(json);
@@ -184,7 +184,7 @@ A text with a variable part is a function, because word order differs between la
 from a built-in dictionary so the type check tells you what is left:
 
 ```tsx
-import { blockDocumentMessages, type BlockDocumentMessages } from '@cassandragargoyle/react-components';
+import { blockDocumentMessages, type BlockDocumentMessages } from '@cassandragargoyle/react-components/block-document';
 
 const de: BlockDocumentMessages = { ...blockDocumentMessages.en, delete: 'Löschen', /* … */ };
 
@@ -218,7 +218,7 @@ history of documents it was given.
 The edits are exported as pure functions, for a host that changes a document itself:
 
 ```ts
-import { insertBlock, moveBlock, removeBlock, updateBlock, canMoveBlock } from '@cassandragargoyle/react-components';
+import { insertBlock, moveBlock, removeBlock, updateBlock, canMoveBlock } from '@cassandragargoyle/react-components/block-document';
 
 const next = moveBlock(doc, 'p1', { parentId: 'plans', index: 0 }); // index counted after taking p1 out
 ```

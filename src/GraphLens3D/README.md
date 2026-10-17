@@ -5,6 +5,8 @@ Reusable React/TypeScript component that renders the **graphlens** contract
 [`3d-force-graph`](https://github.com/vasturiano/3d-force-graph) (Three.js +
 d3-force-3d). It is the 3D counterpart to the 2D Cytoscape `GraphCanvas`.
 
+![GraphLens3D visual reference](./GraphLens3D.svg)
+
 Below the 3D viewport, a resizable `GraphLensNodeTable` (AG Grid) lists the
 nodes of the currently loaded document — sortable, filterable by All/Selected,
 and bidirectionally synced with the viewport selection.

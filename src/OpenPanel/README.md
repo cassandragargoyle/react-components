@@ -14,7 +14,7 @@ thin wrapper binds it to the Electron preload bridge.
 ## Usage
 
 ```tsx
-import { OpenPanel, type OpenPanelRecentItem } from '@cassandragargoyle/react-components';
+import { OpenPanel, type OpenPanelRecentItem } from '@cassandragargoyle/react-components/open-panel';
 
 function StartScreen({ host }: { host: MyHost }): React.ReactElement {
     const [items, setItems] = useState<OpenPanelRecentItem[] | null>(null);

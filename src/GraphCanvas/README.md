@@ -11,6 +11,8 @@ issue [030](https://github.com/cassandragargoyle/portunix-vscode/blob/main/docs/
 ADR [006](https://github.com/cassandragargoyle/portunix-vscode/blob/main/docs/adr/006-react-flow-for-workflow-canvas.md) for the design
 rationale (Cytoscape for generic graphs, React Flow for editable workflows).
 
+![GraphCanvas visual reference](./GraphCanvas.svg)
+
 ## Usage
 
 ```tsx
@@ -178,10 +180,7 @@ Layout algorithms (from [`GraphToolbar`](./GraphToolbar.tsx)): `dagre`
 ## 6. Visual Appearance
 
 A to-scale mockup of the rendered component (VS Code dark theme) lives in
-[`visual-appearance.svg`](./visual-appearance.svg):
-
-![Graph Canvas appearance](./visual-appearance.svg)
-
+[`GraphCanvas.svg`](./GraphCanvas.svg), the image at the top of this README.
 It shows the three panels together with the node shapes and colors per `type`:
 
 | `type` | Shape | Fill | Border |
