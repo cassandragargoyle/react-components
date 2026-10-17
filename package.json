@@ -1,6 +1,6 @@
 {
   "name": "@cassandragargoyle/react-components",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Reusable, extensible React components shared across the CassandraGargoyle ecosystem",
   "license": "MIT",
   "type": "module",
@@ -35,12 +35,57 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run build"
+    "test:entries": "node scripts/check-entry-points.mjs",
+    "prepublishOnly": "npm run build && npm run test:entries"
   },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./avatar": {
+      "types": "./dist/Avatar/index.d.ts",
+      "import": "./dist/avatar.js"
+    },
+    "./block-document": {
+      "types": "./dist/BlockDocument/index.d.ts",
+      "import": "./dist/block-document.js"
+    },
+    "./carousel": {
+      "types": "./dist/Carousel/index.d.ts",
+      "import": "./dist/carousel.js"
+    },
+    "./code-editor": {
+      "types": "./dist/CodeEditor/index.d.ts",
+      "import": "./dist/code-editor.js"
+    },
+    "./graph-canvas": {
+      "types": "./dist/GraphCanvas/index.d.ts",
+      "import": "./dist/graph-canvas.js"
+    },
+    "./graph-lens-3d": {
+      "types": "./dist/GraphLens3D/index.d.ts",
+      "import": "./dist/graph-lens-3d.js"
+    },
+    "./node-table-panel": {
+      "types": "./dist/NodeTablePanel/index.d.ts",
+      "import": "./dist/node-table-panel.js"
+    },
+    "./open-panel": {
+      "types": "./dist/OpenPanel/index.d.ts",
+      "import": "./dist/open-panel.js"
+    },
+    "./progress": {
+      "types": "./dist/Progress/index.d.ts",
+      "import": "./dist/progress.js"
+    },
+    "./radial-menu": {
+      "types": "./dist/RadialMenu/index.d.ts",
+      "import": "./dist/radial-menu.js"
+    },
+    "./workflow-canvas": {
+      "types": "./dist/WorkflowCanvas/index.d.ts",
+      "import": "./dist/workflow-canvas.js"
     },
     "./package.json": "./package.json"
   },

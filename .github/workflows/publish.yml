@@ -50,6 +50,10 @@ jobs:
       - name: Test
         run: npm test
 
+      # Each entry point may load only its own optional peers (INT-005)
+      - name: Build and check entry points
+        run: npm run build && npm run test:entries
+
       - name: Read package version
         id: pkg
         run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
