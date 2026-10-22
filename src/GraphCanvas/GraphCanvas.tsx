@@ -47,6 +47,12 @@ export interface GraphCanvasProps {
     api: GraphCanvasPort;
 }
 
+/** Whether a key event comes from a text field, where Ctrl+A keeps its usual meaning */
+function isTextEntry(target: EventTarget | null): boolean {
+    return target instanceof HTMLElement
+        && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+}
+
 export function GraphCanvas({ api }: GraphCanvasProps): JSX.Element {
     const viewportRef = useRef<GraphViewportHandle>(null);
     // First port wins, like the previous one-time acquisition; a new prop does not rewire listeners
@@ -97,7 +103,8 @@ export function GraphCanvas({ api }: GraphCanvasProps): JSX.Element {
         return () => window.removeEventListener('message', handler);
     }, []);
 
-    // Find handler — auto-select and pan to matching node
+    // Find handler — auto-select and pan to matching node; only a new query pans,
+    // so dragging a node while a query is typed does not jump back to the match
     useEffect(() => {
         if (!findQuery || !graphData || !viewportRef.current) return;
         const query = findQuery.toLowerCase();
@@ -107,7 +114,7 @@ export function GraphCanvas({ api }: GraphCanvasProps): JSX.Element {
         if (match) {
             viewportRef.current.selectAndPanTo(match.id);
         }
-    }, [findQuery, graphData]);
+    }, [findQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Keyboard shortcuts
     useEffect(() => {
@@ -120,6 +127,11 @@ export function GraphCanvas({ api }: GraphCanvasProps): JSX.Element {
             if (e.key === 'Escape') {
                 setFindQuery('');
                 setSelectedElements([]);
+                viewportRef.current?.clearSelection();
+            }
+            if (e.key === 'a' && (e.ctrlKey || e.metaKey) && !isTextEntry(e.target)) {
+                e.preventDefault();
+                viewportRef.current?.selectAllNodes();
             }
             if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault();
@@ -139,15 +151,19 @@ export function GraphCanvas({ api }: GraphCanvasProps): JSX.Element {
         });
     }, []);
 
-    // Node drag repositioning
+    // Node drag repositioning — records every node's position, so the whole arrangement
+    // is restored on reopen instead of the layout algorithm running over it
     const handleNodeDragEnd = useCallback((nodeId: string, x: number, y: number) => {
+        const positions = viewportRef.current?.getNodePositions() ?? new Map<string, { x: number; y: number }>();
+        positions.set(nodeId, { x: Math.round(x), y: Math.round(y) });
         setGraphData((prev) => {
             if (!prev) return prev;
             const updated = {
                 ...prev,
-                nodes: prev.nodes.map((n) =>
-                    n.id === nodeId ? { ...n, position: { x: Math.round(x), y: Math.round(y) } } : n
-                ),
+                nodes: prev.nodes.map((n) => {
+                    const pos = positions.get(n.id);
+                    return pos ? { ...n, position: pos } : n;
+                }),
             };
             port.postMessage({ type: 'graphDataChanged', data: updated });
             return updated;
@@ -157,13 +173,8 @@ export function GraphCanvas({ api }: GraphCanvasProps): JSX.Element {
     // Table node click — select and pan in graph
     const handleTableNodeClick = useCallback((nodeId: string, ctrlKey: boolean) => {
         if (ctrlKey) {
-            setSelectedElements((prev) => {
-                const exists = prev.find((e) => e.id === nodeId && e.type === 'node');
-                if (exists) {
-                    return prev.filter((e) => !(e.id === nodeId && e.type === 'node'));
-                }
-                return [...prev, { type: 'node', id: nodeId }];
-            });
+            // Toggle in the graph; its selection events update the state and the table
+            viewportRef.current?.toggleSelect(nodeId);
         } else {
             viewportRef.current?.selectAndPanTo(nodeId);
         }

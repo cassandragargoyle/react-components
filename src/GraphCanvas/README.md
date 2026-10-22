@@ -177,34 +177,58 @@ Layout algorithms (from [`GraphToolbar`](./GraphToolbar.tsx)): `dagre`
 `grid`. Options mapped in `layoutOptions()` in
 [`GraphViewport.tsx`](./GraphViewport.tsx).
 
-## 6. Visual Appearance
+**Stored positions win.** When every node of a loaded document has a
+`position`, the viewport uses the Cytoscape `preset` layout and keeps them; the
+chosen algorithm runs only when the user picks one in the toolbar. Dragging a
+node records the position of every node, so a saved file reopens exactly as it
+was left.
+
+## 6. Keyboard
+
+| Key | Action |
+| --- | --- |
+| Ctrl/Cmd+F | Focus the find input |
+| Ctrl/Cmd+A | Select all nodes (not inside a text field) |
+| Escape | Clear the find query and the selection |
+| Ctrl/Cmd+S | Post `requestSave` with the current positions |
+
+## 7. Visual Appearance
 
 A to-scale mockup of the rendered component (VS Code dark theme) lives in
 [`GraphCanvas.svg`](./GraphCanvas.svg), the image at the top of this README.
 It shows the three panels together with the node shapes and colors per `type`:
 
-| `type` | Shape | Fill | Border |
-|--------|-------|------|--------|
-| `compute` | round-rectangle | `#4a9eff` | `#3a7ecc` |
-| `database` | diamond | `#e6994a` | `#cc8833` |
-| `network` | hexagon | `#4ae699` | `#33cc77` |
-| _(none)_ | ellipse | `#4a9eff` | `#3a7ecc` |
-| _selected_ | grows to 48px | + `#75beff` border, 15% overlay | |
+Colors come from the VS Code theme variables when the host defines them
+(see [`graphTheme.ts`](./graphTheme.ts)); the fallback in brackets is used
+anywhere else, for example in the Electron viewer. The stylesheet is rebuilt
+when the theme changes.
 
-Edges are `#555555` bezier curves with a target triangle arrow;
-`type = "dashed"` renders a dashed line, and selection recolors to `#75beff`.
+| `type` | Shape | Fill and border |
+| --- | --- | --- |
+| `compute` | round-rectangle | `--vscode-charts-blue` (`#4a9eff`) |
+| `database` | diamond | `--vscode-charts-orange` (`#e6994a`) |
+| `network` | hexagon | `--vscode-charts-green` (`#4ae699`) |
+| _(none)_ | ellipse | `--vscode-charts-blue` (`#4a9eff`) |
+| _selected_ | grows to 48px | `--vscode-focusBorder` (`#75beff`) border, 15% overlay |
+| _hover_ | unchanged | `--vscode-focusBorder` glow (underlay) |
+
+Edges are bezier curves in `--vscode-editorWidget-border` (`#555555`) with a
+target triangle arrow and labels in `--vscode-descriptionForeground`
+(`#858585`); `type = "dashed"` renders a dashed line, and selection recolors to
+the focus color. Label outlines use `--vscode-editor-background` (`#1e1e1e`).
 
 The SVG mirrors `buildStylesheet()` in
-[`GraphViewport.tsx`](./GraphViewport.tsx) and the layout rules in
-[`GraphCanvas.css`](./GraphCanvas.css). If you change the stylesheet, update
-the SVG to match.
+[`GraphViewport.tsx`](./GraphViewport.tsx) with the fallback palette and the
+layout rules in [`GraphCanvas.css`](./GraphCanvas.css). If you change the
+stylesheet, update the SVG to match.
 
-## 7. File Map
+## 8. File Map
 
 | File | Role |
-|------|------|
+| --- | --- |
 | `GraphCanvas.tsx` | Top-level state + three-panel orchestration |
 | `GraphViewport.tsx` | Cytoscape.js wrapper (render, zoom, pan, drag, layout) |
+| `graphTheme.ts` | Palette from VS Code theme variables, with fallbacks |
 | `GraphToolbar.tsx` | Zoom/fit controls, layout selector, find, counts |
 | `GraphNodeTable.tsx` | Maps nodes → rows/columns for shared `NodeTablePanel` |
 | `GraphPropertyPanel.tsx` | Property + connections view for selection |

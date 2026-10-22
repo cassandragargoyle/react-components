@@ -30,7 +30,7 @@ export interface GraphNode {
     label?: string;
     /** Node type for visual styling */
     type?: string;
-    /** Position hint (optional, layout algorithm overrides) */
+    /** Stored position; when every node has one the layout is skipped and they are kept */
     position?: { x: number; y: number };
     /** Arbitrary properties shown in property panel and table */
     properties?: Record<string, unknown>;

@@ -10,6 +10,7 @@ import React, { useRef, useEffect, useCallback, useImperativeHandle, forwardRef 
 import cytoscape, { Core, EventObject, NodeSingular } from 'cytoscape';
 import cytoscapeDagre from 'cytoscape-dagre';
 import { GraphNode, GraphEdge, LayoutAlgorithm, SelectedElement } from './types';
+import { GraphPalette, resolveGraphPalette } from './graphTheme';
 
 // Register dagre layout extension
 cytoscape.use(cytoscapeDagre);
@@ -19,6 +20,10 @@ export interface GraphViewportHandle {
     zoomIn: () => void;
     zoomOut: () => void;
     selectAndPanTo: (nodeId: string) => void;
+    /** Add the node to the selection, or remove it when already selected */
+    toggleSelect: (nodeId: string) => void;
+    selectAllNodes: () => void;
+    clearSelection: () => void;
     applyLayout: (algorithm: LayoutAlgorithm) => void;
     getNodePositions: () => Map<string, { x: number; y: number }>;
 }
@@ -31,8 +36,8 @@ interface GraphViewportProps {
     onNodeDragEnd: (nodeId: string, x: number, y: number) => void;
 }
 
-/** Build Cytoscape stylesheet using VS Code theme-compatible colors */
-function buildStylesheet(): cytoscape.StylesheetJsonBlock[] {
+/** Build the Cytoscape stylesheet from the resolved theme palette */
+function buildStylesheet(palette: GraphPalette): cytoscape.StylesheetJsonBlock[] {
     return [
         {
             selector: 'node',
@@ -40,16 +45,16 @@ function buildStylesheet(): cytoscape.StylesheetJsonBlock[] {
                 'label': 'data(label)',
                 'text-valign': 'center',
                 'text-halign': 'center',
-                'background-color': '#4a9eff',
-                'color': '#ffffff',
+                'background-color': palette.nodePrimary,
+                'color': palette.nodeText,
                 'font-size': '11px',
                 'text-wrap': 'ellipsis',
                 'text-max-width': '80px',
                 'width': 40,
                 'height': 40,
                 'border-width': 2,
-                'border-color': '#3a7ecc',
-                'text-outline-color': '#1e1e1e',
+                'border-color': palette.nodePrimary,
+                'text-outline-color': palette.background,
                 'text-outline-width': 1,
             },
         },
@@ -57,34 +62,43 @@ function buildStylesheet(): cytoscape.StylesheetJsonBlock[] {
             selector: 'node[type = "database"]',
             style: {
                 'shape': 'diamond',
-                'background-color': '#e6994a',
-                'border-color': '#cc8833',
+                'background-color': palette.nodeDatabase,
+                'border-color': palette.nodeDatabase,
             },
         },
         {
             selector: 'node[type = "network"]',
             style: {
                 'shape': 'hexagon',
-                'background-color': '#4ae699',
-                'border-color': '#33cc77',
+                'background-color': palette.nodeNetwork,
+                'border-color': palette.nodeNetwork,
             },
         },
         {
             selector: 'node[type = "compute"]',
             style: {
                 'shape': 'round-rectangle',
-                'background-color': '#4a9eff',
-                'border-color': '#3a7ecc',
+                'background-color': palette.nodePrimary,
+                'border-color': palette.nodePrimary,
+            },
+        },
+        {
+            // Soft glow behind the element under the pointer
+            selector: '.hover',
+            style: {
+                'underlay-color': palette.accent,
+                'underlay-opacity': 0.25,
+                'underlay-padding': 6,
             },
         },
         {
             selector: 'node:selected',
             style: {
                 'border-width': 3,
-                'border-color': '#75beff',
+                'border-color': palette.accent,
                 'width': 48,
                 'height': 48,
-                'overlay-color': '#75beff',
+                'overlay-color': palette.accent,
                 'overlay-opacity': 0.15,
             },
         },
@@ -92,15 +106,15 @@ function buildStylesheet(): cytoscape.StylesheetJsonBlock[] {
             selector: 'edge',
             style: {
                 'width': 2,
-                'line-color': '#555555',
-                'target-arrow-color': '#555555',
+                'line-color': palette.edgeLine,
+                'target-arrow-color': palette.edgeLine,
                 'target-arrow-shape': 'triangle',
                 'curve-style': 'bezier',
                 'label': 'data(label)',
                 'font-size': '10px',
-                'color': '#858585',
+                'color': palette.edgeText,
                 'text-rotation': 'autorotate',
-                'text-outline-color': '#1e1e1e',
+                'text-outline-color': palette.background,
                 'text-outline-width': 1,
             },
         },
@@ -114,9 +128,9 @@ function buildStylesheet(): cytoscape.StylesheetJsonBlock[] {
             selector: 'edge:selected',
             style: {
                 'width': 3,
-                'line-color': '#75beff',
-                'target-arrow-color': '#75beff',
-                'overlay-color': '#75beff',
+                'line-color': palette.accent,
+                'target-arrow-color': palette.accent,
+                'overlay-color': palette.accent,
                 'overlay-opacity': 0.15,
             },
         },
@@ -140,6 +154,14 @@ function layoutOptions(algorithm: LayoutAlgorithm): cytoscape.LayoutOptions {
     }
 }
 
+/** Layout that keeps the stored positions when every node has one, else the chosen algorithm */
+export function initialLayoutOptions(nodes: GraphNode[], algorithm: LayoutAlgorithm): cytoscape.LayoutOptions {
+    if (nodes.length > 0 && nodes.every((n) => n.position)) {
+        return { name: 'preset' };
+    }
+    return layoutOptions(algorithm);
+}
+
 /** Build a structural fingerprint — only node/edge IDs, not positions */
 function structuralKey(nodes: GraphNode[], edges: GraphEdge[]): string {
     const nk = nodes.map((n) => n.id).sort().join(',');
@@ -153,14 +175,17 @@ export const GraphViewport = forwardRef<GraphViewportHandle, GraphViewportProps>
         const cyRef = useRef<Core | null>(null);
         const initialFitDone = useRef(false);
         const prevStructureRef = useRef('');
+        // Algorithm last applied on purpose; mounting must not re-run it over stored positions
+        const appliedLayoutRef = useRef(layout);
 
         // Initialize Cytoscape instance
         useEffect(() => {
             if (!containerRef.current) return;
 
+            const container = containerRef.current;
             const cy = cytoscape({
-                container: containerRef.current,
-                style: buildStylesheet(),
+                container,
+                style: buildStylesheet(resolveGraphPalette(container)),
                 minZoom: 0.1,
                 maxZoom: 5,
                 wheelSensitivity: 0.3,
@@ -168,16 +193,23 @@ export const GraphViewport = forwardRef<GraphViewportHandle, GraphViewportProps>
 
             cyRef.current = cy;
 
-            // Selection events
+            // Selection events — coalesced, so selecting many elements at once reports once
+            let selectionPending = false;
             const handleSelect = () => {
-                const selected: SelectedElement[] = [];
-                cy.$(':selected').forEach((ele) => {
-                    selected.push({
-                        type: ele.isNode() ? 'node' : 'edge',
-                        id: ele.id(),
+                if (selectionPending) return;
+                selectionPending = true;
+                queueMicrotask(() => {
+                    selectionPending = false;
+                    if (cy.destroyed()) return;
+                    const selected: SelectedElement[] = [];
+                    cy.$(':selected').forEach((ele) => {
+                        selected.push({
+                            type: ele.isNode() ? 'node' : 'edge',
+                            id: ele.id(),
+                        });
                     });
+                    onSelectionChange(selected);
                 });
-                onSelectionChange(selected);
             };
 
             cy.on('select', handleSelect);
@@ -200,6 +232,16 @@ export const GraphViewport = forwardRef<GraphViewportHandle, GraphViewportProps>
                 });
             });
 
+            // Hover glow
+            cy.on('mouseover', 'node, edge', (evt: EventObject) => evt.target.addClass('hover'));
+            cy.on('mouseout', 'node, edge', (evt: EventObject) => evt.target.removeClass('hover'));
+
+            // VS Code swaps the theme class on <body>; rebuild the stylesheet to follow it
+            const themeObserver = new MutationObserver(() => {
+                cy.style(buildStylesheet(resolveGraphPalette(container)));
+            });
+            themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class', 'style'] });
+
             // Resize observer — only resize, fit only once on first valid size
             const ro = new ResizeObserver(() => {
                 cy.resize();
@@ -211,6 +253,7 @@ export const GraphViewport = forwardRef<GraphViewportHandle, GraphViewportProps>
             ro.observe(containerRef.current);
 
             return () => {
+                themeObserver.disconnect();
                 ro.disconnect();
                 cy.destroy();
                 cyRef.current = null;
@@ -261,8 +304,8 @@ export const GraphViewport = forwardRef<GraphViewportHandle, GraphViewportProps>
 
             cy.resize();
 
-            // Run layout, then fit
-            const opts = layoutOptions(layout);
+            // Run layout (or restore stored positions), then fit
+            const opts = initialLayoutOptions(nodes, layout);
             const layoutInstance = cy.layout(opts);
             layoutInstance.on('layoutstop', () => {
                 cy.fit(undefined, 40);
@@ -283,6 +326,8 @@ export const GraphViewport = forwardRef<GraphViewportHandle, GraphViewportProps>
         }, []);
 
         useEffect(() => {
+            if (appliedLayoutRef.current === layout) return;
+            appliedLayoutRef.current = layout;
             applyLayout(layout);
         }, [layout, applyLayout]);
 
@@ -312,6 +357,21 @@ export const GraphViewport = forwardRef<GraphViewportHandle, GraphViewportProps>
                     center: { eles: node },
                     duration: 300,
                 });
+            },
+            toggleSelect: (nodeId: string) => {
+                const node = cyRef.current?.getElementById(nodeId);
+                if (!node || node.length === 0) return;
+                if (node.selected()) {
+                    node.unselect();
+                } else {
+                    node.select();
+                }
+            },
+            selectAllNodes: () => {
+                cyRef.current?.nodes().select();
+            },
+            clearSelection: () => {
+                cyRef.current?.$(':selected').unselect();
             },
             applyLayout,
             getNodePositions: () => {
