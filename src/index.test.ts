@@ -38,6 +38,8 @@ const EXPECTED = [
     'configureCodeEditor',
     'resolveMonacoLanguage',
     'runPreflightCheck',
+    'GitHistory',
+    'parseUnifiedDiff',
     'GraphCanvas',
     'GraphLens3D',
     'MarkdownView',
@@ -68,7 +70,7 @@ describe('package entry point', () => {
 
     it('exports nothing beyond the declared surface', () => {
         expect(Object.keys(api).sort()).toEqual(
-            [...EXPECTED, 'DEFAULT_OPEN_PANEL_LABELS', 'blockDocumentMessages'].sort(),
+            [...EXPECTED, 'DEFAULT_OPEN_PANEL_LABELS', 'DEFAULT_GIT_HISTORY_LABELS', 'blockDocumentMessages'].sort(),
         );
     });
 });

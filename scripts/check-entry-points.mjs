@@ -28,6 +28,7 @@ const EXPECTED_PEERS = {
     './block-document': [],
     './carousel': [],
     './code-editor': [],
+    './git-history': [],
     './graph-canvas': [...AG_GRID, 'cytoscape', 'cytoscape-dagre'],
     './graph-lens-3d': [...AG_GRID, '3d-force-graph'],
     './markdown-view': ['react-markdown', 'remark-gfm'],

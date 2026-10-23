@@ -47,6 +47,20 @@ export type {
     PreflightFailureReason,
 } from './CodeEditor';
 
+export { GitHistory, DEFAULT_GIT_HISTORY_LABELS, parseUnifiedDiff } from './GitHistory';
+export type {
+    GitHistoryProps,
+    GitHistoryLabels,
+    GitCommit,
+    GitHistoryPage,
+    GitHistoryQuery,
+    GitHistorySource,
+    DiffFile,
+    DiffHunk,
+    DiffLine,
+    DiffLineKind,
+} from './GitHistory';
+
 export { GraphCanvas } from './GraphCanvas';
 export type { GraphCanvasProps, GraphCanvasPort, GraphDocument, GraphNode, GraphEdge, LayoutAlgorithm } from './GraphCanvas';
 
