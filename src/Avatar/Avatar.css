@@ -23,6 +23,7 @@
     cursor: pointer;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
 }
+.avatar-static { cursor: default; }
 .avatar:focus-visible { outline: 2px solid var(--opp-blue, #1565c0); outline-offset: 2px; }
 .avatar-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .avatar-initials { user-select: none; }

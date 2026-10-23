@@ -40,6 +40,7 @@ const EXPECTED = [
     'runPreflightCheck',
     'GitHistory',
     'parseUnifiedDiff',
+    'layoutCommitGraph',
     'GraphCanvas',
     'GraphLens3D',
     'MarkdownView',

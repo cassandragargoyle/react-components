@@ -44,7 +44,26 @@ export interface AvatarProps {
     email?: string;
     /** Pixel diameter of the avatar (default 22) */
     size?: number;
+    /** false renders a plain image with no popup menu and no focus stop, e.g. in a list row */
+    interactive?: boolean;
+    /** false drops the kind ring, for places where the actor kind carries no meaning */
+    ring?: boolean;
+    /** Partial override of the popup menu texts (Czech by default) */
+    labels?: Partial<AvatarLabels>;
 }
+
+/** Texts of the popup menu; `actions` is the button label, `{name}` is the display name */
+export interface AvatarLabels {
+    actions: string;
+    mailTo: string;
+    copyMention: string;
+}
+
+const DEFAULT_AVATAR_LABELS: AvatarLabels = {
+    actions: '{name} — akce',
+    mailTo: '✉️ Napsat e-mail',
+    copyMention: '@ Zkopírovat zmínku',
+};
 
 /** Pick a stable hue from the id so the same actor always keeps its color */
 function hueForId(id: string): number {
@@ -77,7 +96,11 @@ export function Avatar({
     avatarUrl,
     email,
     size = 22,
+    interactive = true,
+    ring = true,
+    labels,
 }: AvatarProps): React.ReactElement {
+    const text = { ...DEFAULT_AVATAR_LABELS, ...labels };
     // Track image-load failure so a broken avatarUrl gracefully shows initials
     const [imageFailed, setImageFailed] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -109,31 +132,41 @@ export function Avatar({
         ...(showImage ? {} : { background: `hsl(${hue} 55% 42%)` }),
     };
     const fontStyle: React.CSSProperties = { fontSize: Math.round(size * 0.42) };
+    const chipClass = `avatar${ring ? ` avatar-${kind}` : ''}`;
+    const face = showImage ? (
+        <img
+            className="avatar-img"
+            src={avatarUrl}
+            alt={interactive ? displayName : ''}
+            onError={() => setImageFailed(true)}
+        />
+    ) : (
+        <span className="avatar-initials" style={fontStyle} aria-hidden>
+            {initialsOf(displayName)}
+        </span>
+    );
+
+    if (!interactive) {
+        return (
+            <span className={`${chipClass} avatar-static`} style={chipStyle} title={displayName} role="img" aria-label={displayName}>
+                {face}
+            </span>
+        );
+    }
 
     return (
         <span className="avatar-wrap" ref={wrapRef}>
             <button
                 type="button"
-                className={`avatar avatar-${kind}`}
+                className={chipClass}
                 style={chipStyle}
                 title={displayName}
-                aria-label={`${displayName} — akce`}
+                aria-label={text.actions.replace('{name}', displayName)}
                 aria-haspopup="menu"
                 aria-expanded={menuOpen}
                 onClick={() => setMenuOpen(o => !o)}
             >
-                {showImage ? (
-                    <img
-                        className="avatar-img"
-                        src={avatarUrl}
-                        alt={displayName}
-                        onError={() => setImageFailed(true)}
-                    />
-                ) : (
-                    <span className="avatar-initials" style={fontStyle} aria-hidden>
-                        {initialsOf(displayName)}
-                    </span>
-                )}
+                {face}
             </button>
 
             {menuOpen && (
@@ -146,7 +179,7 @@ export function Avatar({
                             href={`mailto:${email}`}
                             onClick={() => setMenuOpen(false)}
                         >
-                            ✉️ Napsat e-mail
+                            {text.mailTo}
                         </a>
                     )}
                     <button
@@ -158,7 +191,7 @@ export function Avatar({
                             setMenuOpen(false);
                         }}
                     >
-                        @ Zkopírovat zmínku
+                        {text.copyMention}
                     </button>
                 </span>
             )}

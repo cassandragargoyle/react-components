@@ -4,13 +4,27 @@
  */
 
 // Public exports for the GitHistory component
-// The file history view, its data-source contract and the unified-diff parser
+// The file and folder history view, its data-source contract, the diff parser and the graph layout
 
 export { GitHistory, DEFAULT_GIT_HISTORY_LABELS } from './GitHistory';
-export type { GitHistoryProps, GitHistoryLabels } from './GitHistory';
+export type { GitHistoryProps, GitHistoryLabels, GitHistoryLayout, GitHistoryOrientation } from './GitHistory';
+export type { GitHistoryColumn } from './CommitList';
+export type { GitHistoryTab } from './DetailPanel';
+export type { DiffViewMode } from './DiffView';
 export { parseUnifiedDiff } from './parseUnifiedDiff';
+export { layoutCommitGraph } from './layoutCommitGraph';
+export type { GraphCommit, GraphRow, GraphSegment } from './layoutCommitGraph';
 export type {
+    GitHistoryTarget,
     GitCommit,
+    GitCommitAction,
+    GitCommitDetails,
+    GitCommitStatus,
+    GitChangedFile,
+    GitFileStatus,
+    GitLink,
+    GitRef,
+    GitRefKind,
     GitHistoryPage,
     GitHistoryQuery,
     GitHistorySource,

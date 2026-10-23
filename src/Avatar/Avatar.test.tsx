@@ -46,4 +46,18 @@ describe('Avatar', () => {
         const mail = screen.getByText(/Napsat e-mail/).closest('a');
         expect(mail).toHaveAttribute('href', 'mailto:eva@x.io');
     });
+
+    it('renders a plain image without menu or ring when not interactive', () => {
+        const { container } = render(<Avatar id="u5" displayName="Alex Roe" kind="user" interactive={false} ring={false} />);
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
+        expect(screen.getByRole('img', { name: 'Alex Roe' })).toBeInTheDocument();
+        expect(container.querySelector('.avatar-user')).toBeNull();
+    });
+
+    it('takes overridden menu texts', () => {
+        render(<Avatar id="u6" displayName="Eva" kind="user" email="eva@x.io" labels={{ actions: '{name} actions', mailTo: 'Send mail' }} />);
+        fireEvent.click(screen.getByRole('button', { name: 'Eva actions' }));
+        expect(screen.getByText('Send mail')).toBeInTheDocument();
+        expect(screen.getByText(/Zkopírovat zmínku/)).toBeInTheDocument();
+    });
 });

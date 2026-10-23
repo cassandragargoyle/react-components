@@ -7,7 +7,7 @@
 // Components migrate here from portunix-vscode; see its issues 125 and 132
 
 export { Avatar } from './Avatar';
-export type { AvatarProps, AvatarKind } from './Avatar';
+export type { AvatarProps, AvatarKind, AvatarLabels } from './Avatar';
 
 export { BlockDocument, isBlockDocument, validateBlockDocument, insertBlock, removeBlock, moveBlock, updateBlock, canMoveBlock, isFieldVisible, blockDocumentMessages } from './BlockDocument';
 export type {
@@ -47,11 +47,24 @@ export type {
     PreflightFailureReason,
 } from './CodeEditor';
 
-export { GitHistory, DEFAULT_GIT_HISTORY_LABELS, parseUnifiedDiff } from './GitHistory';
+export { GitHistory, DEFAULT_GIT_HISTORY_LABELS, parseUnifiedDiff, layoutCommitGraph } from './GitHistory';
 export type {
     GitHistoryProps,
     GitHistoryLabels,
+    GitHistoryLayout,
+    GitHistoryOrientation,
+    GitHistoryColumn,
+    GitHistoryTab,
+    GitHistoryTarget,
     GitCommit,
+    GitCommitAction,
+    GitCommitDetails,
+    GitCommitStatus,
+    GitChangedFile,
+    GitFileStatus,
+    GitLink,
+    GitRef,
+    GitRefKind,
     GitHistoryPage,
     GitHistoryQuery,
     GitHistorySource,
@@ -59,6 +72,10 @@ export type {
     DiffHunk,
     DiffLine,
     DiffLineKind,
+    DiffViewMode,
+    GraphCommit,
+    GraphRow,
+    GraphSegment,
 } from './GitHistory';
 
 export { GraphCanvas } from './GraphCanvas';

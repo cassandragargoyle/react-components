@@ -50,7 +50,7 @@ the unused peers, this is what makes them truly optional:
 | `/block-document` | `BlockDocument` and its functions | — |
 | `/carousel` | `Carousel` | — |
 | `/code-editor` | `CodeEditor` and its functions | — (the host builds `monaco-editor` as a separate, lazy-loaded chunk) |
-| `/git-history` | `GitHistory`, `parseUnifiedDiff` | — |
+| `/git-history` | `GitHistory`, `parseUnifiedDiff`, `layoutCommitGraph` | — |
 | `/graph-canvas` | `GraphCanvas` | `cytoscape`, `cytoscape-dagre`, `ag-grid-community`, `ag-grid-react` |
 | `/graph-lens-3d` | `GraphLens3D` | `3d-force-graph`, `ag-grid-community`, `ag-grid-react` |
 | `/markdown-view` | `MarkdownView`, `slugify` | `react-markdown`, `remark-gfm` |
@@ -89,7 +89,7 @@ to import.
 | [`BlockDocument`](https://github.com/cassandragargoyle/react-components/tree/main/src/BlockDocument) | A document of blocks — chapters, paragraphs, images, videos — shown as one page and edited in place |
 | [`Carousel`](https://github.com/cassandragargoyle/react-components/tree/main/src/Carousel) | A three-card fan carousel around a centred hero card |
 | [`CodeEditor`](https://github.com/cassandragargoyle/react-components/tree/main/src/CodeEditor) | A Monaco code editor, lazy-loaded on first use, with a plain-text fallback |
-| [`GitHistory`](https://github.com/cassandragargoyle/react-components/tree/main/src/GitHistory) | A file history view: a paged commit list and the selected commit's unified diff, fed by a host data source |
+| [`GitHistory`](https://github.com/cassandragargoyle/react-components/tree/main/src/GitHistory) | A file or folder history in the style of Git Extensions: commit graph, refs, avatars, and Commit/Diff/Files tabs, fed by a host data source |
 | [`GraphCanvas`](https://github.com/cassandragargoyle/react-components/tree/main/src/GraphCanvas) | A 2D node-edge graph viewer and editor over Cytoscape, with a node table and property panel |
 | [`GraphLens3D`](https://github.com/cassandragargoyle/react-components/tree/main/src/GraphLens3D) | A 3D force-directed graph explorer with search, filters and a detail panel |
 | [`MarkdownView`](https://github.com/cassandragargoyle/react-components/tree/main/src/MarkdownView) | A read-only GitHub-flavoured Markdown document; links and image paths are resolved by the host |

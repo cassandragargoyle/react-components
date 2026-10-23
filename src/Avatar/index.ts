@@ -7,4 +7,4 @@
 // A domain-neutral, dependency-light participant avatar
 
 export { Avatar } from './Avatar';
-export type { AvatarProps, AvatarKind } from './Avatar';
+export type { AvatarProps, AvatarKind, AvatarLabels } from './Avatar';

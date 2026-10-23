@@ -3,10 +3,21 @@
  *  Licensed under the MIT License - see LICENSE file for details
  */
 
-/* File history view: header, commit list and unified diff
+/* File and folder history view: header, commit grid with graph, splitter and tabbed details
    Colours read the VS Code theme variables and fall back to a dark theme outside a webview */
 
 .git-history {
+    /* Graph lane palette; a theme may override any of these */
+    --git-history-lane-0: var(--vscode-charts-blue, #3794ff);
+    --git-history-lane-1: var(--vscode-charts-purple, #b180d7);
+    --git-history-lane-2: var(--vscode-charts-red, #f14c4c);
+    --git-history-lane-3: var(--vscode-charts-green, #89d185);
+    --git-history-lane-4: var(--vscode-charts-orange, #d18616);
+    --git-history-lane-5: var(--vscode-charts-yellow, #cca700);
+    --git-history-lane-6: var(--vscode-terminal-ansiCyan, #29b8db);
+    --git-history-lane-7: var(--vscode-terminal-ansiMagenta, #d670d6);
+    --git-history-graph-hollow: var(--vscode-editor-background, #1e1e1e);
+
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -52,10 +63,29 @@
     flex: 1;
 }
 
+.git-history-filter {
+    width: 200px;
+    min-width: 96px;
+    padding: 2px 6px;
+    border: 1px solid var(--vscode-input-border, var(--vscode-panel-border, #3c3c3c));
+    border-radius: 2px;
+    color: var(--vscode-input-foreground, #cccccc);
+    background: var(--vscode-input-background, #3c3c3c);
+    font: inherit;
+}
+
+.git-history-filter:focus {
+    outline: 1px solid var(--vscode-focusBorder, #007fd4);
+    outline-offset: -1px;
+}
+
 .git-history-button,
 .git-history-toggle,
 .git-history-load-more {
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     padding: 2px 8px;
     border: 1px solid var(--vscode-button-border, var(--vscode-panel-border, #3c3c3c));
     border-radius: 2px;
@@ -63,6 +93,12 @@
     background: transparent;
     font: inherit;
     cursor: pointer;
+}
+
+.git-history-button.is-small {
+    margin-left: 8px;
+    padding: 0 6px;
+    font-size: 0.9em;
 }
 
 .git-history-button:hover:not(:disabled),
@@ -82,40 +118,137 @@
     background: var(--vscode-inputOption-activeBackground, rgba(0, 127, 212, 0.4));
 }
 
+.git-history-segmented {
+    display: inline-flex;
+}
+
+.git-history-segmented .git-history-toggle + .git-history-toggle {
+    margin-left: -1px;
+}
+
 .git-history-button:focus-visible,
 .git-history-toggle:focus-visible,
 .git-history-load-more:focus-visible,
-.git-history-commit-list:focus-visible {
+.git-history-grid:focus-visible,
+.git-history-files-list:focus-visible,
+.git-history-tab:focus-visible,
+.git-history-splitter:focus-visible,
+.git-history-link-button:focus-visible,
+.git-history-menu-item:focus-visible {
     outline: 1px solid var(--vscode-focusBorder, #007fd4);
     outline-offset: -1px;
 }
 
-/* Body: list | diff */
+/* Body: list and details, below or beside each other */
 .git-history-body {
     display: flex;
     flex: 1;
     min-height: 0;
 }
 
-.git-history-commits {
-    flex: 0 0 320px;
-    max-width: 45%;
-    overflow-y: auto;
-    border-right: 1px solid var(--vscode-panel-border, #3c3c3c);
+.git-history-body.is-vertical {
+    flex-direction: column;
 }
 
-.git-history-commit-list {
+.git-history-list-pane {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 0;
+    flex-shrink: 0;
+    min-width: 0;
+    min-height: 0;
+}
+
+.git-history-detail-pane {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
+.git-history-splitter {
+    flex: 0 0 4px;
+    background: var(--vscode-panel-border, #3c3c3c);
     outline: none;
 }
 
-.git-history-commit {
-    padding: 4px 8px;
-    cursor: pointer;
+.git-history-body.is-vertical .git-history-splitter {
+    cursor: row-resize;
+}
+
+.git-history-body.is-horizontal .git-history-splitter {
+    cursor: col-resize;
+}
+
+.git-history-splitter:hover {
+    background: var(--vscode-sash-hoverBorder, var(--vscode-focusBorder, #007fd4));
+}
+
+/* Commit grid */
+.git-history-commits {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+.git-history-grid {
+    outline: none;
+    min-width: 520px;
+}
+
+.git-history-row {
+    display: grid;
+    grid-template-columns: var(--git-history-columns);
+    align-items: center;
+    height: 26px;
+}
+
+.git-history-grid-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--vscode-editorWidget-background, #252526);
     border-bottom: 1px solid var(--vscode-panel-border, #3c3c3c);
+    color: var(--vscode-descriptionForeground, #858585);
+    font-size: 0.9em;
+}
+
+.git-history-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    height: 100%;
+    padding: 0 6px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.git-history-cell.is-graph {
+    padding: 0 4px;
+    overflow: visible;
+}
+
+.git-history-graph {
+    display: block;
+    flex-shrink: 0;
+}
+
+.git-history-commit {
+    cursor: pointer;
 }
 
 .git-history-commit:hover {
     background: var(--vscode-list-hoverBackground, #2a2d2e);
+}
+
+.git-history-commit.is-same-author {
+    background: var(--vscode-editor-findMatchHighlightBackground, rgba(234, 92, 0, 0.12));
+}
+
+.git-history-commit.is-same-author .git-history-commit-author {
+    font-weight: 600;
 }
 
 .git-history-commit.is-selected {
@@ -123,15 +256,32 @@
     background: var(--vscode-list-activeSelectionBackground, #04395e);
 }
 
-.git-history-commit-line {
-    display: flex;
-    gap: 8px;
+.git-history-commit-subject {
+    flex: 1 1 auto;
     min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.git-history-commit-author {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.git-history-cell.is-date {
+    color: var(--vscode-descriptionForeground, #858585);
+}
+
+.git-history-commit.is-selected .git-history-cell.is-date {
+    color: inherit;
+}
+
+.git-history-commit-sha,
+.git-history-mono {
+    font-family: var(--vscode-editor-font-family, monospace);
 }
 
 .git-history-commit-sha {
-    flex-shrink: 0;
-    font-family: var(--vscode-editor-font-family, monospace);
     color: var(--vscode-textLink-foreground, #3794ff);
 }
 
@@ -139,24 +289,88 @@
     color: inherit;
 }
 
-.git-history-commit-subject {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.git-history-commit-meta {
-    margin-top: 2px;
-    font-size: 0.9em;
-    color: var(--vscode-descriptionForeground, #858585);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.git-history-commit.is-selected .git-history-commit-meta {
+.git-history-row-actions {
+    flex-shrink: 0;
+    visibility: hidden;
+    padding: 0 6px;
+    border: none;
+    border-radius: 2px;
     color: inherit;
-    opacity: 0.8;
+    background: transparent;
+    font: inherit;
+    line-height: 18px;
+    cursor: pointer;
+}
+
+.git-history-commit:hover .git-history-row-actions,
+.git-history-commit.is-selected .git-history-row-actions {
+    visibility: visible;
+}
+
+.git-history-row-actions:hover {
+    background: var(--vscode-toolbar-hoverBackground, rgba(90, 93, 94, 0.31));
+}
+
+/* Ref labels: outline style by kind, monochrome unless a theme colours them */
+.git-history-refs {
+    display: inline-flex;
+    flex-shrink: 0;
+    gap: 4px;
+    max-width: 60%;
+    overflow: hidden;
+}
+
+.git-history-ref {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    max-width: 180px;
+    padding: 0 6px;
+    border: 1px solid var(--git-history-ref-border, var(--vscode-descriptionForeground, #858585));
+    border-radius: 3px;
+    font-size: 0.9em;
+    line-height: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.git-history-ref.is-head {
+    font-weight: 700;
+    border-width: 2px;
+}
+
+.git-history-ref.is-remote {
+    border-style: dashed;
+}
+
+.git-history-ref.is-more {
+    border-style: dotted;
+}
+
+/* Status dot: colour plus shape, so it does not rely on colour alone */
+.git-history-status {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+}
+
+.git-history-status.is-success {
+    border-radius: 50%;
+    background: var(--vscode-testing-iconPassed, #73c991);
+}
+
+.git-history-status.is-failure {
+    background: var(--vscode-testing-iconFailed, #f14c4c);
+}
+
+.git-history-status.is-pending {
+    border: 2px solid var(--vscode-testing-iconQueued, #cca700);
+    border-radius: 50%;
+}
+
+.git-history-status.is-unknown {
+    height: 2px;
+    background: var(--vscode-descriptionForeground, #858585);
 }
 
 .git-history-load-more {
@@ -169,35 +383,255 @@
     color: var(--vscode-errorForeground, #f48771);
 }
 
-/* Detail: commit summary and diff */
+/* Row menu */
+.git-history-menu {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    min-width: 160px;
+    padding: 4px 0;
+    border: 1px solid var(--vscode-menu-border, #454545);
+    border-radius: 4px;
+    background: var(--vscode-menu-background, #252526);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.git-history-menu-item {
+    padding: 4px 16px;
+    border: none;
+    color: var(--vscode-menu-foreground, #cccccc);
+    background: transparent;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.git-history-menu-item:hover,
+.git-history-menu-item:focus {
+    color: var(--vscode-menu-selectionForeground, #ffffff);
+    background: var(--vscode-menu-selectionBackground, #094771);
+}
+
+/* Detail panel and tabs */
 .git-history-detail {
     display: flex;
     flex-direction: column;
     flex: 1;
     min-width: 0;
+    min-height: 0;
 }
 
-.git-history-detail-head {
-    padding: 8px;
+.git-history-tabs {
+    display: flex;
+    flex-shrink: 0;
+    gap: 2px;
+    padding: 0 8px;
     border-bottom: 1px solid var(--vscode-panel-border, #3c3c3c);
 }
 
-.git-history-detail-subject {
-    font-weight: 600;
-    overflow-wrap: anywhere;
-}
-
-.git-history-detail-meta {
-    margin-top: 4px;
+.git-history-tab {
+    padding: 6px 12px;
+    border: none;
+    border-bottom: 2px solid transparent;
     color: var(--vscode-descriptionForeground, #858585);
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
 }
 
-.git-history-detail-body {
+.git-history-tab.is-active {
+    color: var(--vscode-foreground, #cccccc);
+    border-bottom-color: var(--vscode-focusBorder, #007fd4);
+}
+
+.git-history-tabpanel {
+    display: flex;
     flex: 1;
     min-height: 0;
     overflow: auto;
 }
 
+.git-history-tab-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
+.git-history-tab-toolbar {
+    display: flex;
+    flex-shrink: 0;
+    justify-content: flex-end;
+    padding: 4px 8px;
+}
+
+.git-history-tab-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+/* Commit tab */
+.git-history-commit-info {
+    flex: 1;
+    padding: 8px 12px;
+    overflow: auto;
+}
+
+.git-history-commit-head {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.git-history-fields {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 2px 12px;
+    margin: 0;
+}
+
+.git-history-fields dt {
+    color: var(--vscode-descriptionForeground, #858585);
+}
+
+.git-history-fields dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.git-history-link,
+.git-history-link-button {
+    color: var(--vscode-textLink-foreground, #3794ff);
+    text-decoration: none;
+}
+
+.git-history-link:hover,
+.git-history-link-button:hover {
+    text-decoration: underline;
+}
+
+.git-history-link-button {
+    margin-right: 8px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: inherit;
+    cursor: pointer;
+}
+
+.git-history-message {
+    margin: 12px 0;
+    padding: 8px 12px;
+    border-radius: 2px;
+    background: var(--vscode-textBlockQuote-background, rgba(127, 127, 127, 0.1));
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.git-history-message-subject {
+    font-weight: 600;
+}
+
+.git-history-message-body {
+    margin-top: 12px;
+}
+
+.git-history-commit-line {
+    margin-top: 4px;
+}
+
+.git-history-commit-line.is-dim {
+    color: var(--vscode-descriptionForeground, #858585);
+}
+
+.git-history-commit-line.is-error {
+    color: var(--vscode-errorForeground, #f48771);
+}
+
+/* Files tab */
+.git-history-files {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
+.git-history-files-side {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 280px;
+    max-width: 40%;
+    min-height: 0;
+    border-right: 1px solid var(--vscode-panel-border, #3c3c3c);
+}
+
+.git-history-files-list {
+    flex: 1;
+    overflow: auto;
+    outline: none;
+}
+
+.git-history-file {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 2px 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.git-history-file:hover {
+    background: var(--vscode-list-hoverBackground, #2a2d2e);
+}
+
+.git-history-file.is-selected {
+    color: var(--vscode-list-activeSelectionForeground, #ffffff);
+    background: var(--vscode-list-activeSelectionBackground, #04395e);
+}
+
+.git-history-file-status {
+    flex: 0 0 12px;
+    font-family: var(--vscode-editor-font-family, monospace);
+    font-weight: 600;
+}
+
+.git-history-file-path {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    direction: rtl;
+    text-align: left;
+}
+
+.git-history-file-counts {
+    flex-shrink: 0;
+    font-family: var(--vscode-editor-font-family, monospace);
+    font-size: 0.9em;
+}
+
+.git-history-file-counts .is-add {
+    color: var(--vscode-gitDecoration-addedResourceForeground, #81b88b);
+}
+
+.git-history-file-counts .is-delete {
+    color: var(--vscode-gitDecoration-deletedResourceForeground, #c74e39);
+}
+
+.git-history-file.is-selected .git-history-file-counts span {
+    color: inherit;
+}
+
+.git-history-files-all {
+    padding: 4px 8px;
+    border-top: 1px solid var(--vscode-panel-border, #3c3c3c);
+    color: var(--vscode-descriptionForeground, #858585);
+}
+
+/* Diff */
 .git-history-diff-note {
     padding: 8px;
     color: var(--vscode-descriptionForeground, #858585);
@@ -231,6 +665,19 @@
     line-height: 1.5;
 }
 
+.git-history-diff-table.is-split {
+    table-layout: fixed;
+}
+
+.git-history-diff-table.is-split .git-history-diff-num {
+    width: 48px;
+}
+
+.git-history-diff-table.is-split .git-history-diff-code {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .git-history-diff-hunk td {
     padding: 2px 8px;
     color: var(--vscode-descriptionForeground, #858585);
@@ -257,15 +704,22 @@
     user-select: none;
 }
 
-.git-history-diff-line.is-add {
+.git-history-diff-line.is-add,
+.git-history-diff-table.is-split .is-add {
     background: var(--vscode-diffEditor-insertedLineBackground, rgba(155, 185, 85, 0.2));
 }
 
-.git-history-diff-line.is-delete {
+.git-history-diff-line.is-delete,
+.git-history-diff-table.is-split .is-delete {
     background: var(--vscode-diffEditor-removedLineBackground, rgba(255, 0, 0, 0.2));
 }
 
-.git-history-diff-line.is-meta .git-history-diff-code {
+.git-history-diff-table.is-split .is-empty {
+    background: var(--vscode-diffEditor-diagonalFill, rgba(127, 127, 127, 0.08));
+}
+
+.git-history-diff-line.is-meta .git-history-diff-code,
+.git-history-diff-table.is-split .git-history-diff-code.is-meta {
     color: var(--vscode-descriptionForeground, #858585);
     font-style: italic;
 }

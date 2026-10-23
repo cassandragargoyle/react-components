@@ -37,6 +37,9 @@ import { Avatar } from '@cassandragargoyle/pilot-ui';
 | `avatarUrl`   | `string`                            | —       | Optional image; falls back to initials on absence or load error   |
 | `email`       | `string`                            | —       | Optional address; enables the "Mail to" menu action               |
 | `size`        | `number`                            | `22`    | Pixel diameter                                                     |
+| `interactive` | `boolean`                           | `true`  | `false` renders a plain `role="img"` chip: no menu, no focus stop  |
+| `ring`        | `boolean`                           | `true`  | `false` drops the kind ring                                        |
+| `labels`      | `Partial<AvatarLabels>`             | Czech   | Menu texts: `actions` (`{name}` is the name), `mailTo`, `copyMention` |
 
 ## Behavior
 
@@ -60,7 +63,9 @@ import { Avatar } from '@cassandragargoyle/pilot-ui';
 
 The chip is a real `<button>` with `aria-haspopup="menu"`, `aria-expanded`,
 and a `title` tooltip; the menu uses `role="menu"` / `role="menuitem"`.
-Focus is visible via `:focus-visible`.
+Focus is visible via `:focus-visible`. With `interactive={false}` the chip is a
+`role="img"` element labelled with the name, for rows that are themselves
+selectable (the `GitHistory` author column).
 
 ## Files
 
@@ -68,4 +73,4 @@ Focus is visible via `:focus-visible`.
 - `Avatar.css` — chip, ring cue, and popup menu styles (theme-var driven)
 - `Avatar.svg` — visual reference (this README's image)
 - `Avatar.test.tsx` — unit tests
-- `index.ts` — public exports (`Avatar`, `AvatarProps`, `AvatarKind`)
+- `index.ts` — public exports (`Avatar`, `AvatarProps`, `AvatarKind`, `AvatarLabels`)
