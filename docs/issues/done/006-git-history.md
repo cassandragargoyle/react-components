@@ -14,17 +14,18 @@ related:
 
 ## Metadata
 
-- **Status**: 🔄 In Progress
+- **Status**: ✅ Implemented
 - **Type**: enhancement
 - **Priority**: medium
 - **Created**: 2026-10-23
+- **Closed**: 2026-10-24
 - **Version**: 0.4.0 (phase 1, the simple view), 0.5.0 (phase 2, the rich view)
 - **Author**: Zdenek
 - **Target**: `src/GitHistory/` (new component), entry point `/git-history`
 - **GitHub**: [#6](https://github.com/cassandragargoyle/react-components/issues/6)
 - **Related**:
   - `portunix-vscode` issue 053 — the Explorer **Git → History** menu that opens this view
-  - [GUI Design Guidelines](../architecture/GUI-DESIGN-PRINCIPLES.md) — theme, icons,
+  - [GUI Design Guidelines](../../architecture/GUI-DESIGN-PRINCIPLES.md) — theme, icons,
     interaction states
 
 ## Summary
@@ -165,7 +166,7 @@ Columns, from left to right; a column without data in the loaded commits is hidd
   sets an outline style — the current `HEAD` branch is bold, remote branches are dashed,
   tags have a tag glyph. Monochrome by default, theme variables to colour them. Long label
   lists are cut with a `+N` chip whose tooltip lists the rest.
-- **Author avatars**: the library's own [`Avatar`](../../src/Avatar/) component is used —
+- **Author avatars**: the library's own [`Avatar`](../../../src/Avatar/) component is used —
   no second avatar implementation. It shows initials with a colour that is stable per
   author (seeded by the e-mail). The host may give an image through
   `resolveAvatarUrl(email)`, which becomes `Avatar`'s `avatarUrl`; the component never
@@ -336,32 +337,32 @@ New props: `layout`, `onLayoutChange`, `resolveAvatarUrl`, `linkify`, `onOpenLin
 
 ### Phase 2 Acceptance Criteria
 
-- [ ] Commit graph from `parents`, with `layoutCommitGraph` exported and unit-tested
+- [x] Commit graph from `parents`, with `layoutCommitGraph` exported and unit-tested
       (linear history, branch and merge, octopus merge, a lane crossing a page boundary)
-- [ ] Ref labels with the four kinds and `+N` overflow
-- [ ] Author column with `Avatar`; no remote image unless `resolveAvatarUrl` is given;
+- [x] Ref labels with the four kinds and `+N` overflow
+- [x] Author column with `Avatar`; no remote image unless `resolveAvatarUrl` is given;
       `Avatar` gains a non-interactive mode and overridable menu texts
-- [ ] Author highlight of the selected commit's author
-- [ ] Optional status dot that does not rely on colour alone
-- [ ] Filter of the loaded commits; `findCommit` for an unloaded SHA
-- [ ] Row actions from `commitActions`, by mouse and keyboard
-- [ ] Two date columns: **Date** as `YYYY-MM-DD HH:mm` (local time, `formatColumnDate`
+- [x] Author highlight of the selected commit's author
+- [x] Optional status dot that does not rely on colour alone
+- [x] Filter of the loaded commits; `findCommit` for an unloaded SHA
+- [x] Row actions from `commitActions`, by mouse and keyboard
+- [x] Two date columns: **Date** as `YYYY-MM-DD HH:mm` (local time, `formatColumnDate`
       to override) and **Age** with the relative date; both hideable and resizable
-- [ ] Every column resizable on its own by the border on its right (drag, arrow keys,
+- [x] Every column resizable on its own by the border on its right (drag, arrow keys,
       double click resets), down to 16 px; the message column flexible until resized; the
       grid scrolls sideways when wider than the pane; reported through
       `onColumnWidthsChange`
-- [ ] Vertical (default) and horizontal layout with a draggable splitter
-- [ ] Files tab rows end with `+additions −deletions` and a change weight mark relative to
+- [x] Vertical (default) and horizontal layout with a draggable splitter
+- [x] Files tab rows end with `+additions −deletions` and a change weight mark relative to
       the file's size (`changeWeight`, levels 0–4, the Explorer heat glyphs); tooltip and
       accessible label in words; no mark without `lines`
-- [ ] Detail panel tabs Commit, Diff (unified + split) and Files, each shown only with its
+- [x] Detail panel tabs Commit, Diff (unified + split) and Files, each shown only with its
       data
-- [ ] `target="folder"`: no follow toggle, no Diff tab, Files tab scoped to the folder
-- [ ] Related links, contained-in branches/tags and derives-from-tag, loaded lazily
-- [ ] Windowed list for long histories; grid and tabs keyboard-accessible
-- [ ] Hosts with only phase 1 data render as today; README and demo cover the rich view
-- [ ] Version 0.5.0
+- [x] `target="folder"`: no follow toggle, no Diff tab, Files tab scoped to the folder
+- [x] Related links, contained-in branches/tags and derives-from-tag, loaded lazily
+- [x] Windowed list for long histories; grid and tabs keyboard-accessible
+- [x] Hosts with only phase 1 data render as today; README and demo cover the rich view
+- [x] Version 0.5.0
 
 ## Out of Scope
 
