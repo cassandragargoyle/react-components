@@ -421,7 +421,7 @@ describe('GitHistory change weight', () => {
         expect(small).toHaveAccessibleName('Modified small.ts, +9 −0 of 10 lines · 90 % of the file · rewritten');
         expect(small.querySelector('.git-history-file-weight svg circle + circle')).not.toBeNull();
 
-        expect(big.querySelector('.git-history-file-weight')).toHaveAttribute('title', expect.stringContaining('0 % of the file · a touch'));
+        expect(big.querySelector('.git-history-file-weight')).toHaveAttribute('title', '+10 \u22120 of 10000 lines · < 1 % of the file · a touch');
         expect(logo.querySelector('.git-history-file-weight svg')).toBeNull();
         expect(countOnly.querySelector('.git-history-file-weight svg')).toBeNull();
         expect(within(countOnly).getByText('+3')).toBeInTheDocument();

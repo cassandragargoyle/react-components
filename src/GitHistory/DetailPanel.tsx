@@ -356,7 +356,8 @@ function describeChange(file: GitChangedFile, labels: DetailPanelLabels): string
         .replace('{added}', `+${file.additions ?? 0}`)
         .replace('{deleted}', `\u2212${file.deletions ?? 0}`)
         .replace('{lines}', String(weight.size))
-        .replace('{percent}', String(Math.round(weight.ratio * 100)))
+        // A change that rounds to 0 % is still a change
+        .replace('{percent}', weight.ratio > 0 && Math.round(weight.ratio * 100) === 0 ? '< 1' : String(Math.round(weight.ratio * 100)))
         .replace('{level}', labels.changeWeightLevel[weight.level]);
 }
 
