@@ -8,7 +8,7 @@
 
 export { GitHistory, DEFAULT_GIT_HISTORY_LABELS } from './GitHistory';
 export type { GitHistoryProps, GitHistoryLabels, GitHistoryLayout, GitHistoryOrientation } from './GitHistory';
-export type { GitHistoryColumn } from './CommitList';
+export type { GitHistoryColumn, GitHistoryColumnWidths, GitHistoryResizableColumn } from './CommitList';
 export type { GitHistoryTab } from './DetailPanel';
 export type { DiffViewMode } from './DiffView';
 export { parseUnifiedDiff } from './parseUnifiedDiff';

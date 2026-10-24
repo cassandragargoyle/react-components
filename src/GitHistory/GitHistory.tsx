@@ -8,7 +8,16 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ProgressPanel } from '../Progress';
-import { CommitList, authorKey, type CommitListLabels, type GitHistoryColumn } from './CommitList';
+import {
+    CommitList,
+    DEFAULT_COLUMN_WIDTHS,
+    authorKey,
+    clampColumnWidth,
+    type CommitListLabels,
+    type GitHistoryColumn,
+    type GitHistoryColumnWidths,
+    type GitHistoryResizableColumn,
+} from './CommitList';
 import { DetailPanel, type DetailPanelLabels, type GitHistoryTab } from './DetailPanel';
 import type { DiffViewMode } from './DiffView';
 import { layoutCommitGraph } from './layoutCommitGraph';
@@ -86,6 +95,7 @@ export const DEFAULT_GIT_HISTORY_LABELS: GitHistoryLabels = {
     columnSha: 'Commit',
     columnStatus: 'Status',
     commitActions: 'Commit actions',
+    resizeColumn: 'Resize the {column} column',
     merge: 'merge commit',
     status: { success: 'Build succeeded', failure: 'Build failed', pending: 'Build running', unknown: 'Build status unknown' },
     tabCommit: 'Commit',
@@ -142,6 +152,10 @@ export interface GitHistoryProps {
     initialDiffMode?: DiffViewMode;
     /** Columns to hide; a column without data in the loaded commits hides itself */
     columns?: Partial<Record<GitHistoryColumn, boolean>>;
+    /** Initial widths of the author, date and SHA columns, in pixels */
+    initialColumnWidths?: Partial<GitHistoryColumnWidths>;
+    /** Called when a column border has been dragged or moved by key, to persist the widths */
+    onColumnWidthsChange?: (widths: GitHistoryColumnWidths) => void;
     /** Display form of a date; the ISO date stays in the tooltip. Default: relative, English */
     formatDate?: (iso: string) => string;
     /** Absolute form of a date in the Commit tab. Default: local `YYYY-MM-DD HH:mm:ss` */
@@ -235,6 +249,8 @@ export function GitHistory({
     onLayoutChange,
     initialDiffMode = 'unified',
     columns,
+    initialColumnWidths,
+    onColumnWidthsChange,
     formatDate = formatRelativeDate,
     formatFullDate = formatLocalDateTime,
     resolveAvatarUrl,
@@ -264,6 +280,14 @@ export function GitHistory({
     });
     const [tab, setTab] = useState<GitHistoryTab>(target === 'folder' ? 'files' : 'diff');
     const [diffMode, setDiffMode] = useState<DiffViewMode>(initialDiffMode);
+    const [columnWidths, setColumnWidths] = useState<GitHistoryColumnWidths>(() => {
+        const widths = { ...DEFAULT_COLUMN_WIDTHS };
+        for (const key of Object.keys(widths) as GitHistoryResizableColumn[]) {
+            const given = initialColumnWidths?.[key];
+            if (typeof given === 'number' && Number.isFinite(given)) widths[key] = clampColumnWidth(given);
+        }
+        return widths;
+    });
     const bodyRef = useRef<HTMLDivElement>(null);
 
     // Bumped whenever the list is reset; an answer of an older generation is ignored
@@ -377,6 +401,18 @@ export function GitHistory({
         [commits, select, source]
     );
 
+    // Live width while a border is dragged; the host hears about it once the change is done
+    const columnWidthsRef = useRef(columnWidths);
+    const resizeColumn = useCallback(
+        (column: GitHistoryResizableColumn, width: number, done: boolean) => {
+            const next = { ...columnWidthsRef.current, [column]: width };
+            columnWidthsRef.current = next;
+            setColumnWidths(next);
+            if (done) onColumnWidthsChange?.(next);
+        },
+        [onColumnWidthsChange]
+    );
+
     const changeLayout = useCallback(
         (next: GitHistoryLayout) => {
             setLayout(next);
@@ -455,6 +491,8 @@ export function GitHistory({
                             formatDate={formatDate}
                             commitActions={commitActions}
                             resolveAvatarUrl={resolveAvatarUrl}
+                            widths={columnWidths}
+                            onResizeColumn={resizeColumn}
                             labels={text}
                         />
                     )}

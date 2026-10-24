@@ -54,6 +54,8 @@ export type {
     GitHistoryLayout,
     GitHistoryOrientation,
     GitHistoryColumn,
+    GitHistoryColumnWidths,
+    GitHistoryResizableColumn,
     GitHistoryTab,
     GitHistoryTarget,
     GitCommit,

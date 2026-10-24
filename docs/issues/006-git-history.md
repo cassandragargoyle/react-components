@@ -286,6 +286,8 @@ New props: `layout`, `onLayoutChange`, `resolveAvatarUrl`, `linkify`, `onOpenLin
 - [ ] Optional status dot that does not rely on colour alone
 - [ ] Filter of the loaded commits; `findCommit` for an unloaded SHA
 - [ ] Row actions from `commitActions`, by mouse and keyboard
+- [ ] Resizable author, date and SHA columns (drag, arrow keys, double click resets),
+      reported through `onColumnWidthsChange`
 - [ ] Vertical (default) and horizontal layout with a draggable splitter
 - [ ] Detail panel tabs Commit, Diff (unified + split) and Files, each shown only with its
       data

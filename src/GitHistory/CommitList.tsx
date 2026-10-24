@@ -26,6 +26,21 @@ const LOAD_MORE_THRESHOLD = 48;
 /** The columns of the list */
 export type GitHistoryColumn = 'graph' | 'message' | 'author' | 'date' | 'sha' | 'status';
 
+/** Columns whose width the user can drag; the message column takes the rest */
+export type GitHistoryResizableColumn = 'author' | 'date' | 'sha';
+
+/** Widths of the resizable columns, in pixels */
+export type GitHistoryColumnWidths = Record<GitHistoryResizableColumn, number>;
+
+export const DEFAULT_COLUMN_WIDTHS: GitHistoryColumnWidths = { author: 160, date: 112, sha: 76 };
+export const MIN_COLUMN_WIDTH = 48;
+export const MAX_COLUMN_WIDTH = 480;
+// Width change of one arrow key press on a column border
+const RESIZE_STEP = 10;
+
+export const clampColumnWidth = (width: number): number =>
+    Math.round(Math.min(MAX_COLUMN_WIDTH, Math.max(MIN_COLUMN_WIDTH, width)));
+
 export interface CommitListLabels {
     commits: string;
     loadMore: string;
@@ -37,6 +52,7 @@ export interface CommitListLabels {
     columnSha: string;
     columnStatus: string;
     commitActions: string;
+    resizeColumn: string;
     merge: string;
     status: Record<GitCommitStatus, string>;
 }
@@ -58,12 +74,72 @@ export interface CommitListProps {
     formatDate: (iso: string) => string;
     commitActions?: (commit: GitCommit) => GitCommitAction[];
     resolveAvatarUrl?: (email: string, commit: GitCommit) => string | undefined;
+    widths: GitHistoryColumnWidths;
+    /** A border was dragged or moved by key; `done` is true when the change is complete */
+    onResizeColumn: (column: GitHistoryResizableColumn, width: number, done: boolean) => void;
     labels: CommitListLabels;
 }
 
 /** Key that identifies an author across commits */
 export function authorKey(commit: GitCommit): string {
     return (commit.authorEmail ?? commit.author).toLowerCase();
+}
+
+/**
+ * The draggable border on the left of a column header. The message column before it is
+ * flexible, so the border belongs to the column on its right: dragging it left widens that
+ * column. Arrow keys move it by RESIZE_STEP, a double click restores the default width
+ */
+function ColumnResizer({
+    column,
+    width,
+    label,
+    onResize,
+}: {
+    column: GitHistoryResizableColumn;
+    width: number;
+    label: string;
+    onResize: CommitListProps['onResizeColumn'];
+}): React.ReactElement {
+    const startDrag = (e: React.PointerEvent): void => {
+        e.preventDefault();
+        e.stopPropagation();
+        const startX = e.clientX;
+        let latest = width;
+        const onMove = (ev: PointerEvent): void => {
+            if (!Number.isFinite(ev.clientX - startX)) return;
+            latest = clampColumnWidth(width - (ev.clientX - startX));
+            onResize(column, latest, false);
+        };
+        const onUp = (): void => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+            onResize(column, latest, true);
+        };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+    };
+    const handleKeyDown = (e: React.KeyboardEvent): void => {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        e.preventDefault();
+        e.stopPropagation();
+        onResize(column, clampColumnWidth(width + (e.key === 'ArrowLeft' ? RESIZE_STEP : -RESIZE_STEP)), true);
+    };
+    return (
+        <span
+            className="git-history-col-resizer"
+            role="separator"
+            aria-orientation="vertical"
+            aria-label={label}
+            aria-valuenow={width}
+            aria-valuemin={MIN_COLUMN_WIDTH}
+            aria-valuemax={MAX_COLUMN_WIDTH}
+            tabIndex={0}
+            onPointerDown={startDrag}
+            onKeyDown={handleKeyDown}
+            onDoubleClick={() => onResize(column, DEFAULT_COLUMN_WIDTHS[column], true)}
+        />
+    );
 }
 
 function StatusDot({ status, label }: { status: GitCommitStatus; label: string }): React.ReactElement {
@@ -84,6 +160,8 @@ export function CommitList({
     formatDate,
     commitActions,
     resolveAvatarUrl,
+    widths,
+    onResizeColumn,
     labels,
 }: CommitListProps): React.ReactElement {
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -196,14 +274,19 @@ export function CommitList({
     const template = [
         show('graph') ? `${graphLanes * LANE_WIDTH + 8}px` : null,
         'minmax(120px, 1fr)',
-        show('author') ? 'minmax(96px, 180px)' : null,
-        show('date') ? '112px' : null,
-        show('sha') ? '76px' : null,
+        show('author') ? `${widths.author}px` : null,
+        show('date') ? `${widths.date}px` : null,
+        show('sha') ? `${widths.sha}px` : null,
         show('status') ? '24px' : null,
     ]
         .filter(Boolean)
         .join(' ');
     const gridStyle = { '--git-history-columns': template } as React.CSSProperties;
+    const headerText: Record<GitHistoryResizableColumn, string> = {
+        author: labels.columnAuthor,
+        date: labels.columnDate,
+        sha: labels.columnSha,
+    };
 
     return (
         <div className="git-history-commits" ref={scrollRef} onScroll={handleScroll}>
@@ -222,9 +305,20 @@ export function CommitList({
                     <div role="row" className="git-history-row" aria-rowindex={1}>
                         {show('graph') && <span role="columnheader" className="git-history-cell is-graph" aria-label={labels.columnGraph} />}
                         <span role="columnheader" className="git-history-cell">{labels.columnMessage}</span>
-                        {show('author') && <span role="columnheader" className="git-history-cell">{labels.columnAuthor}</span>}
-                        {show('date') && <span role="columnheader" className="git-history-cell">{labels.columnDate}</span>}
-                        {show('sha') && <span role="columnheader" className="git-history-cell">{labels.columnSha}</span>}
+                        {(['author', 'date', 'sha'] as const).map(
+                            (column) =>
+                                show(column) && (
+                                    <span key={column} role="columnheader" className="git-history-cell is-resizable">
+                                        <ColumnResizer
+                                            column={column}
+                                            width={widths[column]}
+                                            label={labels.resizeColumn.replace('{column}', headerText[column])}
+                                            onResize={onResizeColumn}
+                                        />
+                                        {headerText[column]}
+                                    </span>
+                                )
+                        )}
                         {show('status') && <span role="columnheader" className="git-history-cell" aria-label={labels.columnStatus} />}
                     </div>
                 </div>

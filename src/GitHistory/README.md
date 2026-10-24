@@ -57,6 +57,8 @@ For a folder pass `target="folder"` and the folder's path.
 | `onLayoutChange` | `(layout) => void` | — | Called after the layout toggle, a splitter drag or a splitter key, to persist it |
 | `initialDiffMode` | `'unified' \| 'split'` | `'unified'` | Initial diff mode |
 | `columns` | `Partial<Record<GitHistoryColumn, boolean>>` | all | `false` hides a column (`graph`, `author`, `date`, `sha`, `status`) |
+| `initialColumnWidths` | `Partial<GitHistoryColumnWidths>` | 160 / 112 / 76 | Widths of the `author`, `date` and `sha` columns in pixels, kept within 48–480 |
+| `onColumnWidthsChange` | `(widths) => void` | — | Called after a column border was dragged, moved by key or reset, to persist the widths |
 | `formatDate` | `(iso) => string` | relative, English | Display form of a date; the ISO date stays in the tooltip |
 | `formatFullDate` | `(iso) => string` | `YYYY-MM-DD HH:mm:ss` | Absolute date in the Commit tab |
 | `resolveAvatarUrl` | `(email, commit) => string \| undefined` | — | Author image; without it the avatar shows initials. The view never fetches one itself |
@@ -127,7 +129,10 @@ approach Git Extensions takes. A folder is never followed.
   Lanes take colours from `--git-history-lane-0` … `-7`; a merge is a hollow dot. A lane
   that continues on a later page stays open at the bottom.
 - **Columns** — a column without data hides itself (the status column when no commit has
-  a status); `columns` hides any of them.
+  a status); `columns` hides any of them. The message column takes the free width; the
+  author, date and SHA columns are resized by the border on their left in the header —
+  drag it left to widen the column, Left/Right move it by 10 px, a double click restores
+  the default width.
 - **Ref labels** — the checked-out branch bold, branches solid, remotes dashed, tags with
   a tag glyph; more than three fold into `+N` with the rest in its tooltip.
 - **Author highlight** — the other commits of the selected commit's author get a soft

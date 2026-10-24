@@ -313,7 +313,7 @@ describe('GitHistory rich view', () => {
         await findRows();
         fireEvent.click(screen.getByRole('button', { name: 'Show details beside the list' }));
         expect(onLayoutChange).toHaveBeenLastCalledWith({ orientation: 'horizontal', split: 0.45 });
-        fireEvent.keyDown(screen.getByRole('separator'), { key: 'ArrowRight' });
+        fireEvent.keyDown(screen.getByRole('separator', { name: 'Resize the list and the details' }), { key: 'ArrowRight' });
         expect(onLayoutChange).toHaveBeenLastCalledWith({ orientation: 'horizontal', split: 0.5 });
     });
 
@@ -326,5 +326,46 @@ describe('GitHistory rich view', () => {
         expect(list.length).toBeGreaterThan(0);
         expect(list.length).toBeLessThan(60);
         expect(screen.getByRole('grid')).toHaveAttribute('aria-rowcount', '1001');
+    });
+});
+
+describe('GitHistory column widths', () => {
+    const template = (): string => screen.getByRole('grid').style.getPropertyValue('--git-history-columns');
+
+    it('starts from the given widths and resizes a column by key, reporting the result', async () => {
+        const onColumnWidthsChange = vi.fn();
+        render(
+            <GitHistory
+                path="f.ts"
+                source={memorySource(2)}
+                initialColumnWidths={{ author: 200, sha: 9999 }}
+                onColumnWidthsChange={onColumnWidthsChange}
+            />
+        );
+        await findRows();
+        expect(template()).toContain('200px 112px 480px');
+        const border = screen.getByRole('separator', { name: 'Resize the Author column' });
+        fireEvent.keyDown(border, { key: 'ArrowLeft' });
+        expect(onColumnWidthsChange).toHaveBeenLastCalledWith({ author: 210, date: 112, sha: 480 });
+        expect(template()).toContain('210px 112px 480px');
+        fireEvent.keyDown(border, { key: 'ArrowRight' });
+        fireEvent.keyDown(border, { key: 'ArrowRight' });
+        expect(onColumnWidthsChange).toHaveBeenLastCalledWith({ author: 190, date: 112, sha: 480 });
+    });
+
+    it('widens a column when its left border is dragged left, and resets on double click', async () => {
+        const onColumnWidthsChange = vi.fn();
+        render(<GitHistory path="f.ts" source={memorySource(1)} onColumnWidthsChange={onColumnWidthsChange} />);
+        await findRows();
+        const border = screen.getByRole('separator', { name: 'Resize the Date column' });
+        // jsdom has no PointerEvent; a MouseEvent of the pointer type carries clientX
+        fireEvent(border, new MouseEvent('pointerdown', { bubbles: true, clientX: 500 }));
+        fireEvent(window, new MouseEvent('pointermove', { clientX: 460 }));
+        expect(template()).toContain('160px 152px 76px');
+        expect(onColumnWidthsChange).not.toHaveBeenCalled();
+        fireEvent(window, new MouseEvent('pointerup'));
+        expect(onColumnWidthsChange).toHaveBeenLastCalledWith({ author: 160, date: 152, sha: 76 });
+        fireEvent.doubleClick(border);
+        expect(onColumnWidthsChange).toHaveBeenLastCalledWith({ author: 160, date: 112, sha: 76 });
     });
 });
