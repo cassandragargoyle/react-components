@@ -150,7 +150,8 @@ Columns, from left to right; a column without data in the loaded commits is hidd
 | Graph | Lanes and commit dots; merges and branch points drawn as curves | `parents` |
 | Refs + subject | Labels of branches, remote branches and tags, then the subject | `refs`, `subject` |
 | Author | Avatar and name | `author`, `authorEmail`, avatar from the host |
-| Date | Relative date, full date in the tooltip | `date` |
+| Date | Exact author date, `YYYY-MM-DD HH:mm` in local time | `date` |
+| Age | Relative date (*3 days ago*), the exact date in the tooltip | `date` |
 | SHA | Short SHA, monospace | `shortSha` |
 | Status | A dot for the build or check status | `status` |
 
@@ -175,6 +176,18 @@ Columns, from left to right; a column without data in the loaded commits is hidd
   a bold author name, as in the screenshot.
 - **Status dot**: `status` is `success | failure | pending | unknown`; shown with a
   colour *and* a shape or tooltip, so it does not rely on colour alone.
+- **Date and Age**: two columns from the same author date. **Date** shows it exactly, as
+  `YYYY-MM-DD HH:mm` in the viewer's local time, with tabular digits so the column lines
+  up; its tooltip adds the seconds, the time zone offset and the commit date when it
+  differs. **Age** is the relative form that the single date column showed so far, renamed
+  so the two headers do not clash; its tooltip shows the exact date. Both are hidden or
+  shown through `columns` (`date`, `age`); default widths 128 px and 104 px.
+- **Column widths**: every column — the graph and the message included — has a border on
+  its right in the header. Dragging it changes that column alone, to any width from 16 px
+  up; the columns after it move along. The message column takes the free width until the
+  user resizes it; then it keeps its width, and free space stays after the last column. A
+  grid wider than the pane scrolls sideways. The host may replace the exact form with `formatColumnDate(iso)` — the column
+  keeps its fixed-width layout — and the relative one with `formatDate` as today.
 - **Filter**: a text box filters the loaded commits by subject, author or SHA. Typing a
   full or abbreviated SHA that is not loaded asks the host (`findCommit`, optional).
 - **Row actions**: a `⋯` button on hover and a context menu (keyboard: `Shift+F10`)
@@ -199,6 +212,49 @@ Tabs, each shown only when the host supports it:
 - **Files**: every file the commit changed (`loadCommitFiles(commit)` → path, status
   A/M/D/R, added/removed line counts); selecting one shows its diff
   (`loadDiff(commit, path)`). The file of this history is selected first.
+
+#### Change weight in the Files tab
+
+Each row of the Files tab ends, right-aligned, with the line counts and a **change weight
+mark** — how big the change is *for that file*:
+
+```text
+ M  src/core/chatSession.ts           +9   −0   ◉     ← 9 of 10 lines: the file was rewritten
+ M  src/core/messageRouter.ts        +40  −12   ○     ← 52 of 900 lines
+ M  src/legacy/bigTable.ts           +10   −0   ·     ← 10 of 10 000 lines: a touch
+ A  src/core/newModule.ts            +120  −0   ◉     ← a new file is changed through and through
+ R  docs/old.md → docs/new.md          +0   −0         ← pure rename: nothing to weigh
+ M  assets/logo.png                                   ← binary: no counts, no mark
+```
+
+- **Counts**: `+additions` in the added colour and `−deletions` in the removed colour, in
+  tabular digits so the columns of numbers line up.
+- **The mark** uses the same four glyphs as the Explorer's commit heat marks
+  (`·` `○` `●` `◉`, see `portunix-vscode` `src/electron/git/commitHeat.svg`), so the two
+  read as one visual language: *the bigger the dot, the more it matters*. It has no
+  fading here — the commit has one date.
+- **Relative, not absolute**: the weight is the share of the file the commit touched,
+  `ratio = (additions + deletions) / size`, where `size` is the larger of the file's line
+  count before and after the commit (`before = after − additions + deletions`). Ten changed
+  lines are a rewrite of a ten-line file and a touch of a ten-thousand-line one.
+
+  | Level | Ratio | Glyph | Reads as |
+  | ----- | ----- | ----- | -------- |
+  | 0 | no changed lines (rename, mode change) or binary | — | nothing to weigh |
+  | 1 | up to 5 % | `·` | a touch |
+  | 2 | up to 20 % | `○` | a noticeable change |
+  | 3 | up to 50 % | `●` | a large change |
+  | 4 | above 50 %, every added or deleted file | `◉` | rewritten |
+
+- **Tooltip** on the mark: *+9 −0 of 10 lines · 90 % of the file · rewritten*; the row's
+  accessible label carries the same words.
+- **Without a line count** (the host does not send `lines`, or the file was too big for it
+  to count) the counts are still shown and the mark is left out; nothing is guessed from
+  the byte size.
+- The levels are computed by an exported pure function `changeWeight(file)` →
+  `{ ratio, level }`, unit-tested with the cases above. The glyph is a small library
+  component shared with the history's other marks; Pilot's Explorer switches its heat
+  marks to the same component, so the glyphs cannot drift apart.
 
 Console and Build Report from the screenshot are left out (see Out of Scope).
 
@@ -252,6 +308,9 @@ interface GitChangedFile {
     status: 'added' | 'modified' | 'deleted' | 'renamed' | 'copied';
     additions?: number;
     deletions?: number;
+    /** Line count of the file after the commit (0 when deleted); turns on the change
+     *  weight mark */
+    lines?: number;
 }
 
 interface GitHistorySource {
@@ -286,9 +345,16 @@ New props: `layout`, `onLayoutChange`, `resolveAvatarUrl`, `linkify`, `onOpenLin
 - [ ] Optional status dot that does not rely on colour alone
 - [ ] Filter of the loaded commits; `findCommit` for an unloaded SHA
 - [ ] Row actions from `commitActions`, by mouse and keyboard
-- [ ] Resizable author, date and SHA columns (drag, arrow keys, double click resets),
-      reported through `onColumnWidthsChange`
+- [ ] Two date columns: **Date** as `YYYY-MM-DD HH:mm` (local time, `formatColumnDate`
+      to override) and **Age** with the relative date; both hideable and resizable
+- [ ] Every column resizable on its own by the border on its right (drag, arrow keys,
+      double click resets), down to 16 px; the message column flexible until resized; the
+      grid scrolls sideways when wider than the pane; reported through
+      `onColumnWidthsChange`
 - [ ] Vertical (default) and horizontal layout with a draggable splitter
+- [ ] Files tab rows end with `+additions −deletions` and a change weight mark relative to
+      the file's size (`changeWeight`, levels 0–4, the Explorer heat glyphs); tooltip and
+      accessible label in words; no mark without `lines`
 - [ ] Detail panel tabs Commit, Diff (unified + split) and Files, each shown only with its
       data
 - [ ] `target="folder"`: no follow toggle, no Diff tab, Files tab scoped to the folder

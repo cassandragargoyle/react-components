@@ -56,10 +56,11 @@ For a folder pass `target="folder"` and the folder's path.
 | `initialLayout` | `Partial<GitHistoryLayout>` | below, 45 % | Where the details sit (`vertical` = below, `horizontal` = beside) and the list's share |
 | `onLayoutChange` | `(layout) => void` | — | Called after the layout toggle, a splitter drag or a splitter key, to persist it |
 | `initialDiffMode` | `'unified' \| 'split'` | `'unified'` | Initial diff mode |
-| `columns` | `Partial<Record<GitHistoryColumn, boolean>>` | all | `false` hides a column (`graph`, `author`, `date`, `sha`, `status`) |
-| `initialColumnWidths` | `Partial<GitHistoryColumnWidths>` | 160 / 112 / 76 | Widths of the `author`, `date` and `sha` columns in pixels, kept within 48–480 |
+| `columns` | `Partial<Record<GitHistoryColumn, boolean>>` | all | `false` hides a column (`graph`, `author`, `date`, `age`, `sha`, `status`) |
+| `initialColumnWidths` | `GitHistoryColumnWidths` | — | Widths of any columns in pixels, kept within 16–1600; the others keep their defaults |
 | `onColumnWidthsChange` | `(widths) => void` | — | Called after a column border was dragged, moved by key or reset, to persist the widths |
-| `formatDate` | `(iso) => string` | relative, English | Display form of a date; the ISO date stays in the tooltip |
+| `formatDate` | `(iso) => string` | relative, English | The Age column, e.g. *3 days ago* |
+| `formatColumnDate` | `(iso) => string` | `YYYY-MM-DD HH:mm` | The Date column, exact, local time |
 | `formatFullDate` | `(iso) => string` | `YYYY-MM-DD HH:mm:ss` | Absolute date in the Commit tab |
 | `resolveAvatarUrl` | `(email, commit) => string \| undefined` | — | Author image; without it the avatar shows initials. The view never fetches one itself |
 | `linkify` | `(commit) => GitLink[]` | — | Links under the commit message, e.g. *View on GitHub*, *Issue 42* |
@@ -97,11 +98,12 @@ interface GitCommit {
 
 `GitHistoryPage` is `{ commits, hasMore }`, newest first. `GitCommitDetails` is
 `{ branches, tags, describe?: { tag, distance } }`. `GitChangedFile` is
-`{ path, oldPath?, status, additions?, deletions? }`. A rejected promise is shown with the
+`{ path, oldPath?, status, additions?, deletions?, lines? }`, where `lines` is the file's line
+count after the commit (0 when deleted). A rejected promise is shown with the
 error's `message`, so reject with a readable `Error`.
 
-`parseUnifiedDiff(text)`, `layoutCommitGraph(commits)` and `DEFAULT_GIT_HISTORY_LABELS` are
-exported too. The graph layout is a pure function over the loaded commits: lane per
+`parseUnifiedDiff(text)`, `layoutCommitGraph(commits)`, `changeWeight(file)`, `HeatGlyph` and
+`DEFAULT_GIT_HISTORY_LABELS` are exported too. The graph layout is a pure function over the loaded commits: lane per
 commit and the line segments of each row.
 
 ### Commands for a git-backed source
@@ -128,11 +130,16 @@ approach Git Extensions takes. A folder is never followed.
 - **Graph** — drawn when every loaded commit has `parents`, and hidden while filtering.
   Lanes take colours from `--git-history-lane-0` … `-7`; a merge is a hollow dot. A lane
   that continues on a later page stays open at the bottom.
-- **Columns** — a column without data hides itself (the status column when no commit has
-  a status); `columns` hides any of them. The message column takes the free width; the
-  author, date and SHA columns are resized by the border on their left in the header —
-  drag it left to widen the column, Left/Right move it by 10 px, a double click restores
-  the default width.
+- **Columns** — graph, message, author, date, age, SHA, status. A column without data
+  hides itself (the status column when no commit has a status); `columns` hides any of
+  them. **Date** shows the author date exactly, **Age** relatively; both carry the exact
+  date with its time zone, and the commit date when it differs, in the tooltip.
+- **Column widths** — every column has its own width and a border on its right in the
+  header: dragging it changes that column alone and the columns after it move along;
+  Left/Right move it by 10 px, a double click restores the default. Defaults: the graph
+  fits its lanes, author 160, date 128, age 104, SHA 76, status 24 px; the message column
+  takes the free width until it is resized, then it keeps its own width too and the free
+  space stays after the last column. A grid wider than the pane scrolls sideways.
 - **Ref labels** — the checked-out branch bold, branches solid, remotes dashed, tags with
   a tag glyph; more than three fold into `+N` with the rest in its tooltip.
 - **Author highlight** — the other commits of the selected commit's author get a soft
@@ -151,6 +158,13 @@ approach Git Extensions takes. A folder is never followed.
   unified or split; not shown for a folder. *Files*: every file of the commit with its
   status and line counts, and the chosen file's diff; for a folder only the files below it,
   with a switch for all.
+- **Change weight** — each row of the Files tab ends with `+additions −deletions` and a mark
+  of how much of *that file* the commit changed: changed lines over the larger of the line
+  counts before and after (`changeWeight`). Up to 5 % `·`, 20 % `○`, 50 % `●`, above `◉`; an
+  added or deleted file is `◉`; a rename or a binary has no mark, and so has a file without
+  `lines`. The tooltip and the row's accessible name say it in words. The glyph is
+  `HeatGlyph`, the same one Pilot uses for its Explorer commit heat; colour it through
+  `--git-history-weight-color`.
 - **States** — loading and error of the whole view use `ProgressPanel`; no commits shows
   the empty state; a failed diff, file list, detail or next page is reported in place.
 
@@ -170,6 +184,8 @@ lane colours, `--git-history-graph-hollow` and `--git-history-ref-border` can be
 - `CommitGraphCell.tsx` — one row of the graph as SVG
 - `layoutCommitGraph.ts` — the lane layout of the graph
 - `RefLabels.tsx` — ref chips
+- `HeatGlyph.tsx` — the four-step heat glyph
+- `changeWeight.ts` — the change weight of a file in a commit
 - `CommitMenu.tsx` — the row action menu
 - `DetailPanel.tsx` — the Commit, Diff and Files tabs
 - `DiffView.tsx` — unified and split diff tables

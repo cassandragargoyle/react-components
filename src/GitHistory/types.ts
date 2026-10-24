@@ -68,6 +68,8 @@ export interface GitChangedFile {
     status: GitFileStatus;
     additions?: number;
     deletions?: number;
+    /** Line count of the file after the commit (0 when deleted); turns on the change weight */
+    lines?: number;
 }
 
 /** A link shown under the commit message, e.g. "View on GitHub" or "Issue 42" */

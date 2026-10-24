@@ -329,43 +329,101 @@ describe('GitHistory rich view', () => {
     });
 });
 
-describe('GitHistory column widths', () => {
+describe('GitHistory columns', () => {
     const template = (): string => screen.getByRole('grid').style.getPropertyValue('--git-history-columns');
 
-    it('starts from the given widths and resizes a column by key, reporting the result', async () => {
+    it('shows the exact date and the relative age in two columns', async () => {
+        render(
+            <GitHistory
+                path="f.ts"
+                source={memorySource(1)}
+                formatDate={() => 'a while ago'}
+                formatColumnDate={(iso) => `exact ${iso.slice(0, 10)}`}
+            />
+        );
+        const [row] = await findRows();
+        expect(screen.getByRole('columnheader', { name: 'Date' })).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', { name: 'Age' })).toBeInTheDocument();
+        expect(within(row).getByText('exact 2026-01-01')).toHaveAttribute('title', expect.stringMatching(/^2026-01-01 \d\d:00:00 \(UTC[+-]\d\d:\d\d\)$/));
+        expect(within(row).getByText('a while ago')).toBeInTheDocument();
+    });
+
+    it('formats the Date column as YYYY-MM-DD HH:mm by default', async () => {
+        render(<GitHistory path="f.ts" source={memorySource(1)} />);
+        const [row] = await findRows();
+        expect(row.querySelector('.is-date')?.textContent).toMatch(/^2026-01-01 \d\d:00$/);
+    });
+
+    it('resizes each column on its own, the message column included', async () => {
         const onColumnWidthsChange = vi.fn();
         render(
             <GitHistory
                 path="f.ts"
                 source={memorySource(2)}
-                initialColumnWidths={{ author: 200, sha: 9999 }}
+                initialColumnWidths={{ message: 300, sha: 9999 }}
                 onColumnWidthsChange={onColumnWidthsChange}
             />
         );
         await findRows();
-        expect(template()).toContain('200px 112px 480px');
-        const border = screen.getByRole('separator', { name: 'Resize the Author column' });
-        fireEvent.keyDown(border, { key: 'ArrowLeft' });
-        expect(onColumnWidthsChange).toHaveBeenLastCalledWith({ author: 210, date: 112, sha: 480 });
-        expect(template()).toContain('210px 112px 480px');
-        fireEvent.keyDown(border, { key: 'ArrowRight' });
-        fireEvent.keyDown(border, { key: 'ArrowRight' });
-        expect(onColumnWidthsChange).toHaveBeenLastCalledWith({ author: 190, date: 112, sha: 480 });
+        // Fixed message, then author, date, age, sha (capped) and the filler track
+        expect(template()).toBe('300px 160px 128px 104px 1600px minmax(0, 1fr)');
+        fireEvent.keyDown(screen.getByRole('separator', { name: 'Resize the Message column' }), { key: 'ArrowLeft' });
+        expect(onColumnWidthsChange).toHaveBeenLastCalledWith({ message: 290, sha: 1600 });
+        fireEvent.keyDown(screen.getByRole('separator', { name: 'Resize the Author column' }), { key: 'ArrowRight' });
+        expect(onColumnWidthsChange).toHaveBeenLastCalledWith({ message: 290, author: 170, sha: 1600 });
+        expect(template()).toBe('290px 170px 128px 104px 1600px minmax(0, 1fr)');
     });
 
-    it('widens a column when its left border is dragged left, and resets on double click', async () => {
+    it('narrows a column down to the minimum by dragging its right border, and resets on double click', async () => {
+        const onColumnWidthsChange = vi.fn();
+        render(<GitHistory path="f.ts" source={memorySource(1)} initialColumnWidths={{ message: 300 }} onColumnWidthsChange={onColumnWidthsChange} />);
+        await findRows();
+        const border = screen.getByRole('separator', { name: 'Resize the Message column' });
+        // jsdom has no PointerEvent; a MouseEvent of the pointer type carries clientX
+        fireEvent(border, new MouseEvent('pointerdown', { bubbles: true, clientX: 500 }));
+        fireEvent(window, new MouseEvent('pointermove', { clientX: 0 }));
+        expect(template()).toMatch(/^16px /);
+        expect(onColumnWidthsChange).not.toHaveBeenCalled();
+        fireEvent(window, new MouseEvent('pointerup'));
+        expect(onColumnWidthsChange).toHaveBeenLastCalledWith({ message: 16 });
+        fireEvent.doubleClick(border);
+        expect(onColumnWidthsChange).toHaveBeenLastCalledWith({});
+        // Flexible again, so no filler track
+        expect(template()).toBe('minmax(120px, 1fr) 160px 128px 104px 76px');
+    });
+
+    it('starts a flexible message column from its width on screen', async () => {
         const onColumnWidthsChange = vi.fn();
         render(<GitHistory path="f.ts" source={memorySource(1)} onColumnWidthsChange={onColumnWidthsChange} />);
         await findRows();
-        const border = screen.getByRole('separator', { name: 'Resize the Date column' });
-        // jsdom has no PointerEvent; a MouseEvent of the pointer type carries clientX
-        fireEvent(border, new MouseEvent('pointerdown', { bubbles: true, clientX: 500 }));
-        fireEvent(window, new MouseEvent('pointermove', { clientX: 460 }));
-        expect(template()).toContain('160px 152px 76px');
-        expect(onColumnWidthsChange).not.toHaveBeenCalled();
-        fireEvent(window, new MouseEvent('pointerup'));
-        expect(onColumnWidthsChange).toHaveBeenLastCalledWith({ author: 160, date: 152, sha: 76 });
-        fireEvent.doubleClick(border);
-        expect(onColumnWidthsChange).toHaveBeenLastCalledWith({ author: 160, date: 112, sha: 76 });
+        const border = screen.getByRole('separator', { name: 'Resize the Message column' });
+        vi.spyOn(border.parentElement!, 'getBoundingClientRect').mockReturnValue({ width: 400 } as DOMRect);
+        fireEvent.keyDown(border, { key: 'ArrowRight' });
+        expect(onColumnWidthsChange).toHaveBeenLastCalledWith({ message: 410 });
+    });
+});
+
+describe('GitHistory change weight', () => {
+    it('ends each file row with the counts and a weight mark relative to the file size', async () => {
+        const loadCommitFiles = vi.fn(async () => [
+            { path: 'small.ts', status: 'modified' as const, additions: 9, deletions: 0, lines: 10 },
+            { path: 'big.ts', status: 'modified' as const, additions: 10, deletions: 0, lines: 10_000 },
+            { path: 'logo.png', status: 'modified' as const },
+            { path: 'count-only.ts', status: 'modified' as const, additions: 3, deletions: 1 },
+        ]);
+        render(<GitHistory path="small.ts" source={memorySource(1, { loadCommitFiles })} />);
+        await findRows();
+        fireEvent.click(screen.getByRole('tab', { name: 'Files' }));
+        const [small, big, logo, countOnly] = await screen.findAllByRole('option');
+
+        expect(within(small).getByText('+9')).toBeInTheDocument();
+        expect(within(small).getByText('−0')).toBeInTheDocument();
+        expect(small).toHaveAccessibleName('Modified small.ts, +9 −0 of 10 lines · 90 % of the file · rewritten');
+        expect(small.querySelector('.git-history-file-weight svg circle + circle')).not.toBeNull();
+
+        expect(big.querySelector('.git-history-file-weight')).toHaveAttribute('title', expect.stringContaining('0 % of the file · a touch'));
+        expect(logo.querySelector('.git-history-file-weight svg')).toBeNull();
+        expect(countOnly.querySelector('.git-history-file-weight svg')).toBeNull();
+        expect(within(countOnly).getByText('+3')).toBeInTheDocument();
     });
 });

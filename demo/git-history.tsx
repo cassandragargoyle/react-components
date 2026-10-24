@@ -5,7 +5,7 @@
 
 // The GitHistory demo at /demo/git-history.html: a generated history with branches, merges and refs
 // The in-memory source answers with a delay, so loading states and paging are visible;
-// ?folder shows a folder history, ?simple only the phase 1 fields
+// ?folder shows a folder history, ?simple only the phase 1 fields, ?narrow fixed narrow columns
 
 import React, { useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -75,9 +75,12 @@ const COMMITS = buildHistory();
 function filesOf(commit: GitCommit): GitChangedFile[] {
     const index = COMMITS.indexOf(commit);
     return [
-        { path: 'src/history.ts', status: index === COMMITS.length - 1 ? 'added' : 'modified', additions: 2, deletions: 1 },
-        { path: 'src/history.test.ts', status: 'modified', additions: 5, deletions: 0 },
-        { path: 'docs/history.md', status: 'modified', additions: 1, deletions: 1 },
+        { path: 'src/history.ts', status: index === COMMITS.length - 1 ? 'added' : 'modified', additions: 2, deletions: 1, lines: 40 },
+        { path: 'src/history.test.ts', status: 'modified', additions: 5, deletions: 0, lines: 12 },
+        { path: 'src/table.ts', status: 'modified', additions: 10, deletions: 2, lines: 10_000 },
+        { path: 'docs/history.md', status: 'modified', additions: 30, deletions: 28, lines: 60 },
+        { path: 'docs/old.md', oldPath: 'docs/older.md', status: 'renamed', additions: 0, deletions: 0, lines: 5 },
+        { path: 'assets/logo.png', status: 'modified' },
     ];
 }
 
@@ -157,6 +160,8 @@ function Demo(): React.ReactElement {
                 { id: 'copy-subject', label: 'Copy subject', run: () => void navigator.clipboard?.writeText(commit.subject) },
             ]}
             onLayoutChange={(layout) => console.info('[demo] layout', layout)}
+            initialColumnWidths={query.has('narrow') ? { message: 260, author: 120 } : undefined}
+            onColumnWidthsChange={(widths) => console.info('[demo] column widths', widths)}
         />
     );
 }

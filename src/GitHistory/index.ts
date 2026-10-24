@@ -8,11 +8,15 @@
 
 export { GitHistory, DEFAULT_GIT_HISTORY_LABELS } from './GitHistory';
 export type { GitHistoryProps, GitHistoryLabels, GitHistoryLayout, GitHistoryOrientation } from './GitHistory';
-export type { GitHistoryColumn, GitHistoryColumnWidths, GitHistoryResizableColumn } from './CommitList';
+export type { GitHistoryColumn, GitHistoryColumnWidths } from './CommitList';
 export type { GitHistoryTab } from './DetailPanel';
 export type { DiffViewMode } from './DiffView';
 export { parseUnifiedDiff } from './parseUnifiedDiff';
 export { layoutCommitGraph } from './layoutCommitGraph';
+export { changeWeight, CHANGE_WEIGHT_LIMITS } from './changeWeight';
+export type { ChangeWeight } from './changeWeight';
+export { HeatGlyph } from './HeatGlyph';
+export type { HeatGlyphProps, HeatLevel } from './HeatGlyph';
 export type { GraphCommit, GraphRow, GraphSegment } from './layoutCommitGraph';
 export type {
     GitHistoryTarget,

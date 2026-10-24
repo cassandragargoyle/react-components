@@ -9,14 +9,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ProgressPanel } from '../Progress';
 import {
+    COLUMN_ORDER,
     CommitList,
-    DEFAULT_COLUMN_WIDTHS,
     authorKey,
     clampColumnWidth,
     type CommitListLabels,
     type GitHistoryColumn,
     type GitHistoryColumnWidths,
-    type GitHistoryResizableColumn,
 } from './CommitList';
 import { DetailPanel, type DetailPanelLabels, type GitHistoryTab } from './DetailPanel';
 import type { DiffViewMode } from './DiffView';
@@ -92,6 +91,7 @@ export const DEFAULT_GIT_HISTORY_LABELS: GitHistoryLabels = {
     columnMessage: 'Message',
     columnAuthor: 'Author',
     columnDate: 'Date',
+    columnAge: 'Age',
     columnSha: 'Commit',
     columnStatus: 'Status',
     commitActions: 'Commit actions',
@@ -120,6 +120,8 @@ export const DEFAULT_GIT_HISTORY_LABELS: GitHistoryLabels = {
     noFilesInFolder: 'No file below this folder changed',
     files: 'Changed files',
     fileStatus: { added: 'Added', modified: 'Modified', deleted: 'Deleted', renamed: 'Renamed', copied: 'Copied' },
+    changeWeight: '{added} {deleted} of {lines} lines · {percent} % of the file · {level}',
+    changeWeightLevel: { 1: 'a touch', 2: 'a noticeable change', 3: 'a large change', 4: 'rewritten' },
 };
 
 /** Where the detail panel sits: under the list or beside it */
@@ -152,12 +154,15 @@ export interface GitHistoryProps {
     initialDiffMode?: DiffViewMode;
     /** Columns to hide; a column without data in the loaded commits hides itself */
     columns?: Partial<Record<GitHistoryColumn, boolean>>;
-    /** Initial widths of the author, date and SHA columns, in pixels */
-    initialColumnWidths?: Partial<GitHistoryColumnWidths>;
-    /** Called when a column border has been dragged or moved by key, to persist the widths */
+    /** Initial widths of any columns, in pixels; the others keep their defaults */
+    initialColumnWidths?: GitHistoryColumnWidths;
+    /** Called when a column border has been dragged, moved by key or reset, to persist the
+     *  widths; a column missing from the object has its default width */
     onColumnWidthsChange?: (widths: GitHistoryColumnWidths) => void;
-    /** Display form of a date; the ISO date stays in the tooltip. Default: relative, English */
+    /** Relative form of a date, in the Age column. Default: relative, English */
     formatDate?: (iso: string) => string;
+    /** Exact form of a date, in the Date column. Default: local `YYYY-MM-DD HH:mm` */
+    formatColumnDate?: (iso: string) => string;
     /** Absolute form of a date in the Commit tab. Default: local `YYYY-MM-DD HH:mm:ss` */
     formatFullDate?: (iso: string) => string;
     /** Image of an author; without it the avatar shows initials. Never fetched by the view itself */
@@ -208,12 +213,28 @@ function formatRelativeDate(iso: string): string {
     return format.format(0, 'minute');
 }
 
+const pad = (n: number): string => String(n).padStart(2, '0');
+
 /** Default absolute date: local time as YYYY-MM-DD HH:mm:ss */
 function formatLocalDateTime(iso: string): string {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return iso;
-    const p = (n: number): string => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+/** Default form of the Date column: local time as YYYY-MM-DD HH:mm */
+function formatShortDateTime(iso: string): string {
+    const full = formatLocalDateTime(iso);
+    return full === iso ? iso : full.slice(0, 16);
+}
+
+/** Local time zone offset of a date, e.g. UTC+02:00 */
+function zoneOf(iso: string): string {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    const minutes = -d.getTimezoneOffset();
+    const sign = minutes < 0 ? '-' : '+';
+    return `UTC${sign}${pad(Math.floor(Math.abs(minutes) / 60))}:${pad(Math.abs(minutes) % 60)}`;
 }
 
 function errorMessage(err: unknown): string {
@@ -252,6 +273,7 @@ export function GitHistory({
     initialColumnWidths,
     onColumnWidthsChange,
     formatDate = formatRelativeDate,
+    formatColumnDate = formatShortDateTime,
     formatFullDate = formatLocalDateTime,
     resolveAvatarUrl,
     linkify,
@@ -281,10 +303,10 @@ export function GitHistory({
     const [tab, setTab] = useState<GitHistoryTab>(target === 'folder' ? 'files' : 'diff');
     const [diffMode, setDiffMode] = useState<DiffViewMode>(initialDiffMode);
     const [columnWidths, setColumnWidths] = useState<GitHistoryColumnWidths>(() => {
-        const widths = { ...DEFAULT_COLUMN_WIDTHS };
-        for (const key of Object.keys(widths) as GitHistoryResizableColumn[]) {
-            const given = initialColumnWidths?.[key];
-            if (typeof given === 'number' && Number.isFinite(given)) widths[key] = clampColumnWidth(given);
+        const widths: GitHistoryColumnWidths = {};
+        for (const column of COLUMN_ORDER) {
+            const given = initialColumnWidths?.[column];
+            if (typeof given === 'number' && Number.isFinite(given)) widths[column] = clampColumnWidth(given);
         }
         return widths;
     });
@@ -337,6 +359,19 @@ export function GitHistory({
         );
     }, [list, loadingMore, source, follow, pageSize]);
 
+    // Tooltip of the date columns: the exact author date with its zone, and the commit date
+    // when it differs (a rebase or an amend)
+    const describeDate = useCallback(
+        (commit: GitCommit): string => {
+            const lines = [`${formatFullDate(commit.date)} (${zoneOf(commit.date)})`];
+            if (commit.commitDate && commit.commitDate !== commit.date) {
+                lines.push(`${text.commitDate}: ${formatFullDate(commit.commitDate)}`);
+            }
+            return lines.join('\n');
+        },
+        [formatFullDate, text.commitDate]
+    );
+
     const select = useCallback(
         (commit: GitCommit) => {
             setSelected(commit);
@@ -377,7 +412,7 @@ export function GitHistory({
     );
 
     const visibleColumns = useMemo(() => {
-        const set = new Set<GitHistoryColumn>(['graph', 'message', 'author', 'date', 'sha', 'status']);
+        const set = new Set<GitHistoryColumn>(COLUMN_ORDER);
         if (!commits.some((c) => c.status)) set.delete('status');
         for (const [column, visible] of Object.entries(columns ?? {})) {
             if (visible === false && column !== 'message') set.delete(column as GitHistoryColumn);
@@ -404,8 +439,10 @@ export function GitHistory({
     // Live width while a border is dragged; the host hears about it once the change is done
     const columnWidthsRef = useRef(columnWidths);
     const resizeColumn = useCallback(
-        (column: GitHistoryResizableColumn, width: number, done: boolean) => {
-            const next = { ...columnWidthsRef.current, [column]: width };
+        (column: GitHistoryColumn, width: number | undefined, done: boolean) => {
+            const next = { ...columnWidthsRef.current };
+            if (width === undefined) delete next[column];
+            else next[column] = width;
             columnWidthsRef.current = next;
             setColumnWidths(next);
             if (done) onColumnWidthsChange?.(next);
@@ -489,6 +526,8 @@ export function GitHistory({
                             onSelect={select}
                             onLoadMore={loadMore}
                             formatDate={formatDate}
+                            formatColumnDate={formatColumnDate}
+                            describeDate={describeDate}
                             commitActions={commitActions}
                             resolveAvatarUrl={resolveAvatarUrl}
                             widths={columnWidths}

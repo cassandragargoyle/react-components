@@ -41,6 +41,8 @@ const EXPECTED = [
     'GitHistory',
     'parseUnifiedDiff',
     'layoutCommitGraph',
+    'changeWeight',
+    'HeatGlyph',
     'GraphCanvas',
     'GraphLens3D',
     'MarkdownView',
@@ -71,7 +73,7 @@ describe('package entry point', () => {
 
     it('exports nothing beyond the declared surface', () => {
         expect(Object.keys(api).sort()).toEqual(
-            [...EXPECTED, 'DEFAULT_OPEN_PANEL_LABELS', 'DEFAULT_GIT_HISTORY_LABELS', 'blockDocumentMessages'].sort(),
+            [...EXPECTED, 'DEFAULT_OPEN_PANEL_LABELS', 'DEFAULT_GIT_HISTORY_LABELS', 'CHANGE_WEIGHT_LIMITS', 'blockDocumentMessages'].sort(),
         );
     });
 });

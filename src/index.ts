@@ -47,15 +47,25 @@ export type {
     PreflightFailureReason,
 } from './CodeEditor';
 
-export { GitHistory, DEFAULT_GIT_HISTORY_LABELS, parseUnifiedDiff, layoutCommitGraph } from './GitHistory';
+export {
+    GitHistory,
+    DEFAULT_GIT_HISTORY_LABELS,
+    parseUnifiedDiff,
+    layoutCommitGraph,
+    changeWeight,
+    CHANGE_WEIGHT_LIMITS,
+    HeatGlyph,
+} from './GitHistory';
 export type {
+    ChangeWeight,
+    HeatGlyphProps,
+    HeatLevel,
     GitHistoryProps,
     GitHistoryLabels,
     GitHistoryLayout,
     GitHistoryOrientation,
     GitHistoryColumn,
     GitHistoryColumnWidths,
-    GitHistoryResizableColumn,
     GitHistoryTab,
     GitHistoryTarget,
     GitCommit,

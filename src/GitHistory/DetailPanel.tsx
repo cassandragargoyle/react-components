@@ -8,7 +8,9 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Avatar } from '../Avatar';
+import { changeWeight } from './changeWeight';
 import { authorKey } from './CommitList';
+import { HeatGlyph } from './HeatGlyph';
 import { DiffView, type DiffViewMode } from './DiffView';
 import { parseUnifiedDiff } from './parseUnifiedDiff';
 import type {
@@ -59,6 +61,9 @@ export interface DetailPanelLabels {
     deleted: string;
     selectCommit: string;
     fileStatus: Record<GitChangedFile['status'], string>;
+    /** Change weight tooltip; {added}, {deleted}, {lines}, {percent} and {level} are filled in */
+    changeWeight: string;
+    changeWeightLevel: Record<1 | 2 | 3 | 4, string>;
 }
 
 export interface DetailPanelProps {
@@ -343,6 +348,18 @@ function isBelow(file: string, folder: string): boolean {
     return prefix === '' || file === prefix || file.startsWith(`${prefix}/`);
 }
 
+// Words for a file's change, e.g. "+9 −0 of 10 lines · 90 % of the file · rewritten"
+function describeChange(file: GitChangedFile, labels: DetailPanelLabels): string | undefined {
+    const weight = changeWeight(file);
+    if (weight.level === 0 || weight.ratio === null || weight.size === null) return undefined;
+    return labels.changeWeight
+        .replace('{added}', `+${file.additions ?? 0}`)
+        .replace('{deleted}', `\u2212${file.deletions ?? 0}`)
+        .replace('{lines}', String(weight.size))
+        .replace('{percent}', String(Math.round(weight.ratio * 100)))
+        .replace('{level}', labels.changeWeightLevel[weight.level]);
+}
+
 function FilesTab(props: DetailPanelProps & { commit: GitCommit }): React.ReactElement {
     const { commit, source, target, path, diffMode, onDiffModeChange, labels } = props;
     const files = useAsync<GitChangedFile[]>(() => source.loadCommitFiles!(commit), commit.sha);
@@ -395,27 +412,35 @@ function FilesTab(props: DetailPanelProps & { commit: GitCommit }): React.ReactE
                     onKeyDown={handleKeyDown}
                 >
                     {shown.length === 0 && <div className="git-history-diff-note">{labels.noFilesInFolder}</div>}
-                    {shown.map((file) => (
-                        <div
-                            key={file.path}
-                            role="option"
-                            aria-selected={file.path === selected}
-                            className={`git-history-file${file.path === selected ? ' is-selected' : ''}`}
-                            title={file.oldPath ? `${file.oldPath} → ${file.path}` : file.path}
-                            onClick={() => setSelected(file.path)}
-                        >
-                            <span className={`git-history-file-status is-${file.status}`} title={labels.fileStatus[file.status]}>
-                                {FILE_STATUS_LETTER[file.status]}
-                            </span>
-                            <span className="git-history-file-path">{`${file.path}\u200e`}</span>
-                            {(file.additions !== undefined || file.deletions !== undefined) && (
-                                <span className="git-history-file-counts">
-                                    <span className="is-add">+{file.additions ?? 0}</span>{' '}
-                                    <span className="is-delete">-{file.deletions ?? 0}</span>
+                    {shown.map((file) => {
+                        const weight = changeWeight(file);
+                        const change = describeChange(file, labels);
+                        return (
+                            <div
+                                key={file.path}
+                                role="option"
+                                aria-selected={file.path === selected}
+                                aria-label={[`${labels.fileStatus[file.status]} ${file.path}`, change].filter(Boolean).join(', ')}
+                                className={`git-history-file${file.path === selected ? ' is-selected' : ''}`}
+                                title={file.oldPath ? `${file.oldPath} → ${file.path}` : file.path}
+                                onClick={() => setSelected(file.path)}
+                            >
+                                <span className={`git-history-file-status is-${file.status}`} title={labels.fileStatus[file.status]}>
+                                    {FILE_STATUS_LETTER[file.status]}
                                 </span>
-                            )}
-                        </div>
-                    ))}
+                                <span className="git-history-file-path">{`${file.path}\u200e`}</span>
+                                {(file.additions !== undefined || file.deletions !== undefined) && (
+                                    <span className="git-history-file-counts">
+                                        <span className="is-add">+{file.additions ?? 0}</span>
+                                        <span className="is-delete">{'\u2212'}{file.deletions ?? 0}</span>
+                                    </span>
+                                )}
+                                <span className="git-history-file-weight" title={change}>
+                                    <HeatGlyph level={weight.level} />
+                                </span>
+                            </div>
+                        );
+                    })}
                 </div>
                 {target === 'folder' && own.length < all.length && (
                     <label className="git-history-files-all">
