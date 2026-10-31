@@ -10,6 +10,7 @@
 import React, { type JSX, useRef, useEffect } from 'react';
 import ForceGraph3D from '3d-force-graph';
 import {
+    GraphLensGroups,
     GraphLensNode,
     GraphLensLink,
     endId,
@@ -22,6 +23,8 @@ import {
 interface GraphLens3DViewportProps {
     nodes: GraphLensNode[];
     links: GraphLensLink[];
+    /** Group definitions of the document (meta.groups) */
+    groups?: GraphLensGroups;
     degreeOf: (id: string) => number;
     selectedId: string | null;
     highlightNodes: Set<string>;
@@ -75,9 +78,9 @@ export function GraphLens3DViewport(props: GraphLens3DViewportProps): JSX.Elemen
 
         const nodeColorOf = (n: any): string => {
             const p = propsRef.current;
-            if (!p.selectedId) return nodeKindColor(n);
+            if (!p.selectedId) return nodeKindColor(n, p.groups);
             if (endId(n.id) === p.selectedId) return SELECTED_NODE;
-            return p.highlightNodes.has(endId(n.id)) ? nodeKindColor(n) : DIM_NODE;
+            return p.highlightNodes.has(endId(n.id)) ? nodeKindColor(n, p.groups) : DIM_NODE;
         };
 
         const linkColorOf = (l: any): string => {
@@ -208,7 +211,7 @@ export function GraphLens3DViewport(props: GraphLens3DViewportProps): JSX.Elemen
         graph.nodeColor(graph.nodeColor());
         graph.linkColor(graph.linkColor());
         graph.linkWidth(graph.linkWidth());
-    }, [props.selectedId, props.highlightNodes, props.highlightLinks]);
+    }, [props.selectedId, props.highlightNodes, props.highlightLinks, props.groups]);
 
     // Re-evaluate visibility and fit the visible subset when search/filters change
     useEffect(() => {

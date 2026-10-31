@@ -17,6 +17,7 @@ single-selection model.
 | Prop | Type | Description |
 | ----------------- | -------------------------------- | ----------- |
 | `nodes` | `GraphLensNode[]` | Nodes to display — the caller passes only nodes that pass the toolbar search/kind filters (`isVisible`), so the table always matches the 3D view |
+| `groups` | `GraphLensGroups \| undefined` | Group definitions of the document (`meta.groups`), used for the Kind column label and swatch |
 | `selectedId` | `string \| null` | Currently selected node id, used to highlight the matching row and to drive the "Selected" filter |
 | `filter` | `TableFilter` (`'all' \| 'selected'`) | Current table filter mode |
 | `onFilterChange` | `(filter: TableFilter) => void` | Called when the user clicks the All/Selected toggle |
@@ -28,8 +29,9 @@ single-selection model.
 
 - **ID** — `node.id`
 - **Label** — `node.label`, falling back to `node.title`, then `node.id`
-- **Kind** — `kindOf(node)` (`tag` or the voice type, e.g. `VoC`), rendered with a
-  color swatch via `kindColor()` (`KindCellRenderer`)
+- **Kind** — the group label via `kindLabel()` of `kindOf(node)` (`node.group`, `tag`,
+  the voice type, e.g. `VoC`, or `node.type`), rendered with a color swatch via
+  `kindColor()` (`KindCellRenderer`)
 - **Degree** — number of connecting links, via `degreeOf(node.id)`
 - **Meta columns** — one column per unique key found across `node.meta` objects
   (`collectMetaColumns`), flattened the same way `WorkflowNodeTable` flattens

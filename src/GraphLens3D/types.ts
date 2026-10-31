@@ -18,12 +18,25 @@ export interface GraphLensDocument {
     links: GraphLensLink[];
 }
 
-/** Free-form document metadata; `title` is the known key, others are allowed */
+/** Free-form document metadata; `title` and `groups` are the known keys, others are allowed */
 export interface GraphLensMeta {
     /** Document title */
     title?: string;
+    /** Group definitions by group key (see GraphLensNode.group) */
+    groups?: GraphLensGroups;
     [key: string]: unknown;
 }
+
+/** Display definition of one node group */
+export interface GraphLensGroup {
+    /** Legend and filter label; the group key is shown when missing */
+    label?: string;
+    /** Color as #RRGGBB; the default color is used when missing */
+    color?: string;
+}
+
+/** Group definitions by group key */
+export type GraphLensGroups = Record<string, GraphLensGroup>;
 
 /** Single node in the graph */
 export interface GraphLensNode {
@@ -35,6 +48,8 @@ export interface GraphLensNode {
     label: string;
     /** Voice subtype for voice nodes, e.g. 'VoC' */
     voice?: string;
+    /** Optional group key, usually defined in meta.groups */
+    group?: string;
     /** Optional title shown in the detail panel */
     title?: string;
     /** Optional long-form description */
@@ -114,20 +129,35 @@ export const DEFAULT_NODE_COLOR = '#8b949e';
 export const HUB_LINK_COLOR = '#9aa4af'; // hub -> voice (grey, straight)
 export const RELATED_LINK_COLOR = '#fb923c'; // voice <-> voice "related" (orange, curved)
 
-/** Grouping key for stats/filters: a voice's VoX type, or 'tag' */
-export function kindOf(node: GraphLensNode): string {
-    return node.type === 'tag' ? 'tag' : node.voice || 'voice';
+const GROUP_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
+
+// Own-key lookup, so a kind such as 'constructor' never reads from Object.prototype
+function ownValue<T>(record: Record<string, T> | undefined, key: string): T | undefined {
+    if (!record || typeof record !== 'object') return undefined;
+    return Object.prototype.hasOwnProperty.call(record, key) ? record[key] : undefined;
 }
 
-/** Swatch/render color for a grouping kind (as produced by kindOf) */
-export function kindColor(kind: string): string {
+/** Grouping key for stats/filters: node.group, 'tag', a voice's VoX type, or the node type */
+export function kindOf(node: GraphLensNode): string {
+    if (node.group) return node.group;
+    return node.type === 'tag' ? 'tag' : node.voice || node.type;
+}
+
+/** Swatch/render color for a grouping kind: meta.groups, the palette, then the default */
+export function kindColor(kind: string, groups?: GraphLensGroups): string {
+    const color = ownValue(groups, kind)?.color;
+    if (typeof color === 'string' && GROUP_COLOR_PATTERN.test(color)) return color;
     if (kind === 'tag') return TAG_COLOR;
-    return VOICE_COLORS[kind] || DEFAULT_NODE_COLOR;
+    return ownValue(VOICE_COLORS, kind) ?? DEFAULT_NODE_COLOR;
+}
+
+/** Display label for a grouping kind: the meta.groups label, or the key itself */
+export function kindLabel(kind: string, groups?: GraphLensGroups): string {
+    const label = ownValue(groups, kind)?.label;
+    return typeof label === 'string' && label ? label : kind;
 }
 
 /** Color for a node by its kind */
-export function nodeKindColor(node: GraphLensNode): string {
-    if (node.type === 'tag') return TAG_COLOR;
-    if (node.type === 'voice') return VOICE_COLORS[node.voice || ''] || DEFAULT_NODE_COLOR;
-    return DEFAULT_NODE_COLOR;
+export function nodeKindColor(node: GraphLensNode, groups?: GraphLensGroups): string {
+    return kindColor(kindOf(node), groups);
 }

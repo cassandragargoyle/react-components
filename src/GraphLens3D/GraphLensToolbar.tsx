@@ -9,9 +9,10 @@
 
 import React, { type JSX } from 'react';
 
-/** One selectable kind filter (e.g. a VoX type or 'tag') */
+/** One selectable kind filter (e.g. a group, a VoX type or 'tag') */
 export interface KindFilter {
     kind: string;
+    label: string;
     color: string;
     enabled: boolean;
 }
@@ -101,7 +102,7 @@ export function GraphLensToolbar({
                                 onChange={() => onToggleKind(k.kind)}
                             />
                             <span className="graphlens-swatch" style={{ background: k.color }} />
-                            {k.kind}
+                            {k.label}
                         </label>
                     ))}
                 </div>

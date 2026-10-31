@@ -11,6 +11,8 @@ export type { GraphLens3DProps } from './GraphLens3D';
 export type {
     GraphLensDocument,
     GraphLensMeta,
+    GraphLensGroup,
+    GraphLensGroups,
     GraphLensNode,
     GraphLensLink,
     GraphLensStatus,

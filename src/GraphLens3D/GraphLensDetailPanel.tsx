@@ -11,6 +11,8 @@ import {
     GraphLensDocument,
     GraphLensSelection,
     endId,
+    kindLabel,
+    kindOf,
     nodeKindColor,
 } from './types';
 
@@ -103,6 +105,9 @@ export function GraphLensDetailPanel({
     }
 
     const isTag = node.type === 'tag';
+    const groups = data.meta?.groups;
+    const kind = kindOf(node);
+    const groupLabel = kindLabel(kind, groups);
     const neighbors = data.links
         .map((l) => {
             const s = endId(l.source);
@@ -119,7 +124,7 @@ export function GraphLensDetailPanel({
             <div className="graphlens-detail-header">
                 <span
                     className="graphlens-detail-badge"
-                    style={{ background: nodeKindColor(node) }}
+                    style={{ background: nodeKindColor(node, groups) }}
                 />
                 {node.label || node.id}
             </div>
@@ -132,6 +137,12 @@ export function GraphLensDetailPanel({
                     <div className="graphlens-detail-row">
                         <span className="graphlens-detail-key">Type</span>
                         <span className="graphlens-detail-value">{node.type}</span>
+                    </div>
+                )}
+                {(node.group || groupLabel !== kind) && (
+                    <div className="graphlens-detail-row">
+                        <span className="graphlens-detail-key">Group</span>
+                        <span className="graphlens-detail-value">{groupLabel}</span>
                     </div>
                 )}
                 {node.voice && (

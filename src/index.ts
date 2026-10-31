@@ -98,6 +98,8 @@ export type {
     GraphLens3DProps,
     GraphLensDocument,
     GraphLensMeta,
+    GraphLensGroup,
+    GraphLensGroups,
     GraphLensNode,
     GraphLensLink,
     GraphLensStatus,

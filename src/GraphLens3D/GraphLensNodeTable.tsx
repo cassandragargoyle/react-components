@@ -8,10 +8,12 @@
 import React, { type JSX, useMemo } from 'react';
 import type { ColDef } from 'ag-grid-community';
 import { NodeTablePanel } from '../NodeTablePanel';
-import { GraphLensNode, TableFilter, kindOf, kindColor } from './types';
+import { GraphLensGroups, GraphLensNode, TableFilter, kindOf, kindColor, kindLabel } from './types';
 
 interface GraphLensNodeTableProps {
     nodes: GraphLensNode[];
+    /** Group definitions of the document (meta.groups) */
+    groups?: GraphLensGroups;
     selectedId: string | null;
     filter: TableFilter;
     onFilterChange: (filter: TableFilter) => void;
@@ -22,12 +24,20 @@ interface GraphLensNodeTableProps {
     onCollapsedChange: (collapsed: boolean) => void;
 }
 
+const MIN_KIND_WIDTH = 100;
+
 /** Flatten node into a flat row object for the table */
-function nodeToRow(node: GraphLensNode, degreeOf: (id: string) => number): Record<string, unknown> {
+function nodeToRow(
+    node: GraphLensNode,
+    degreeOf: (id: string) => number,
+    groups?: GraphLensGroups
+): Record<string, unknown> {
+    const kind = kindOf(node);
     return {
         id: node.id,
         label: node.label || node.title || node.id,
-        kind: kindOf(node),
+        kind: kindLabel(kind, groups),
+        kindColor: kindColor(kind, groups),
         degree: degreeOf(node.id),
         ...Object.fromEntries(
             Object.entries(node.meta || {}).map(([k, v]) => [
@@ -51,11 +61,17 @@ function collectMetaColumns(nodes: GraphLensNode[]): string[] {
     return Array.from(keys).sort();
 }
 
+/** Width that fits the longest kind label: about 7px per character plus swatch and padding */
+function kindColumnWidth(rows: Record<string, unknown>[]): number {
+    const longest = Math.max(0, ...rows.map((row) => String(row.kind).length));
+    return Math.max(MIN_KIND_WIDTH, longest * 7 + 44);
+}
+
 /** Renders the kind color swatch next to the kind value */
-function KindCellRenderer({ value }: { value: string }): JSX.Element {
+function KindCellRenderer({ value, data }: { value: string; data: { kindColor: string } }): JSX.Element {
     return (
         <span className="graphlens-node-table-kind">
-            <span className="graphlens-swatch" style={{ background: kindColor(value) }} />
+            <span className="graphlens-swatch" style={{ background: data.kindColor }} />
             {value}
         </span>
     );
@@ -63,6 +79,7 @@ function KindCellRenderer({ value }: { value: string }): JSX.Element {
 
 export function GraphLensNodeTable({
     nodes,
+    groups,
     selectedId,
     filter,
     onFilterChange,
@@ -73,8 +90,8 @@ export function GraphLensNodeTable({
     onCollapsedChange,
 }: GraphLensNodeTableProps): JSX.Element {
     const rows = useMemo(
-        () => nodes.map((n) => nodeToRow(n, degreeOf)),
-        [nodes, degreeOf]
+        () => nodes.map((n) => nodeToRow(n, degreeOf, groups)),
+        [nodes, degreeOf, groups]
     );
 
     const columns = useMemo<ColDef[]>(() => {
@@ -82,7 +99,7 @@ export function GraphLensNodeTable({
         return [
             { field: 'id', headerName: 'ID', width: 120, sortable: true },
             { field: 'label', headerName: 'Label', width: 150, sortable: true },
-            { field: 'kind', headerName: 'Kind', width: 100, sortable: true, cellRenderer: KindCellRenderer },
+            { field: 'kind', headerName: 'Kind', width: kindColumnWidth(rows), sortable: true, cellRenderer: KindCellRenderer },
             { field: 'degree', headerName: 'Degree', width: 90, sortable: true },
             ...metaCols.map((key) => ({
                 field: `meta_${key}`,
@@ -91,7 +108,7 @@ export function GraphLensNodeTable({
                 sortable: true,
             })),
         ];
-    }, [nodes]);
+    }, [nodes, rows]);
 
     // Bridge the single-select model to the panel's Set-based selection
     const selectedIds = useMemo(

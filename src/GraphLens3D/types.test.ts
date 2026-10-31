@@ -13,14 +13,22 @@ import {
     VOICE_COLORS,
     endId,
     kindColor,
+    kindLabel,
     kindOf,
     linkKey,
     nodeKindColor,
+    type GraphLensGroups,
     type GraphLensNode,
 } from './types';
 
 const tag: GraphLensNode = { id: 't1', type: 'tag', label: 'Pricing' };
 const voice: GraphLensNode = { id: 'v1', type: 'voice', label: 'Too expensive', voice: 'VoC' };
+const language: GraphLensNode = { id: 'l1', type: 'language', label: 'C' };
+const groups: GraphLensGroups = {
+    language: { label: 'Programming language', color: '#AABBCC' },
+    tag: { color: '#112233' },
+    VoC: { label: 'Customer' },
+};
 
 describe('GraphLens3D helpers', () => {
     it('resolves a link endpoint given as an id or as a node object', () => {
@@ -44,5 +52,50 @@ describe('GraphLens3D helpers', () => {
         expect(nodeKindColor(voice)).toBe(VOICE_COLORS.VoC);
         expect(nodeKindColor({ id: 'x', type: 'other', label: 'x' })).toBe(DEFAULT_NODE_COLOR);
         expect(kindColor('VoX')).toBe(DEFAULT_NODE_COLOR);
+    });
+
+    it('resolves the group in the order group, tag, voice, type', () => {
+        expect(kindOf({ ...tag, group: 'g' })).toBe('g');
+        expect(kindOf({ ...voice, group: 'g' })).toBe('g');
+        expect(kindOf({ ...tag, voice: 'VoC' })).toBe('tag');
+        expect(kindOf({ ...language, voice: 'VoC' })).toBe('VoC');
+        expect(kindOf(language)).toBe('language');
+    });
+
+    it('resolves the color in the order group definition, palette, default', () => {
+        expect(nodeKindColor(language, groups)).toBe('#AABBCC');
+        expect(nodeKindColor(tag, groups)).toBe('#112233');
+        expect(nodeKindColor(voice, groups)).toBe(VOICE_COLORS.VoC);
+        expect(nodeKindColor({ ...language, type: 'other' }, groups)).toBe(DEFAULT_NODE_COLOR);
+    });
+
+    it('falls back to default styling for an invalid group definition', () => {
+        const invalid = {
+            a: { color: 'red', label: '' },
+            b: { color: '#12345', label: 42 },
+            c: null,
+            tag: 'gold',
+        } as unknown as GraphLensGroups;
+        expect(kindColor('a', invalid)).toBe(DEFAULT_NODE_COLOR);
+        expect(kindColor('b', invalid)).toBe(DEFAULT_NODE_COLOR);
+        expect(kindColor('c', invalid)).toBe(DEFAULT_NODE_COLOR);
+        expect(kindColor('tag', invalid)).toBe(TAG_COLOR);
+        expect(kindLabel('a', invalid)).toBe('a');
+        expect(kindLabel('b', invalid)).toBe('b');
+        expect(kindLabel('c', invalid)).toBe('c');
+        expect(kindColor('a', 'groups' as unknown as GraphLensGroups)).toBe(DEFAULT_NODE_COLOR);
+    });
+
+    it('never reads a kind from Object.prototype', () => {
+        expect(kindColor('constructor')).toBe(DEFAULT_NODE_COLOR);
+        expect(kindColor('constructor', groups)).toBe(DEFAULT_NODE_COLOR);
+        expect(kindLabel('constructor', groups)).toBe('constructor');
+    });
+
+    it('labels a group from its definition, or with the key', () => {
+        expect(kindLabel('language', groups)).toBe('Programming language');
+        expect(kindLabel('tag', groups)).toBe('tag');
+        expect(kindLabel('other', groups)).toBe('other');
+        expect(kindLabel('other')).toBe('other');
     });
 });

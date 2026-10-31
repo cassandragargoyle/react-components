@@ -27,6 +27,7 @@ import {
     linkKey,
     kindOf,
     kindColor,
+    kindLabel,
 } from './types';
 import graphLensStyles from './GraphLens3D.css';
 
@@ -149,17 +150,26 @@ export function GraphLens3D({ data, status }: GraphLens3DProps): JSX.Element {
     // Stable accessor for a node's degree (number of connecting links), used for node sizing
     const degreeOf = useCallback((id: string) => adjacency.degree.get(id) ?? 0, [adjacency]);
 
+    // Group definitions of the document
+    const groups = data?.meta?.groups;
+
     // Distinct kinds present + per-kind totals
     const { kindList, globalCounts } = useMemo(() => {
-        const counts: Record<string, number> = {};
+        const counts: Record<string, number> = Object.create(null);
         if (data) for (const n of data.nodes) counts[kindOf(n)] = (counts[kindOf(n)] || 0) + 1;
         return { kindList: Object.keys(counts).sort(), globalCounts: counts };
     }, [data]);
 
     // Kind filter rows for the toolbar
     const kinds: KindFilter[] = useMemo(
-        () => kindList.map((k) => ({ kind: k, color: kindColor(k), enabled: enabledKinds[k] !== false })),
-        [kindList, enabledKinds]
+        () =>
+            kindList.map((k) => ({
+                kind: k,
+                label: kindLabel(k, groups),
+                color: kindColor(k, groups),
+                enabled: enabledKinds[k] !== false,
+            })),
+        [kindList, groups, enabledKinds]
     );
 
     // A node passes when its kind is enabled and (no query OR it matches the text)
@@ -229,18 +239,18 @@ export function GraphLens3D({ data, status }: GraphLens3DProps): JSX.Element {
         if (data && selection?.kind === 'node') {
             const node = nodeById.get(selection.id);
             if (node) {
-                const byKind: Record<string, number> = {};
+                const byKind: Record<string, number> = Object.create(null);
                 adjacency.neighbors.get(node.id)?.forEach((id) => {
                     const n = nodeById.get(id);
                     if (n) byKind[kindOf(n)] = (byKind[kindOf(n)] || 0) + 1;
                 });
                 const rows: StatRow[] = [
                     { key: 'id', value: node.id },
-                    { key: 'kind', value: kindOf(node) },
+                    { key: 'kind', value: kindLabel(kindOf(node), groups) },
                     { key: 'degree', value: adjacency.degree.get(node.id) ?? 0 },
                     ...Object.keys(byKind)
                         .sort()
-                        .map((k) => ({ key: `${k} neighbors`, value: byKind[k] })),
+                        .map((k) => ({ key: `${kindLabel(k, groups)} neighbors`, value: byKind[k] })),
                 ];
                 return { statsTitle: 'Selected node', stats: rows };
             }
@@ -249,11 +259,11 @@ export function GraphLens3D({ data, status }: GraphLens3DProps): JSX.Element {
             ? [
                   { key: 'nodes', value: data.nodes.length },
                   { key: 'links', value: data.links.length },
-                  ...kindList.map((k) => ({ key: k, value: globalCounts[k] })),
+                  ...kindList.map((k) => ({ key: kindLabel(k, groups), value: globalCounts[k] })),
               ]
             : [];
         return { statsTitle: 'Graph totals', stats: rows };
-    }, [data, selection, nodeById, adjacency, kindList, globalCounts]);
+    }, [data, groups, selection, nodeById, adjacency, kindList, globalCounts]);
 
     // Select a node and record it in the navigation history
     const handleNodeClick = useCallback((id: string) => {
@@ -315,6 +325,7 @@ export function GraphLens3D({ data, status }: GraphLens3DProps): JSX.Element {
         (id: string, clientX: number, clientY: number) => {
             const node = nodeById.get(id);
             const kind = node ? kindOf(node) : '';
+            const shownKind = kindLabel(kind, groups);
             const canBack = nav.cursor > 0;
             const canForward = nav.cursor < nav.history.length - 1;
             const actions: RadialMenuAction[] = [
@@ -322,7 +333,7 @@ export function GraphLens3D({ data, status }: GraphLens3DProps): JSX.Element {
                     id: 'isolate',
                     icon: nodeIcons.isolate,
                     label: 'Isolate',
-                    tooltip: kind ? `Show only "${kind}" nodes` : 'Show only this kind',
+                    tooltip: kind ? `Show only "${shownKind}" nodes` : 'Show only this kind',
                     disabled: !kind,
                     onSelect: () => handleIsolateKind(kind),
                 },
@@ -336,7 +347,7 @@ export function GraphLens3D({ data, status }: GraphLens3DProps): JSX.Element {
                             id: 'hide',
                             icon: nodeIcons.hide,
                             label: 'Hide',
-                            tooltip: kind ? `Hide "${kind}" nodes` : 'Hide this kind',
+                            tooltip: kind ? `Hide "${shownKind}" nodes` : 'Hide this kind',
                             disabled: !kind,
                             onSelect: () => handleToggleKind(kind),
                         },
@@ -388,6 +399,7 @@ export function GraphLens3D({ data, status }: GraphLens3DProps): JSX.Element {
         },
         [
             nodeById,
+            groups,
             nav,
             radial,
             handleIsolateKind,
@@ -443,6 +455,7 @@ export function GraphLens3D({ data, status }: GraphLens3DProps): JSX.Element {
                         <GraphLens3DViewport
                             nodes={data.nodes}
                             links={data.links}
+                            groups={groups}
                             degreeOf={degreeOf}
                             selectedId={selectedId}
                             highlightNodes={highlightNodes}
@@ -476,6 +489,7 @@ export function GraphLens3D({ data, status }: GraphLens3DProps): JSX.Element {
                     )}
                     <GraphLensNodeTable
                         nodes={visibleNodes}
+                        groups={groups}
                         selectedId={selectedId}
                         filter={tableFilter}
                         onFilterChange={setTableFilter}

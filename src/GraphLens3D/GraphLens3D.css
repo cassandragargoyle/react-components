@@ -157,6 +157,7 @@
     height: 9px;
     border-radius: 50%;
     display: inline-block;
+    flex-shrink: 0;
 }
 
 .graphlens-filter-count {

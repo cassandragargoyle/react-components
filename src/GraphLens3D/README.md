@@ -42,6 +42,35 @@ The TS type mirrors the **canonical, language-independent GraphView schema**
 document level. Documents at rest use the `.glens.json` filename suffix. Align
 the TS type to that schema rather than inventing a parallel shape.
 
+## Node groups and colors
+
+A document can define its own groups and colors, with no change to the code:
+
+```json
+{
+  "meta": {
+    "groups": {
+      "language": { "label": "Programming language", "color": "#d29922" },
+      "manifest": { "label": "Manifest", "color": "#58a6ff" }
+    }
+  },
+  "nodes": [
+    { "id": "language:c", "type": "language", "label": "C", "group": "language" }
+  ],
+  "links": []
+}
+```
+
+The group of a node is the first value that is set: `node.group`, `tag` for tag
+nodes, `node.voice`, `node.type`. The filter, the statistics and the node table
+have one entry per group.
+
+The color of a group is `meta.groups[key].color`, then the built-in `tag` and
+voice palette, then the neutral default. A color that is not `#RRGGBB` is
+ignored, and a missing definition uses the default styling, so a document
+without groups looks as it did before. `meta.groups[key].label` replaces the key
+wherever the group is shown.
+
 ## Consumption modes in portunix-vscode
 
 | Mode | Entry | Data source |
