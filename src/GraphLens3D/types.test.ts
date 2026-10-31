@@ -142,6 +142,36 @@ describe('normalizeDocument', () => {
         expect(data?.links[0]).toEqual({ source: 'a', target: 'a' });
     });
 
+    it('leaves out links to unknown nodes and keeps the others', () => {
+        const valid = { source: 't1', target: 'v1' };
+        const data = normalizeDocument(
+            asDocument({
+                nodes: [tag, voice],
+                links: [
+                    { source: 't1', target: 'ghost' },
+                    { source: 'ghost', target: 'v1' },
+                    { target: 'v1' },
+                    { source: 'constructor', target: 'v1' },
+                    valid,
+                ],
+            })
+        );
+
+        expect(data?.links).toEqual([valid]);
+        expect(data?.links[0]).toBe(valid);
+    });
+
+    it('matches link endpoints by value, as the graph engine does', () => {
+        const nodes = [{ id: 1, type: 'x', label: 'A' }, { id: 2, type: 'x', label: 'B' }];
+        const links = [
+            { source: 1, target: 2 },
+            { source: '1', target: 2 },
+            { source: { id: 1 }, target: { id: 2 } },
+        ];
+
+        expect(normalizeDocument(asDocument({ nodes, links }))?.links).toEqual([links[0], links[2]]);
+    });
+
     it('keeps numbers and null, which render without an error', () => {
         const node = { id: 1, type: 'x', label: 5, title: null };
         expect(normalizeDocument(asDocument({ nodes: [node], links: [] }))?.nodes[0]).toBe(node);

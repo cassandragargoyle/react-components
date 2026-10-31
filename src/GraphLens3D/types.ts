@@ -165,7 +165,8 @@ function isNode(value: unknown): boolean {
 
 /**
  * Make a document from outside safe to render. Documents arrive as parsed JSON, so
- * the types do not hold: a field shown as text loses an object value, and a document
+ * the types do not hold: a field shown as text loses an object value, a link to an
+ * unknown node is left out, because the graph engine stops at it, and a document
  * without the graph shape gives null. A valid node or link stays the same object.
  */
 export function normalizeDocument(input: GraphLensDocument): GraphLensDocument | null {
@@ -173,11 +174,16 @@ export function normalizeDocument(input: GraphLensDocument): GraphLensDocument |
     const { meta, nodes, links } = input;
     if (!Array.isArray(nodes) || !Array.isArray(links)) return null;
     if (!nodes.every(isNode) || !links.every(isObject)) return null;
+    // Raw ids: the engine finds an endpoint by value, so '1' does not match the id 1
+    const ids = new Set<unknown>(nodes.map((node) => node.id));
+    const isKnown = (end: unknown): boolean => ids.has(isObject(end) ? (end as { id?: unknown }).id : end);
     return {
         ...input,
         meta: isObject(meta) ? withoutObjects(meta, META_TEXT_FIELDS) : meta,
         nodes: nodes.map((node) => withoutObjects(node, NODE_TEXT_FIELDS)),
-        links: links.map((link) => withoutObjects(link, LINK_TEXT_FIELDS)),
+        links: links
+            .filter((link) => isKnown(link.source) && isKnown(link.target))
+            .map((link) => withoutObjects(link, LINK_TEXT_FIELDS)),
     };
 }
 

@@ -43,7 +43,8 @@ document level. Documents at rest use the `.glens.json` filename suffix. Align
 the TS type to that schema rather than inventing a parallel shape.
 
 The component does not validate against the schema, but it stays usable with a
-wrong document. An object in a field that is shown as text is ignored, and a
+wrong document. An object in a field that is shown as text is ignored. A link to
+a node that does not exist is left out, and the statistics show how many were. A
 document without the graph shape (a `nodes` array of objects with an `id`, and a
 `links` array) shows an error instead of the graph.
 

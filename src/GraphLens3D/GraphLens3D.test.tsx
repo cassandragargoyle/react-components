@@ -97,6 +97,22 @@ describe('GraphLens3D', () => {
         expect(container.querySelector('.graphlens-detail-header')).toHaveTextContent(/^a$/i);
     });
 
+    it('counts links to missing nodes in the statistics', () => {
+        const { container } = render(
+            <GraphLens3D data={{ nodes, links: [...links, { source: 'a', target: 'ghost' }] }} />
+        );
+
+        const rows = statRows(container);
+        expect(rows).toContain('links2');
+        expect(rows).toContain('links to missing nodes1');
+    });
+
+    it('shows no count when every link is valid', () => {
+        const { container } = render(<GraphLens3D data={{ nodes, links }} />);
+
+        expect(statRows(container).join()).not.toContain('missing');
+    });
+
     it('renders an object in meta.title, link.rel and link.description', () => {
         const object = { a: 1 } as unknown as string;
         render(

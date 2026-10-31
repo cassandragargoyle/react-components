@@ -107,6 +107,8 @@ export interface GraphLens3DProps {
 export function GraphLens3D({ data: input, status }: GraphLens3DProps): JSX.Element {
     // The document as parsed JSON, made safe to render; null when it is not a graph
     const data = useMemo(() => (input ? normalizeDocument(input) : null), [input]);
+    // Links left out because a node is missing; the statistics show them, so the graph does not look complete
+    const ignoredLinks = input && data ? input.links.length - data.links.length : 0;
 
     // Current node/link selection, or null when nothing is selected
     const [selection, setSelection] = useState<GraphLensSelection | null>(null);
@@ -268,6 +270,9 @@ export function GraphLens3D({ data: input, status }: GraphLens3DProps): JSX.Elem
             ? [
                   { id: 'nodes', key: 'nodes', value: data.nodes.length },
                   { id: 'links', key: 'links', value: data.links.length },
+                  ...(ignoredLinks > 0
+                      ? [{ id: 'ignored-links', key: 'links to missing nodes', value: ignoredLinks }]
+                      : []),
                   ...kindList.map((k) => ({
                       id: `total:${k}`,
                       key: kindLabel(k, groups),
@@ -277,7 +282,7 @@ export function GraphLens3D({ data: input, status }: GraphLens3DProps): JSX.Elem
               ]
             : [];
         return { statsTitle: 'Graph totals', stats: rows };
-    }, [data, groups, selection, nodeById, adjacency, kindList, globalCounts]);
+    }, [data, groups, ignoredLinks, selection, nodeById, adjacency, kindList, globalCounts]);
 
     // Select a node and record it in the navigation history
     const handleNodeClick = useCallback((id: string) => {

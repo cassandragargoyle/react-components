@@ -57,8 +57,9 @@ Uložené dokumenty používají příponu `.glens.json`. Typ v TS slaďujte s t
 schématem a nevymýšlejte paralelní strukturu.
 
 Komponenta dokument proti schématu nevaliduje, ale s chybným dokumentem zůstane
-použitelná. Objekt v poli, které se zobrazuje jako text, se ignoruje, a dokument bez
-tvaru grafu (pole `nodes` s objekty s `id` a pole `links`) místo grafu ukáže chybu.
+použitelná. Objekt v poli, které se zobrazuje jako text, se ignoruje. Vazba na uzel,
+který neexistuje, se vynechá a statistiky ukážou, kolik takových vazeb bylo. Dokument
+bez tvaru grafu (pole `nodes` s objekty s `id` a pole `links`) místo grafu ukáže chybu.
 
 ## Skupiny uzlů a barvy
 
