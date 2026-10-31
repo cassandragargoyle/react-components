@@ -87,6 +87,15 @@
     gap: 8px;
     width: 230px;
     max-width: 70%;
+    /* The filters and statistics grow with the groups of the document */
+    max-height: calc(100% - 16px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.graphlens-toolbar > * {
+    flex-shrink: 0;
 }
 
 .graphlens-nav {
