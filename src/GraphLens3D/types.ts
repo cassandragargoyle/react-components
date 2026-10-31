@@ -1,4 +1,5 @@
 /*
+ *  SPDX-License-Identifier: MIT
  *  This file is part of CassandraGargoyle Community Project
  *  Licensed under the MIT License - see LICENSE file for details
  */
@@ -201,6 +202,11 @@ export function kindColor(kind: string, groups?: GraphLensGroups): string {
     if (typeof color === 'string' && GROUP_COLOR_PATTERN.test(color)) return color;
     if (kind === 'tag') return TAG_COLOR;
     return ownValue(VOICE_COLORS, kind) ?? DEFAULT_NODE_COLOR;
+}
+
+/** Whether a document defines groups of its own; meta.groups comes from parsed JSON */
+export function definesGroups(groups: unknown): boolean {
+    return isObject(groups) && !Array.isArray(groups) && Object.keys(groups).length > 0;
 }
 
 /** Display label for a grouping kind: the meta.groups label, or the key itself */

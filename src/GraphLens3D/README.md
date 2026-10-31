@@ -70,6 +70,7 @@ A document can define its own groups and colors, with no change to the code:
 The group of a node is the first value that is set: `node.group`, `tag` for tag
 nodes, `node.voice`, `node.type`. A value that is not non-empty text counts as
 not set. The filter, the statistics and the node table have one entry per group.
+A document that defines `meta.groups` shows each filter on its own line.
 
 The color of a group is `meta.groups[key].color`, then the built-in `tag` and
 voice palette, then the neutral default. A color that is not `#RRGGBB` is

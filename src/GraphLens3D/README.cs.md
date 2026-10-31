@@ -83,7 +83,8 @@ Dokument si může definovat vlastní skupiny a barvy bez změny kódu:
 Skupinou uzlu je první nastavená hodnota v tomto pořadí: `node.group`, `tag` pro
 uzly typu tag, `node.voice`, `node.type`. Hodnota, která není neprázdný text, se
 bere jako nenastavená. Filtr, statistiky a tabulka uzlů mají pro každou skupinu
-jednu položku.
+jednu položku. Dokument, který definuje `meta.groups`, má každý filtr na vlastním
+řádku.
 
 Barvou skupiny je `meta.groups[key].color`, potom vestavěná paleta pro `tag` a hlasy
 a nakonec neutrální výchozí barva. Barva, která nemá tvar `#RRGGBB`, se ignoruje a

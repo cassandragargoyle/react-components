@@ -1,4 +1,5 @@
 /*
+ *  SPDX-License-Identifier: MIT
  *  This file is part of CassandraGargoyle Community Project
  *  Licensed under the MIT License - see LICENSE file for details
  */
@@ -28,6 +29,7 @@ import {
     kindOf,
     kindColor,
     kindLabel,
+    definesGroups,
     normalizeDocument,
 } from './types';
 import graphLensStyles from './GraphLens3D.css';
@@ -503,6 +505,7 @@ export function GraphLens3D({ data: input, status }: GraphLens3DProps): JSX.Elem
                             query={query}
                             onQueryChange={setQuery}
                             kinds={kinds}
+                            kindsInColumn={definesGroups(groups)}
                             onToggleKind={handleToggleKind}
                             visibleCount={visibleCount}
                             totalCount={data.nodes.length}

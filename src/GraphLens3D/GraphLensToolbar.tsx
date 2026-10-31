@@ -1,4 +1,5 @@
 /*
+ *  SPDX-License-Identifier: MIT
  *  This file is part of CassandraGargoyle Community Project
  *  Licensed under the MIT License - see LICENSE file for details
  */
@@ -38,6 +39,8 @@ interface GraphLensToolbarProps {
     onQueryChange: (value: string) => void;
     // Kind filters
     kinds: KindFilter[];
+    /** One filter per line; a document with its own groups uses this, others keep the wrapped layout */
+    kindsInColumn: boolean;
     onToggleKind: (kind: string) => void;
     // Visible count
     visibleCount: number;
@@ -58,6 +61,7 @@ export function GraphLensToolbar({
     query,
     onQueryChange,
     kinds,
+    kindsInColumn,
     onToggleKind,
     visibleCount,
     totalCount,
@@ -97,7 +101,7 @@ export function GraphLensToolbar({
             />
 
             {kinds.length > 0 && (
-                <div className="graphlens-filters">
+                <div className={`graphlens-filters${kindsInColumn ? ' graphlens-filters-column' : ''}`}>
                     {kinds.map((k) => (
                         <label className="graphlens-filter" key={k.kind}>
                             <input

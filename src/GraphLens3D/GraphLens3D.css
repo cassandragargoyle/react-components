@@ -144,6 +144,11 @@
     color: var(--vscode-descriptionForeground, #858585);
 }
 
+.graphlens-filters-column {
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+
 .graphlens-filter {
     display: flex;
     align-items: center;

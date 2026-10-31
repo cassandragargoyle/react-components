@@ -1,4 +1,5 @@
 /*
+ *  SPDX-License-Identifier: MIT
  *  This file is part of CassandraGargoyle Community Project
  *  Licensed under the MIT License - see LICENSE file for details
  */
@@ -143,6 +144,25 @@ describe('GraphLens3D', () => {
         render(<GraphLens3D data={null} />);
 
         expect(screen.queryByText('Could not load the graph')).not.toBeInTheDocument();
+    });
+
+    it.each([
+        ['with groups', { x: { label: 'X' } }, true],
+        ['with empty groups', {}, false],
+        ['with an array as groups', [{ label: 'X' }], false],
+        ['with text as groups', 'groups', false],
+    ])('puts the filters in a column only for a document %s', (_name, groups, column) => {
+        const data = documentWith(groups as unknown as GraphLensGroups);
+        const { container } = render(<GraphLens3D data={data} />);
+
+        expect(container.querySelector('.graphlens-filters-column') !== null).toBe(column);
+        expect(container.querySelector('.graphlens-filters')).toBeInTheDocument();
+    });
+
+    it('keeps the wrapped filters for a document without meta', () => {
+        const { container } = render(<GraphLens3D data={{ nodes, links }} />);
+
+        expect(container.querySelector('.graphlens-filters-column')).toBeNull();
     });
 
     it('keeps a label from the document as written, and built-in keys capitalized', () => {
