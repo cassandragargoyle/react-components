@@ -245,21 +245,31 @@ export function GraphLens3D({ data, status }: GraphLens3DProps): JSX.Element {
                     if (n) byKind[kindOf(n)] = (byKind[kindOf(n)] || 0) + 1;
                 });
                 const rows: StatRow[] = [
-                    { key: 'id', value: node.id },
-                    { key: 'kind', value: kindLabel(kindOf(node), groups) },
-                    { key: 'degree', value: adjacency.degree.get(node.id) ?? 0 },
+                    { id: 'id', key: 'id', value: node.id },
+                    { id: 'kind', key: 'kind', value: kindLabel(kindOf(node), groups) },
+                    { id: 'degree', key: 'degree', value: adjacency.degree.get(node.id) ?? 0 },
                     ...Object.keys(byKind)
                         .sort()
-                        .map((k) => ({ key: `${kindLabel(k, groups)} neighbors`, value: byKind[k] })),
+                        .map((k) => ({
+                            id: `neighbors:${k}`,
+                            key: `${kindLabel(k, groups)} neighbors`,
+                            value: byKind[k],
+                            literal: kindLabel(k, groups) !== k,
+                        })),
                 ];
                 return { statsTitle: 'Selected node', stats: rows };
             }
         }
         const rows: StatRow[] = data
             ? [
-                  { key: 'nodes', value: data.nodes.length },
-                  { key: 'links', value: data.links.length },
-                  ...kindList.map((k) => ({ key: kindLabel(k, groups), value: globalCounts[k] })),
+                  { id: 'nodes', key: 'nodes', value: data.nodes.length },
+                  { id: 'links', key: 'links', value: data.links.length },
+                  ...kindList.map((k) => ({
+                      id: `total:${k}`,
+                      key: kindLabel(k, groups),
+                      value: globalCounts[k],
+                      literal: kindLabel(k, groups) !== k,
+                  })),
               ]
             : [];
         return { statsTitle: 'Graph totals', stats: rows };

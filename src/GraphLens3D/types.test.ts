@@ -62,6 +62,19 @@ describe('GraphLens3D helpers', () => {
         expect(kindOf(language)).toBe('language');
     });
 
+    it('ignores group, voice and type values that are not text', () => {
+        for (const value of [{ a: 1 }, 5, true, null, '']) {
+            const invalid = value as unknown as string;
+            expect(kindOf({ ...language, group: invalid })).toBe('language');
+            expect(kindOf({ ...language, voice: invalid })).toBe('language');
+            expect(kindOf({ ...language, type: invalid })).toBe('voice');
+        }
+    });
+
+    it('falls back to the voice kind for a node without a type', () => {
+        expect(kindOf({ id: 'x', label: 'x' } as unknown as GraphLensNode)).toBe('voice');
+    });
+
     it('resolves the color in the order group definition, palette, default', () => {
         expect(nodeKindColor(language, groups)).toBe('#AABBCC');
         expect(nodeKindColor(tag, groups)).toBe('#112233');

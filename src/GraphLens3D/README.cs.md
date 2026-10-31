@@ -76,13 +76,15 @@ Dokument si může definovat vlastní skupiny a barvy bez změny kódu:
 ```
 
 Skupinou uzlu je první nastavená hodnota v tomto pořadí: `node.group`, `tag` pro
-uzly typu tag, `node.voice`, `node.type`. Filtr, statistiky a tabulka uzlů mají
-pro každou skupinu jednu položku.
+uzly typu tag, `node.voice`, `node.type`. Hodnota, která není neprázdný text, se
+bere jako nenastavená. Filtr, statistiky a tabulka uzlů mají pro každou skupinu
+jednu položku.
 
 Barvou skupiny je `meta.groups[key].color`, potom vestavěná paleta pro `tag` a hlasy
 a nakonec neutrální výchozí barva. Barva, která nemá tvar `#RRGGBB`, se ignoruje a
 chybějící definice použije výchozí vzhled, takže dokument bez skupin vypadá stejně
-jako dřív. `meta.groups[key].label` nahrazuje klíč všude, kde se skupina zobrazuje.
+jako dřív. `meta.groups[key].label` nahrazuje klíč všude, kde se skupina zobrazuje;
+dlouhý popisek se zkrátí výpustkou a celý text je v jeho tooltipu.
 
 ## Způsoby použití v portunix-vscode
 

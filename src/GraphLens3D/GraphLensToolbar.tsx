@@ -19,8 +19,12 @@ export interface KindFilter {
 
 /** One key/value row in the statistics panel */
 export interface StatRow {
+    /** Unique within the panel; the shown key can repeat, for example with equal group labels */
+    id: string;
     key: string;
     value: string | number;
+    /** Show the key as written, for a label that comes from the document */
+    literal?: boolean;
 }
 
 interface GraphLensToolbarProps {
@@ -102,7 +106,9 @@ export function GraphLensToolbar({
                                 onChange={() => onToggleKind(k.kind)}
                             />
                             <span className="graphlens-swatch" style={{ background: k.color }} />
-                            {k.label}
+                            <span className="graphlens-ellipsis" title={k.label}>
+                                {k.label}
+                            </span>
                         </label>
                     ))}
                 </div>
@@ -137,8 +143,13 @@ export function GraphLensToolbar({
             <div className="graphlens-stats">
                 <div className="graphlens-stats-title">{statsTitle}</div>
                 {stats.map((row) => (
-                    <div className="graphlens-stat-row" key={row.key}>
-                        <span className="graphlens-stat-k">{row.key}</span>
+                    <div className="graphlens-stat-row" key={row.id}>
+                        <span
+                            className={`graphlens-stat-k graphlens-ellipsis${row.literal ? ' graphlens-stat-k-literal' : ''}`}
+                            title={row.key}
+                        >
+                            {row.key}
+                        </span>
                         <span className="graphlens-stat-v">{row.value}</span>
                     </div>
                 ))}

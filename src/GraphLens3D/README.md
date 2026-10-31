@@ -62,14 +62,15 @@ A document can define its own groups and colors, with no change to the code:
 ```
 
 The group of a node is the first value that is set: `node.group`, `tag` for tag
-nodes, `node.voice`, `node.type`. The filter, the statistics and the node table
-have one entry per group.
+nodes, `node.voice`, `node.type`. A value that is not non-empty text counts as
+not set. The filter, the statistics and the node table have one entry per group.
 
 The color of a group is `meta.groups[key].color`, then the built-in `tag` and
 voice palette, then the neutral default. A color that is not `#RRGGBB` is
 ignored, and a missing definition uses the default styling, so a document
 without groups looks as it did before. `meta.groups[key].label` replaces the key
-wherever the group is shown.
+wherever the group is shown; a long label is cut with an ellipsis, and the full
+text is in its tooltip.
 
 ## Consumption modes in portunix-vscode
 

@@ -137,10 +137,17 @@ function ownValue<T>(record: Record<string, T> | undefined, key: string): T | un
     return Object.prototype.hasOwnProperty.call(record, key) ? record[key] : undefined;
 }
 
+// A non-empty text value; anything else in a document counts as not set
+function textOf(value: unknown): string | undefined {
+    return typeof value === 'string' && value ? value : undefined;
+}
+
 /** Grouping key for stats/filters: node.group, 'tag', a voice's VoX type, or the node type */
 export function kindOf(node: GraphLensNode): string {
-    if (node.group) return node.group;
-    return node.type === 'tag' ? 'tag' : node.voice || node.type;
+    const group = textOf(node.group);
+    if (group) return group;
+    if (node.type === 'tag') return 'tag';
+    return textOf(node.voice) ?? textOf(node.type) ?? 'voice';
 }
 
 /** Swatch/render color for a grouping kind: meta.groups, the palette, then the default */
@@ -153,8 +160,7 @@ export function kindColor(kind: string, groups?: GraphLensGroups): string {
 
 /** Display label for a grouping kind: the meta.groups label, or the key itself */
 export function kindLabel(kind: string, groups?: GraphLensGroups): string {
-    const label = ownValue(groups, kind)?.label;
-    return typeof label === 'string' && label ? label : kind;
+    return textOf(ownValue(groups, kind)?.label) ?? kind;
 }
 
 /** Color for a node by its kind */

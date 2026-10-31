@@ -25,6 +25,7 @@ interface GraphLensNodeTableProps {
 }
 
 const MIN_KIND_WIDTH = 100;
+const MAX_KIND_WIDTH = 260;
 
 /** Flatten node into a flat row object for the table */
 function nodeToRow(
@@ -61,18 +62,19 @@ function collectMetaColumns(nodes: GraphLensNode[]): string[] {
     return Array.from(keys).sort();
 }
 
-/** Width that fits the longest kind label: about 7px per character plus swatch and padding */
-function kindColumnWidth(rows: Record<string, unknown>[]): number {
-    const longest = Math.max(0, ...rows.map((row) => String(row.kind).length));
-    return Math.max(MIN_KIND_WIDTH, longest * 7 + 44);
+/** Width for the longest kind label, about 7px per character plus swatch and padding, within limits */
+export function kindColumnWidth(rows: Record<string, unknown>[]): number {
+    let longest = 0;
+    for (const row of rows) longest = Math.max(longest, String(row.kind).length);
+    return Math.min(MAX_KIND_WIDTH, Math.max(MIN_KIND_WIDTH, longest * 7 + 44));
 }
 
 /** Renders the kind color swatch next to the kind value */
 function KindCellRenderer({ value, data }: { value: string; data: { kindColor: string } }): JSX.Element {
     return (
-        <span className="graphlens-node-table-kind">
+        <span className="graphlens-node-table-kind" title={value}>
             <span className="graphlens-swatch" style={{ background: data.kindColor }} />
-            {value}
+            <span className="graphlens-ellipsis">{value}</span>
         </span>
     );
 }

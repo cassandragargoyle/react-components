@@ -45,6 +45,13 @@ describe('GraphLensDetailPanel', () => {
         expect(screen.getByText('compiled')).toBeInTheDocument();
     });
 
+    it('shows no group row for a group that is not text', () => {
+        const group = { a: 1 } as unknown as string;
+        showNode({ nodes: [{ id: 'n1', type: 'language', label: 'C', group }], links: [] });
+
+        expect(screen.queryByText('Group')).not.toBeInTheDocument();
+    });
+
     it('shows no group row for a document without groups', () => {
         showNode({ nodes: [{ id: 'n1', type: 'voice', label: 'Too expensive', voice: 'VoC' }], links: [] });
 

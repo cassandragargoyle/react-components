@@ -139,7 +139,7 @@ export function GraphLensDetailPanel({
                         <span className="graphlens-detail-value">{node.type}</span>
                     </div>
                 )}
-                {(node.group || groupLabel !== kind) && (
+                {(kind === node.group || groupLabel !== kind) && (
                     <div className="graphlens-detail-row">
                         <span className="graphlens-detail-key">Group</span>
                         <span className="graphlens-detail-value">{groupLabel}</span>

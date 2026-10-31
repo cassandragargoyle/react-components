@@ -31,7 +31,8 @@ single-selection model.
 - **Label** — `node.label`, falling back to `node.title`, then `node.id`
 - **Kind** — the group label via `kindLabel()` of `kindOf(node)` (`node.group`, `tag`,
   the voice type, e.g. `VoC`, or `node.type`), rendered with a color swatch via
-  `kindColor()` (`KindCellRenderer`)
+  `kindColor()` (`KindCellRenderer`). The width follows the longest label up to a
+  maximum (`kindColumnWidth`); a longer label is cut, with the full text in a tooltip
 - **Degree** — number of connecting links, via `degreeOf(node.id)`
 - **Meta columns** — one column per unique key found across `node.meta` objects
   (`collectMetaColumns`), flattened the same way `WorkflowNodeTable` flattens

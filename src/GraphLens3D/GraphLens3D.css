@@ -150,6 +150,16 @@
     gap: 5px;
     cursor: pointer;
     user-select: none;
+    min-width: 0;
+    max-width: 100%;
+}
+
+/* Long labels come from the document */
+.graphlens-ellipsis {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .graphlens-swatch {
@@ -210,6 +220,15 @@
 .graphlens-stat-k {
     color: var(--vscode-descriptionForeground, #858585);
     text-transform: capitalize;
+}
+
+/* After .graphlens-ellipsis, so that a built-in key keeps its width next to a long value */
+.graphlens-stat-row .graphlens-stat-k {
+    min-width: 4em;
+}
+
+.graphlens-stat-k-literal {
+    text-transform: none;
 }
 
 .graphlens-stat-v {
@@ -361,5 +380,6 @@
     display: flex;
     align-items: center;
     gap: 5px;
+    min-width: 0;
 }
 
