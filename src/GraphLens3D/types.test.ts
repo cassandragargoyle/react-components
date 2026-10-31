@@ -17,6 +17,8 @@ import {
     kindOf,
     linkKey,
     nodeKindColor,
+    normalizeDocument,
+    type GraphLensDocument,
     type GraphLensGroups,
     type GraphLensNode,
 } from './types';
@@ -110,5 +112,52 @@ describe('GraphLens3D helpers', () => {
         expect(kindLabel('tag', groups)).toBe('tag');
         expect(kindLabel('other', groups)).toBe('other');
         expect(kindLabel('other')).toBe('other');
+    });
+});
+
+describe('normalizeDocument', () => {
+    const asDocument = (value: unknown): GraphLensDocument => value as GraphLensDocument;
+    const object = { a: 1 };
+
+    it('keeps the nodes and links of a valid document as the same objects', () => {
+        const link = { source: 't1', target: 'v1', rel: 'related' };
+        const data = normalizeDocument({ meta: { title: 'T', other: object }, nodes: [tag, voice], links: [link] });
+
+        expect(data?.nodes[0]).toBe(tag);
+        expect(data?.links[0]).toBe(link);
+        expect(data?.meta).toEqual({ title: 'T', other: object });
+    });
+
+    it('removes object values from the fields shown as text', () => {
+        const data = normalizeDocument(
+            asDocument({
+                meta: { title: object },
+                nodes: [{ id: 'a', type: object, label: object, voice: object, group: [], title: object, description: object, meta: object }],
+                links: [{ source: 'a', target: 'a', rel: object, description: object }],
+            })
+        );
+
+        expect(data?.meta).toEqual({});
+        expect(data?.nodes[0]).toEqual({ id: 'a', meta: object });
+        expect(data?.links[0]).toEqual({ source: 'a', target: 'a' });
+    });
+
+    it('keeps numbers and null, which render without an error', () => {
+        const node = { id: 1, type: 'x', label: 5, title: null };
+        expect(normalizeDocument(asDocument({ nodes: [node], links: [] }))?.nodes[0]).toBe(node);
+    });
+
+    it.each([
+        ['an empty object', {}],
+        ['an array', []],
+        ['text', 'graph'],
+        ['nodes that are not an array', { nodes: null, links: [] }],
+        ['links that are missing', { nodes: [] }],
+        ['a node that is not an object', { nodes: [null], links: [] }],
+        ['a node without an id', { nodes: [{ type: 'x' }], links: [] }],
+        ['a node with an object id', { nodes: [{ id: object }], links: [] }],
+        ['a link that is not an object', { nodes: [], links: [1] }],
+    ])('refuses %s', (_name, input) => {
+        expect(normalizeDocument(asDocument(input))).toBeNull();
     });
 });

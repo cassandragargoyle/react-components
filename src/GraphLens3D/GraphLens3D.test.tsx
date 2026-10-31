@@ -88,6 +88,47 @@ describe('GraphLens3D', () => {
         expect(filters).toEqual(['voice', 'x']);
     });
 
+    it.each(['type', 'voice', 'title', 'label', 'description'])('selects a node with an object as %s', (field) => {
+        const node = { id: 'a', type: 'x', label: 'A', [field]: { a: 1 } } as GraphLensNode;
+        const { container } = render(<GraphLens3D data={{ nodes: [node], links: [] }} />);
+
+        fireEvent.click(screen.getByText('select a'));
+
+        expect(container.querySelector('.graphlens-detail-header')).toHaveTextContent(/^a$/i);
+    });
+
+    it('renders an object in meta.title, link.rel and link.description', () => {
+        const object = { a: 1 } as unknown as string;
+        render(
+            <GraphLens3D
+                data={{
+                    meta: { title: object },
+                    nodes,
+                    links: [{ source: 'a', target: 'b', rel: object, description: object }],
+                }}
+            />
+        );
+
+        expect(screen.getByText('GraphLens 3D')).toBeInTheDocument();
+    });
+
+    it.each([
+        ['an empty object', {}],
+        ['an array', []],
+        ['null nodes', { nodes: null, links: [] }],
+    ])('shows an error for %s', (_name, input) => {
+        render(<GraphLens3D data={input as GraphLensDocument} />);
+
+        expect(screen.getByText('Could not load the graph')).toBeInTheDocument();
+        expect(screen.getByText('The document is not a valid graph.')).toBeInTheDocument();
+    });
+
+    it('keeps the loading screen while there is no document', () => {
+        render(<GraphLens3D data={null} />);
+
+        expect(screen.queryByText('Could not load the graph')).not.toBeInTheDocument();
+    });
+
     it('keeps a label from the document as written, and built-in keys capitalized', () => {
         const { container } = render(<GraphLens3D data={documentWith({ x: { label: 'iOS app' } })} />);
 

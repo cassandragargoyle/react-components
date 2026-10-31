@@ -28,6 +28,7 @@ import {
     kindOf,
     kindColor,
     kindLabel,
+    normalizeDocument,
 } from './types';
 import graphLensStyles from './GraphLens3D.css';
 
@@ -102,8 +103,11 @@ export interface GraphLens3DProps {
 // data acquisition (IPC / fetch / postMessage) and passes the document in via `data`.
 // It derives adjacency, manages selection + search/filter state, and lays out the
 // left toolbar, the 3D viewport, and the detail panel. While `data` is null it shows
-// the detailed loading screen.
-export function GraphLens3D({ data, status }: GraphLens3DProps): JSX.Element {
+// the detailed loading screen, and a document without the graph shape gets its error.
+export function GraphLens3D({ data: input, status }: GraphLens3DProps): JSX.Element {
+    // The document as parsed JSON, made safe to render; null when it is not a graph
+    const data = useMemo(() => (input ? normalizeDocument(input) : null), [input]);
+
     // Current node/link selection, or null when nothing is selected
     const [selection, setSelection] = useState<GraphLensSelection | null>(null);
     // Search query and per-kind filter toggles (a kind missing here is enabled)
@@ -445,9 +449,18 @@ export function GraphLens3D({ data, status }: GraphLens3DProps): JSX.Element {
 
     // No document yet — show the detailed loading screen (progress, source, errors)
     if (!data) {
+        const shown: GraphLensStatus | undefined = input
+            ? {
+                  source: status?.source ?? 'unknown',
+                  phase: 'receiving',
+                  message: 'Reading the document',
+                  error: 'The document is not a valid graph.',
+                  hint: 'A graph needs a nodes array, where each node has an id, and a links array.',
+              }
+            : status;
         return (
             <div className="graphlens">
-                <ProgressPanel {...loadingProps(status)} />
+                <ProgressPanel {...loadingProps(shown)} />
             </div>
         );
     }

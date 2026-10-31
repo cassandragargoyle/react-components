@@ -142,6 +142,45 @@ function textOf(value: unknown): string | undefined {
     return typeof value === 'string' && value ? value : undefined;
 }
 
+// Fields that are shown as text; an object there would make React fail
+const NODE_TEXT_FIELDS: (keyof GraphLensNode)[] = ['type', 'label', 'voice', 'group', 'title', 'description'];
+const LINK_TEXT_FIELDS: (keyof GraphLensLink)[] = ['rel', 'description'];
+const META_TEXT_FIELDS: (keyof GraphLensMeta)[] = ['title'];
+
+const isObject = (value: unknown): value is object => typeof value === 'object' && value !== null;
+
+// A copy without the object values of the given fields, or the item itself when it has none
+function withoutObjects<T extends object>(item: T, fields: (keyof T)[]): T {
+    if (!fields.some((field) => isObject(item[field]))) return item;
+    const copy = { ...item };
+    for (const field of fields) if (isObject(copy[field])) delete copy[field];
+    return copy;
+}
+
+function isNode(value: unknown): boolean {
+    if (!isObject(value)) return false;
+    const { id } = value as { id?: unknown };
+    return typeof id === 'string' || typeof id === 'number';
+}
+
+/**
+ * Make a document from outside safe to render. Documents arrive as parsed JSON, so
+ * the types do not hold: a field shown as text loses an object value, and a document
+ * without the graph shape gives null. A valid node or link stays the same object.
+ */
+export function normalizeDocument(input: GraphLensDocument): GraphLensDocument | null {
+    if (!isObject(input)) return null;
+    const { meta, nodes, links } = input;
+    if (!Array.isArray(nodes) || !Array.isArray(links)) return null;
+    if (!nodes.every(isNode) || !links.every(isObject)) return null;
+    return {
+        ...input,
+        meta: isObject(meta) ? withoutObjects(meta, META_TEXT_FIELDS) : meta,
+        nodes: nodes.map((node) => withoutObjects(node, NODE_TEXT_FIELDS)),
+        links: links.map((link) => withoutObjects(link, LINK_TEXT_FIELDS)),
+    };
+}
+
 /** Grouping key for stats/filters: node.group, 'tag', a voice's VoX type, or the node type */
 export function kindOf(node: GraphLensNode): string {
     const group = textOf(node.group);

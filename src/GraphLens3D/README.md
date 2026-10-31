@@ -42,6 +42,11 @@ The TS type mirrors the **canonical, language-independent GraphView schema**
 document level. Documents at rest use the `.glens.json` filename suffix. Align
 the TS type to that schema rather than inventing a parallel shape.
 
+The component does not validate against the schema, but it stays usable with a
+wrong document. An object in a field that is shown as text is ignored, and a
+document without the graph shape (a `nodes` array of objects with an `id`, and a
+`links` array) shows an error instead of the graph.
+
 ## Node groups and colors
 
 A document can define its own groups and colors, with no change to the code:

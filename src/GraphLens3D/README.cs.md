@@ -56,6 +56,10 @@ povinné u každého uzlu; `meta` a `version` jsou na úrovni dokumentu nepovinn
 Uložené dokumenty používají příponu `.glens.json`. Typ v TS slaďujte s tímto
 schématem a nevymýšlejte paralelní strukturu.
 
+Komponenta dokument proti schématu nevaliduje, ale s chybným dokumentem zůstane
+použitelná. Objekt v poli, které se zobrazuje jako text, se ignoruje, a dokument bez
+tvaru grafu (pole `nodes` s objekty s `id` a pole `links`) místo grafu ukáže chybu.
+
 ## Skupiny uzlů a barvy
 
 Dokument si může definovat vlastní skupiny a barvy bez změny kódu:
