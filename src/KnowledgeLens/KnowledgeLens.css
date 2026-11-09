@@ -264,16 +264,23 @@
 /* File comments: the About toggle and panel, and the section comment of a node */
 
 .knowledge-lens-about-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     margin-left: auto;
     flex-shrink: 0;
     padding: 0 4px;
     border: none;
     border-radius: 3px;
     background: none;
-    color: var(--vscode-textLink-foreground, #3794ff);
+    color: var(--vscode-foreground, #cccccc);
     font: inherit;
     font-size: 12px;
     cursor: pointer;
+}
+
+.knowledge-lens-about-icon {
+    display: block;
 }
 
 .knowledge-lens-about-toggle:hover {

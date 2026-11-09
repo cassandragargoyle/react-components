@@ -95,7 +95,7 @@ N3.js drops `#` comments, so KnowledgeLens reads them from the text with
 `<…>`, `"…"` or `"""…"""` is not a comment.
 
 - **Document comment** — the comment lines before the first statement (prefixes and base may
-  sit between them). The header shows **About this file**, which opens it below the header in a
+  sit between them). An info icon in the header (**About this file**) opens it below the header in a
   monospace font with its indentation kept. Frame lines such as `=====` are left out
 - **Section comments** — a comment block between statements belongs to the subjects that follow
   it, up to the next one. The property panel shows the section of the selected node (its first

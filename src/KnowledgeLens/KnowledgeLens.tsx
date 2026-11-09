@@ -403,12 +403,19 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
                                     className="knowledge-lens-about-toggle"
                                     aria-expanded={aboutOpen}
                                     aria-controls="knowledge-lens-about"
+                                    aria-label="About this file"
+                                    title={aboutOpen ? 'Hide the file comment' : 'About this file: show the file comment'}
                                     onClick={() => {
                                         setAboutOpen((open) => !open);
                                         setDirty(true);
                                     }}
                                 >
-                                    <span aria-hidden="true">{aboutOpen ? '▾' : '▸'}</span> About this file
+                                    <span aria-hidden="true">{aboutOpen ? '▾' : '▸'}</span>
+                                    <svg className="knowledge-lens-about-icon" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                                        <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.3" />
+                                        <rect x="7.3" y="7" width="1.4" height="4.5" rx="0.5" fill="currentColor" />
+                                        <circle cx="8" cy="4.9" r="0.85" fill="currentColor" />
+                                    </svg>
                                 </button>
                             )}
                         </div>
