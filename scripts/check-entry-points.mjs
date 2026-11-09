@@ -23,7 +23,7 @@ const AG_GRID = ['ag-grid-community', 'ag-grid-react'];
 // table documents the same list. A subpath missing here, or a peer it reaches beyond its
 // list, fails the check
 const EXPECTED_PEERS = {
-    '.': [...AG_GRID, 'cytoscape', 'cytoscape-dagre', '3d-force-graph', '@xyflow/react', 'react-markdown', 'remark-gfm'],
+    '.': [...AG_GRID, 'cytoscape', 'cytoscape-dagre', '3d-force-graph', '@xyflow/react', 'react-markdown', 'remark-gfm', 'n3'],
     './avatar': [],
     './block-document': [],
     './carousel': [],
@@ -31,6 +31,7 @@ const EXPECTED_PEERS = {
     './git-history': [],
     './graph-canvas': [...AG_GRID, 'cytoscape', 'cytoscape-dagre'],
     './graph-lens-3d': [...AG_GRID, '3d-force-graph'],
+    './knowledge-lens': [...AG_GRID, 'cytoscape', 'cytoscape-dagre', 'n3'],
     './markdown-view': ['react-markdown', 'remark-gfm'],
     './node-table-panel': AG_GRID,
     './open-panel': [],

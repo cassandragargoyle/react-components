@@ -1,0 +1,264 @@
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix eli:     <http://data.europa.eu/eli/ontology#> .
+@prefix lk:      <https://example.org/legal-knowledge#> .
+@prefix sz:      <https://example.org/stavebni-zakon/par-4#> .
+@prefix czv:     <https://e-sbirka.gov.cz/czechvoc/POJMREJ/termin/> .
+@base            <https://e-sbirka.gov.cz/eli/cz/sb/2021/283/2026-06-11/dokument/norma/> .
+
+# =====================================================================
+# Znalostní model § 4 – Záměr
+# Zdroj: samples/sz-4.txt · Specifikace: definition.md
+# Znění zákona č. 283/2021 Sb. k 2026-06-11 (všechna ELI v grafu)
+#
+# Metadata každého objektu (dle specifikace):
+#   Objekt           -> rdf:type
+#   Textový popis    -> rdfs:label (krátký název) + dcterms:description
+#                       (u pojmů navíc skos:definition = znění legální definice)
+#   Umístění v textu -> lk:textLocation (citace) + lk:sourceProvision (ELI)
+#
+# § 4 je definiční ustanovení:
+#   odst. 1 definuje „záměr“ výčtem sedmi druhů (stavba, soubor staveb, …);
+#           každý druh je užší pojem (skos:broader sz:zamer),
+#   odst. 2 definuje „záměr EIA“ jako záměr podle odst. 1, který podléhá
+#           posouzení vlivů na životní prostředí (podmínka + odkaz na
+#           zákon č. 100/2001 Sb.).
+# Ustanovení § 4 neukládá povinnost, proto nemá lk:imposesRequirement.
+# =====================================================================
+
+sz:graf a dcterms:Dataset ;
+    rdfs:label "Znalostní model § 4 zákona č. 283/2021 Sb."@cs ;
+    dcterms:source <https://e-sbirka.gov.cz/eli/cz/sb/2021/283/2026-06-11> ;
+    eli:version_date "2026-06-11"^^xsd:date ;
+    dcterms:created "2026-11-09"^^xsd:date .
+
+
+# ---------------------------------------------------------------------
+# Slovník (typy a vazby z definition.md)
+# ---------------------------------------------------------------------
+
+lk:LegalProvision    a rdfs:Class ; rdfs:label "Právní ustanovení"@cs .
+lk:LegalRequirement  a rdfs:Class ; rdfs:label "Právní požadavek"@cs .
+lk:LegalConcept      a rdfs:Class ; rdfs:label "Právní pojem"@cs .
+lk:LegalCondition    a rdfs:Class ; rdfs:label "Právní podmínka"@cs .
+lk:LegalException    a rdfs:Class ; rdfs:label "Právní výjimka"@cs .
+lk:LegalReference    a rdfs:Class ; rdfs:label "Právní odkaz"@cs .
+
+lk:Verification a rdfs:Class ; rdfs:label "Ověření"@cs .
+lk:Evidence   a rdfs:Class ; rdfs:label "Důkaz"@cs .
+
+lk:appliesTo          a rdf:Property ; rdfs:label "týká se"@cs .
+lk:requires           a rdf:Property ; rdfs:label "vyžaduje"@cs .
+lk:isSubjectTo        a rdf:Property ; rdfs:label "podléhá"@cs .
+lk:isVerifiedBy       a rdf:Property ; rdfs:label "ověřuje"@cs .
+lk:imposesRequirement a rdf:Property ; rdfs:label "ukládá požadavek"@cs .
+lk:usesEvidence       a rdf:Property ; rdfs:label "používá důkaz"@cs .
+lk:producesResult     a rdf:Property ; rdfs:label "vytváří výsledek"@cs .
+lk:exceptionTo        a rdf:Property ; rdfs:label "je výjimkou z"@cs ; rdfs:domain lk:LegalException .
+lk:hasException       a rdf:Property ; rdfs:label "má výjimku"@cs ; rdfs:range lk:LegalException .
+lk:refersTo           a rdf:Property ; rdfs:label "odkazuje na"@cs .
+
+lk:textLocation    a rdf:Property ; rdfs:label "umístění v textu"@cs .
+lk:sourceProvision a rdf:Property ; rdfs:label "vychází z ustanovení"@cs ;
+    rdfs:comment "ELI ustanovení, ze kterého objekt vychází."@cs .
+lk:inferred        a rdf:Property ; rdfs:label "odvozeno"@cs ;
+    rdfs:comment "true = objekt není v textu výslovně uveden, je doplněn výkladem."@cs .
+
+
+# ---------------------------------------------------------------------
+# Ustanovení (IRI = ELI, relativně k @base)
+# ---------------------------------------------------------------------
+
+<https://e-sbirka.gov.cz/eli/cz/sb/2021/283/2026-06-11> a eli:LegalResource ;
+    rdfs:label "Zákon č. 283/2021 Sb., stavební zákon"@cs .
+
+<cast_1/hlava_2/par_4> a lk:LegalProvision , eli:LegalResourceSubdivision ;
+    rdfs:label "§ 4"@cs ;
+    dcterms:title "Záměr"@cs ;
+    dcterms:description "Vymezení pojmů záměr a záměr EIA."@cs ;
+    lk:textLocation "§ 4 zákona č. 283/2021 Sb." ;
+    eli:is_part_of <https://e-sbirka.gov.cz/eli/cz/sb/2021/283/2026-06-11> .
+
+<cast_1/hlava_2/par_4/odst_1> a lk:LegalProvision , eli:LegalResourceSubdivision ;
+    rdfs:label "§ 4 odst. 1"@cs ;
+    dcterms:description "Definice záměru: stavba, soubor staveb, zařízení, údržba dokončené stavby, změna využití území, dělení nebo scelování pozemků a stanovení ochranného pásma."@cs ;
+    lk:textLocation "§ 4 odst. 1 zákona č. 283/2021 Sb." ;
+    eli:is_part_of <cast_1/hlava_2/par_4> .
+
+<cast_1/hlava_2/par_4/odst_2> a lk:LegalProvision , eli:LegalResourceSubdivision ;
+    rdfs:label "§ 4 odst. 2"@cs ;
+    dcterms:description "Definice záměru EIA: záměr podle odst. 1, který podléhá posouzení vlivů na životní prostředí."@cs ;
+    lk:textLocation "§ 4 odst. 2 zákona č. 283/2021 Sb." ;
+    eli:is_part_of <cast_1/hlava_2/par_4> .
+
+
+# ---------------------------------------------------------------------
+# Definované pojmy
+# ---------------------------------------------------------------------
+
+sz:zamer a lk:LegalConcept ;
+    rdfs:label "Záměr"@cs ;
+    skos:definition "Stavba, soubor staveb, zařízení, údržba dokončené stavby, změna využití území, dělení nebo scelování pozemků a stanovení ochranného pásma."@cs ;
+    dcterms:description "Souhrnný pojem pro vše, co se podle stavebního zákona povoluje; výčet v odst. 1 je úplný."@cs ;
+    lk:textLocation "§ 4 odst. 1" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_1> ;
+    rdfs:isDefinedBy <cast_1/hlava_2/par_4/odst_1> ;
+    skos:exactMatch czv:281471 ;
+    skos:narrower sz:stavba , sz:souborStaveb , sz:zarizeni , sz:udrzbaDokonceneStavby ,
+                  sz:zmenaVyuzitiUzemi , sz:deleniScelovaniPozemku , sz:stanoveniOchrannehoPasma .
+
+sz:zamerEIA a lk:LegalConcept ;
+    rdfs:label "Záměr EIA"@cs ;
+    skos:definition "Záměr podle odstavce 1, který podléhá posouzení vlivů na životní prostředí podle zákona o posuzování vlivů na životní prostředí."@cs ;
+    dcterms:description "Záměr, u kterého se podle zákona č. 100/2001 Sb. posuzují vlivy na životní prostředí."@cs ;
+    lk:textLocation "§ 4 odst. 2" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_2> ;
+    rdfs:isDefinedBy <cast_1/hlava_2/par_4/odst_2> ;
+    skos:exactMatch czv:281533 ;
+    skos:broader sz:zamer ;
+    lk:refersTo sz:odkazOdstavec1 ;
+    lk:isSubjectTo sz:podminkaPodlehaEIA .
+
+
+# ---------------------------------------------------------------------
+# Druhy záměru (výčet z § 4 odst. 1)
+# ---------------------------------------------------------------------
+
+sz:stavba a lk:LegalConcept ;
+    rdfs:label "Stavba"@cs ;
+    lk:textLocation "§ 4 odst. 1, „stavba“" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_1> ;
+    rdfs:isDefinedBy <cast_1/hlava_2/par_5/odst_1> ;
+    skos:exactMatch czv:270871 ;
+    skos:broader sz:zamer .
+
+sz:souborStaveb a lk:LegalConcept ;
+    rdfs:label "Soubor staveb"@cs ;
+    lk:textLocation "§ 4 odst. 1, „soubor staveb“" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_1> ;
+    rdfs:isDefinedBy <cast_1/hlava_2/par_5/odst_3> ;
+    skos:exactMatch czv:270117 ;
+    skos:broader sz:zamer .
+
+sz:zarizeni a lk:LegalConcept ;
+    rdfs:label "Zařízení"@cs ;
+    lk:textLocation "§ 4 odst. 1, „zařízení“" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_1> ;
+    rdfs:isDefinedBy <cast_1/hlava_2/par_7/odst_1> ;
+    skos:exactMatch czv:275201 ;
+    skos:broader sz:zamer .
+
+sz:udrzbaDokonceneStavby a lk:LegalConcept ;
+    rdfs:label "Údržba dokončené stavby"@cs ;
+    lk:textLocation "§ 4 odst. 1, „údržba dokončené stavby“" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_1> ;
+    rdfs:isDefinedBy <cast_1/hlava_2/par_6/odst_3> ;
+    skos:exactMatch czv:281537 ;
+    skos:broader sz:zamer .
+
+sz:zmenaVyuzitiUzemi a lk:LegalConcept ;
+    rdfs:label "Změna využití území"@cs ;
+    dcterms:description "V CzechVoc (Správní právo) samostatně není; příbuzný je pojem „změna v území“ (§ 12 písm. a))."@cs ;
+    lk:textLocation "§ 4 odst. 1, „změna využití území“" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_1> ;
+    skos:related czv:275799 ;
+    skos:broader sz:zamer .
+
+sz:deleniScelovaniPozemku a lk:LegalConcept ;
+    rdfs:label "Dělení nebo scelování pozemků"@cs ;
+    dcterms:description "V CzechVoc (Správní právo) není."@cs ;
+    lk:textLocation "§ 4 odst. 1, „dělení nebo scelování pozemků“" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_1> ;
+    skos:broader sz:zamer .
+
+sz:stanoveniOchrannehoPasma a lk:LegalConcept ;
+    rdfs:label "Stanovení ochranného pásma"@cs ;
+    dcterms:description "Záměrem je stanovení ochranného pásma; pojem „ochranné pásmo“ je v CzechVoc definován v jiných předpisech."@cs ;
+    lk:textLocation "§ 4 odst. 1, „stanovení ochranného pásma“" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_1> ;
+    skos:related czv:264341 ;
+    skos:broader sz:zamer .
+
+<cast_1/hlava_2/par_5/odst_1> a lk:LegalProvision , eli:LegalResourceSubdivision ;
+    rdfs:label "§ 5 odst. 1"@cs ; lk:textLocation "§ 5 odst. 1 zákona č. 283/2021 Sb." .
+<cast_1/hlava_2/par_5/odst_3> a lk:LegalProvision , eli:LegalResourceSubdivision ;
+    rdfs:label "§ 5 odst. 3"@cs ; lk:textLocation "§ 5 odst. 3 zákona č. 283/2021 Sb." .
+<cast_1/hlava_2/par_6/odst_3> a lk:LegalProvision , eli:LegalResourceSubdivision ;
+    rdfs:label "§ 6 odst. 3"@cs ; lk:textLocation "§ 6 odst. 3 zákona č. 283/2021 Sb." .
+<cast_1/hlava_2/par_7/odst_1> a lk:LegalProvision , eli:LegalResourceSubdivision ;
+    rdfs:label "§ 7 odst. 1"@cs ; lk:textLocation "§ 7 odst. 1 zákona č. 283/2021 Sb." .
+
+
+# ---------------------------------------------------------------------
+# Podmínka (kritérium z definice záměru EIA)
+# ---------------------------------------------------------------------
+
+sz:podminkaPodlehaEIA a lk:LegalCondition ;
+    rdfs:label "Záměr podléhá posouzení vlivů na životní prostředí"@cs ;
+    dcterms:description "Záměr podle odst. 1 je záměrem EIA, jen pokud podléhá posouzení vlivů na životní prostředí podle zákona č. 100/2001 Sb. (zpravidla záměry z jeho přílohy č. 1)."@cs ;
+    lk:textLocation "§ 4 odst. 2, „který podléhá posouzení vlivů na životní prostředí“" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_2> ;
+    lk:appliesTo sz:zamer , sz:posouzeniVlivu ;
+    lk:refersTo sz:odkazZakonEIA ;
+    lk:isVerifiedBy sz:overeniEIA .
+
+sz:posouzeniVlivu a lk:LegalConcept ;
+    rdfs:label "Posouzení vlivů záměru na životní prostředí"@cs ;
+    skos:definition "Proces, který sestává z vypracování a projednání dokumentace, zpracování posudku, vydání stanoviska a jeho zahrnutí do příslušného rozhodnutí vydaného v navazujícím řízení."@cs ;
+    dcterms:description "Proces EIA podle zákona č. 100/2001 Sb.; legální definice je v § 3 písm. l) tohoto zákona."@cs ;
+    lk:textLocation "§ 4 odst. 2, „posouzení vlivů na životní prostředí“" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_2> ;
+    skos:exactMatch czv:266373 .
+
+
+# ---------------------------------------------------------------------
+# Odkazy (z pole odkazyZFragmentu v e-Sbírce)
+# ---------------------------------------------------------------------
+
+sz:odkazOdstavec1 a lk:LegalReference ;
+    rdfs:label "Odkaz na § 4 odst. 1"@cs ;
+    dcterms:description "Záměr EIA je záměrem ve smyslu odst. 1 (vnitřní odkaz, INTUSTAN)."@cs ;
+    lk:textLocation "§ 4 odst. 2, „záměr podle odstavce 1“" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_2> ;
+    lk:refersTo <cast_1/hlava_2/par_4/odst_1> .
+
+sz:odkazZakonEIA a lk:LegalReference ;
+    rdfs:label "Zákon o posuzování vlivů na životní prostředí (č. 100/2001 Sb.)"@cs ;
+    dcterms:description "Zákon o posuzování vlivů na životní prostředí a o změně některých souvisejících zákonů (odkaz na jiný předpis, JINYPRED)."@cs ;
+    lk:textLocation "§ 4 odst. 2, „podle zákona o posuzování vlivů na životní prostředí“" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_2> ;
+    lk:refersTo <https://e-sbirka.gov.cz/eli/cz/sb/2001/100> .
+
+<https://e-sbirka.gov.cz/eli/cz/sb/2001/100> a eli:LegalResource ;
+    rdfs:label "Zákon č. 100/2001 Sb. (zákon o posuzování vlivů na životní prostředí)"@cs .
+
+
+# ---------------------------------------------------------------------
+# Ověření a důkazy (odvozené)
+# ---------------------------------------------------------------------
+
+sz:overeniEIA a lk:Verification ;
+    rdfs:label "Ověření, zda je záměr záměrem EIA"@cs ;
+    dcterms:description "Ověří, zda záměr podle § 4 odst. 1 podléhá posouzení vlivů na životní prostředí podle zákona č. 100/2001 Sb. Výsledek určuje, zda jde o záměr EIA."@cs ;
+    lk:textLocation "§ 4 odst. 2 (odvozeno)" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_2> ;
+    lk:usesEvidence sz:zaverZjistovacihoRizeni , sz:stanoviskoEIA ;
+    lk:producesResult "záměr EIA / záměr, který není záměrem EIA"@cs ;
+    lk:inferred true .
+
+sz:zaverZjistovacihoRizeni a lk:Evidence ;
+    rdfs:label "Závěr zjišťovacího řízení"@cs ;
+    dcterms:description "Závěr zjišťovacího řízení podle § 7 zákona č. 100/2001 Sb., zda záměr bude dále posuzován."@cs ;
+    lk:textLocation "§ 4 odst. 2 (odvozeno)" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_2> ;
+    lk:inferred true .
+
+sz:stanoviskoEIA a lk:Evidence ;
+    rdfs:label "Stanovisko EIA"@cs ;
+    dcterms:description "Závazné stanovisko k posouzení vlivů provedení záměru na životní prostředí podle § 9a zákona č. 100/2001 Sb."@cs ;
+    lk:textLocation "§ 4 odst. 2 (odvozeno)" ;
+    lk:sourceProvision <cast_1/hlava_2/par_4/odst_2> ;
+    lk:inferred true .

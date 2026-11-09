@@ -107,6 +107,17 @@ export type {
     GraphLensPhase,
 } from './GraphLens3D';
 
+export { KnowledgeLens, parseTurtle, projectGraph } from './KnowledgeLens';
+export type {
+    KnowledgeLensProps,
+    KnowledgeLensPort,
+    KnowledgeLensLayout,
+    KnowledgeLensOptions,
+    KnowledgeLensHostMessage,
+    KnowledgeLensMessage,
+    KnowledgeGraph,
+} from './KnowledgeLens';
+
 export { MarkdownView, slugify } from './MarkdownView';
 export type { MarkdownViewProps } from './MarkdownView';
 

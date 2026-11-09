@@ -1,6 +1,6 @@
 {
   "name": "@cassandragargoyle/react-components",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Reusable, extensible React components shared across the CassandraGargoyle ecosystem",
   "license": "MIT",
   "type": "module",
@@ -14,7 +14,10 @@
     "graph",
     "code-editor",
     "markdown",
-    "git"
+    "git",
+    "rdf",
+    "turtle",
+    "knowledge-graph"
   ],
   "homepage": "https://github.com/cassandragargoyle/react-components#readme",
   "bugs": {
@@ -73,6 +76,10 @@
       "types": "./dist/GraphLens3D/index.d.ts",
       "import": "./dist/graph-lens-3d.js"
     },
+    "./knowledge-lens": {
+      "types": "./dist/KnowledgeLens/index.d.ts",
+      "import": "./dist/knowledge-lens.js"
+    },
     "./markdown-view": {
       "types": "./dist/MarkdownView/index.d.ts",
       "import": "./dist/markdown-view.js"
@@ -107,6 +114,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@types/cytoscape": "^3.21.9",
+    "@types/n3": "^1.26.6",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@xyflow/react": "^12.11.2",
@@ -117,6 +125,7 @@
     "cytoscape-dagre": "^4.0.0",
     "jsdom": "^25.0.1",
     "monaco-editor": "^0.57.0",
+    "n3": "^2.13.12",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
@@ -137,7 +146,8 @@
     "cytoscape-dagre": "^4.0.0",
     "monaco-editor": ">=0.55.0 <0.58.0",
     "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "n3": "^2.13.0"
   },
   "peerDependenciesMeta": {
     "ag-grid-community": {
@@ -165,6 +175,9 @@
       "optional": true
     },
     "remark-gfm": {
+      "optional": true
+    },
+    "n3": {
       "optional": true
     }
   }

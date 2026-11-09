@@ -53,6 +53,7 @@ the unused peers, this is what makes them truly optional:
 | `/git-history` | `GitHistory`, `parseUnifiedDiff`, `layoutCommitGraph` | — |
 | `/graph-canvas` | `GraphCanvas` | `cytoscape`, `cytoscape-dagre`, `ag-grid-community`, `ag-grid-react` |
 | `/graph-lens-3d` | `GraphLens3D` | `3d-force-graph`, `ag-grid-community`, `ag-grid-react` |
+| `/knowledge-lens` | `KnowledgeLens`, `parseTurtle`, `projectGraph` | `n3`, `cytoscape`, `cytoscape-dagre`, `ag-grid-community`, `ag-grid-react` |
 | `/markdown-view` | `MarkdownView`, `slugify` | `react-markdown`, `remark-gfm` |
 | `/node-table-panel` | `NodeTablePanel` | `ag-grid-community`, `ag-grid-react` |
 | `/open-panel` | `OpenPanel` and its helpers | — |
@@ -60,7 +61,7 @@ the unused peers, this is what makes them truly optional:
 | `/radial-menu` | `RadialMenu`, `useRadialMenu` | — |
 | `/workflow-canvas` | `WorkflowCanvas` | `@xyflow/react`, `ag-grid-community`, `ag-grid-react` |
 
-The three graph components embed `NodeTablePanel`, hence AG Grid.
+The four graph components embed `NodeTablePanel`, hence AG Grid.
 
 ```tsx
 import { BlockDocument, type BlockDocumentData } from '@cassandragargoyle/react-components/block-document';
@@ -92,6 +93,7 @@ to import.
 | [`GitHistory`](https://github.com/cassandragargoyle/react-components/tree/main/src/GitHistory) | A file or folder history in the style of Git Extensions: commit graph, refs, avatars, and Commit/Diff/Files tabs, fed by a host data source |
 | [`GraphCanvas`](https://github.com/cassandragargoyle/react-components/tree/main/src/GraphCanvas) | A 2D node-edge graph viewer and editor over Cytoscape, with a node table and property panel |
 | [`GraphLens3D`](https://github.com/cassandragargoyle/react-components/tree/main/src/GraphLens3D) | A 3D force-directed graph explorer with search, filters and a detail panel |
+| [`KnowledgeLens`](https://github.com/cassandragargoyle/react-components/tree/main/src/KnowledgeLens) | A read-only viewer of a Turtle (RDF) document as a knowledge graph: types as styles, literals as text, with filters and a saved layout |
 | [`MarkdownView`](https://github.com/cassandragargoyle/react-components/tree/main/src/MarkdownView) | A read-only GitHub-flavoured Markdown document; links and image paths are resolved by the host |
 | [`NodeTablePanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/NodeTablePanel) | A bottom table panel over AG Grid with an All/Selected filter and selection sync |
 | [`OpenPanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/OpenPanel) | A launcher card: Open File / Open Folder and a filterable list of recent items |
