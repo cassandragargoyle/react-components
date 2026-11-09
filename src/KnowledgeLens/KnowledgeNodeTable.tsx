@@ -12,11 +12,14 @@ import type { ColDef } from 'ag-grid-community';
 import { NodeTablePanel, type TableFilter } from '../NodeTablePanel';
 import { valueText } from './projectGraph';
 import type { KnowledgeClassInfo, KnowledgeNode, KnowledgePredicateInfo } from './types';
+import type { TurtleSection } from './extractComments';
 
 interface KnowledgeNodeTableProps {
     nodes: KnowledgeNode[];
     classesByIri: Map<string, KnowledgeClassInfo>;
     attributeColumns: KnowledgePredicateInfo[];
+    /** Section comment per node IRI; the Section column is shown only when given */
+    sectionOf?: Map<string, TurtleSection>;
     selectedNodeIds: Set<string>;
     filter: TableFilter;
     onFilterChange: (filter: TableFilter) => void;
@@ -30,6 +33,7 @@ export function KnowledgeNodeTable({
     nodes,
     classesByIri,
     attributeColumns,
+    sectionOf,
     selectedNodeIds,
     filter,
     onFilterChange,
@@ -46,6 +50,7 @@ export function KnowledgeNodeTable({
                     iri: node.short,
                     label: node.title,
                     type: classesByIri.get(node.classIri)?.name ?? '',
+                    section: sectionOf?.get(node.id)?.text.split('\n')[0] ?? '',
                 };
                 attributeColumns.forEach((column, i) => {
                     const attribute = node.attributes.find((a) => a.predicate === column.iri);
@@ -53,7 +58,7 @@ export function KnowledgeNodeTable({
                 });
                 return row;
             }),
-        [nodes, classesByIri, attributeColumns]
+        [nodes, classesByIri, attributeColumns, sectionOf]
     );
 
     const columns = useMemo<ColDef[]>(
@@ -61,6 +66,7 @@ export function KnowledgeNodeTable({
             { field: 'iri', headerName: 'IRI', width: 200, sortable: true },
             { field: 'label', headerName: 'Label', width: 220, sortable: true },
             { field: 'type', headerName: 'Type', width: 140, sortable: true },
+            ...(sectionOf ? [{ field: 'section', headerName: 'Section', width: 200, sortable: true }] : []),
             ...attributeColumns.map((column, i) => ({
                 field: `attr_${i}`,
                 headerName: column.name,
@@ -68,7 +74,7 @@ export function KnowledgeNodeTable({
                 sortable: true,
             })),
         ],
-        [attributeColumns]
+        [attributeColumns, sectionOf]
     );
 
     return (

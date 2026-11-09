@@ -260,3 +260,61 @@
     background: var(--vscode-focusBorder, #007fd4);
     outline: none;
 }
+
+/* File comments: the About toggle and panel, and the section comment of a node */
+
+.knowledge-lens-about-toggle {
+    margin-left: auto;
+    flex-shrink: 0;
+    padding: 0 4px;
+    border: none;
+    border-radius: 3px;
+    background: none;
+    color: var(--vscode-textLink-foreground, #3794ff);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.knowledge-lens-about-toggle:hover {
+    background: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.05));
+}
+
+.knowledge-lens-about-toggle:focus-visible,
+.knowledge-lens-about:focus-visible {
+    outline: 1px solid var(--vscode-focusBorder, #007fd4);
+    outline-offset: -1px;
+}
+
+.knowledge-lens-about {
+    flex-shrink: 0;
+    max-height: 40%;
+    margin: 0;
+    padding: 8px 12px;
+    overflow: auto;
+    border-bottom: 1px solid var(--vscode-sideBar-border, #3c3c3c);
+    background: var(--vscode-textCodeBlock-background, rgba(127, 127, 127, 0.08));
+    color: var(--vscode-foreground, #cccccc);
+    font-family: var(--vscode-editor-font-family, monospace);
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: pre;
+}
+
+.knowledge-lens-section-comment {
+    font-size: 12px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.knowledge-lens-section-comment summary {
+    cursor: pointer;
+}
+
+.knowledge-lens-section-comment pre {
+    margin: 4px 0 0;
+    font-family: var(--vscode-editor-font-family, monospace);
+    font-size: 11px;
+    white-space: pre-wrap;
+    color: var(--vscode-descriptionForeground, #858585);
+}

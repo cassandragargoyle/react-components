@@ -18,6 +18,7 @@ import { ClassSwatch, KnowledgeSidePanel } from './KnowledgeSidePanel';
 import { KnowledgePropertyPanel } from './KnowledgePropertyPanel';
 import { KnowledgeNodeTable } from './KnowledgeNodeTable';
 import { parseTurtle } from './parseTurtle';
+import { extractComments, type TurtleSection } from './extractComments';
 import { defaultSubtitleAttributes, projectGraph } from './projectGraph';
 import { createIriShortener } from './iri';
 import { classPalette, resolveKnowledgeTheme, type KnowledgeTheme } from './palette';
@@ -98,6 +99,7 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
     // Null follows the layout: orthogonal for dagre, straight for the others
     const [edgeStyleChoice, setEdgeStyleChoice] = useState<KnowledgeEdgeStyle | null>(null);
     const [panelWidth, setPanelWidth] = useState(DEFAULT_PANEL_WIDTH);
+    const [aboutOpen, setAboutOpen] = useState(false);
     const [language, setLanguage] = useState('');
     const [hiddenClasses, setHiddenClasses] = useState<Set<string>>(new Set());
     const [hiddenPredicates, setHiddenPredicates] = useState<Set<string>>(new Set());
@@ -133,6 +135,7 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
                         setHiddenPredicates(new Set(saved?.hiddenPredicates ?? []));
                         setSubtitleChoice(saved?.subtitleAttributes ?? null);
                         setStoredPositions(saved?.positions);
+                        setAboutOpen(saved?.aboutOpen ?? false);
                         setDirty(false);
                     }
                     break;
@@ -192,6 +195,15 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
 
     const defaultSubtitles = useMemo(() => (graph ? defaultSubtitleAttributes(graph) : []), [graph?.nodes]); // eslint-disable-line react-hooks/exhaustive-deps
     const subtitleAttributes = subtitleChoice ?? defaultSubtitles;
+    // Comments are read from the text, which N3.js drops them from; a broken file has none
+    const comments = useMemo(() => (parsed?.ok && doc ? extractComments(doc.text) : null), [parsed]); // eslint-disable-line react-hooks/exhaustive-deps
+    const sectionOf = useMemo(() => {
+        const map = new Map<string, TurtleSection>();
+        for (const section of comments?.sections ?? []) {
+            for (const subject of section.subjects) if (!map.has(subject)) map.set(subject, section);
+        }
+        return map;
+    }, [comments]);
     const nodesById = useMemo(() => new Map((graph?.nodes ?? []).map((n) => [n.id, n])), [graph]);
     const classesByIri = useMemo(() => new Map((graph?.classes ?? []).map((c) => [c.iri, c])), [graph]);
     const attributeColumns = useMemo(
@@ -220,13 +232,14 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
             hiddenClasses: [...hiddenClasses],
             hiddenPredicates: [...hiddenPredicates],
             subtitleAttributes: subtitleChoice ?? undefined,
+            aboutOpen,
             positions: viewportRef.current.getNodePositions(),
         };
         appliedLayoutRef.current = JSON.stringify(saved);
         setStoredPositions(saved.positions);
         port.postMessage({ type: 'requestSave', layout: saved });
         setDirty(false);
-    }, [canSave, layout, edgeStyleChoice, panelWidth, language, hiddenClasses, hiddenPredicates, subtitleChoice, port]);
+    }, [canSave, layout, edgeStyleChoice, panelWidth, aboutOpen, language, hiddenClasses, hiddenPredicates, subtitleChoice, port]);
 
     const handleSelectionChange = useCallback((elements: KnowledgeSelectedElement[]) => {
         setSelected(elements);
@@ -384,7 +397,26 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
                                     {shortIri(graph.header.source)}
                                 </button>
                             )}
+                            {comments?.document && (
+                                <button
+                                    type="button"
+                                    className="knowledge-lens-about-toggle"
+                                    aria-expanded={aboutOpen}
+                                    aria-controls="knowledge-lens-about"
+                                    onClick={() => {
+                                        setAboutOpen((open) => !open);
+                                        setDirty(true);
+                                    }}
+                                >
+                                    <span aria-hidden="true">{aboutOpen ? '▾' : '▸'}</span> About this file
+                                </button>
+                            )}
                         </div>
+                        {comments?.document && aboutOpen && (
+                            <pre id="knowledge-lens-about" className="knowledge-lens-about" tabIndex={0} aria-label="File comment">
+                                {comments.document}
+                            </pre>
+                        )}
                         {graph.truncated && (
                             <div className="knowledge-lens-warning" role="status">
                                 Showing the first {graph.nodes.length} of {graph.totalNodes} nodes.
@@ -425,6 +457,7 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
                         nodes={visibleNodes}
                         classesByIri={classesByIri}
                         attributeColumns={attributeColumns}
+                        sectionOf={sectionOf.size > 0 ? sectionOf : undefined}
                         selectedNodeIds={selectedNodeIds}
                         filter={tableFilter}
                         onFilterChange={setTableFilter}
@@ -437,6 +470,7 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
                 <PanelSplitter width={panelWidth} onWidthChange={handlePanelWidth} label="properties panel" />
                 <KnowledgePropertyPanel
                     width={panelWidth}
+                    section={selectedNode ? sectionOf.get(selectedNode.id) ?? null : null}
                     node={selectedNode ? nodesById.get(selectedNode.id) ?? null : null}
                     edge={selectedEdge ? graph.edges.find((e) => e.id === selectedEdge.id) ?? null : null}
                     nodesById={nodesById}

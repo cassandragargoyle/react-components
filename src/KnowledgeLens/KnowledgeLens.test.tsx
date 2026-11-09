@@ -149,6 +149,43 @@ describe('KnowledgeLens', () => {
     });
 });
 
+describe('file comments', () => {
+    it('opens the head comment from the header and saves that it is open', async () => {
+        const api = { postMessage: vi.fn() };
+        render(<KnowledgeLens api={api} canSave />);
+        sendSample();
+        await screen.findByRole('region', { name: 'Classes' });
+        const toggle = screen.getByRole('button', { name: /About this file/ });
+        expect(toggle).toHaveAttribute('aria-expanded', 'false');
+        expect(screen.queryByLabelText('File comment')).toBeNull();
+
+        fireEvent.click(toggle);
+        const about = screen.getByLabelText('File comment');
+        expect(about).toHaveTextContent('Znalostní model § 4 – Záměr');
+        expect(about.textContent).not.toMatch(/====/);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+        const call = api.postMessage.mock.calls.find(([m]) => (m as { type: string }).type === 'requestSave');
+        expect((call?.[0] as { layout: KnowledgeLensLayout }).layout.aboutOpen).toBe(true);
+    });
+
+    it('shows the section comment of the selected node', async () => {
+        render(<KnowledgeLens api={{ postMessage: vi.fn() }} />);
+        sendSample();
+        await screen.findByRole('region', { name: 'Classes' });
+        send({ type: 'selectNode', ids: [`${SZ}zamer`] });
+        const panel = screen.getByRole('complementary', { name: 'Properties' });
+        await waitFor(() => expect(within(panel).getByText('Definované pojmy')).toBeInTheDocument());
+    });
+
+    it('has no About toggle for a file without a head comment', async () => {
+        render(<KnowledgeLens api={{ postMessage: vi.fn() }} />);
+        send({ type: 'setTurtleData', text: '<http://a> <http://b> "c" .', fileName: 'plain.ttl' });
+        await screen.findByRole('region', { name: 'Classes' });
+        expect(screen.queryByRole('button', { name: /About this file/ })).toBeNull();
+    });
+});
+
 describe('property panel splitter', () => {
     it('resizes the panel with the arrow keys, keeps the limits and saves the width', async () => {
         const api = { postMessage: vi.fn() };

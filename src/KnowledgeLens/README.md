@@ -88,10 +88,25 @@ Ctrl+A selects every visible node, Ctrl+S saves and Escape clears the selection.
 - **Size** — at most `nodeLimit` nodes (default 2 000) are drawn; above it a warning says how
   many there are. Parsing runs after the first frame, so the loading state is shown at once
 
-## 3. Saved Layout
+## 3. File Comments
+
+N3.js drops `#` comments, so KnowledgeLens reads them from the text with
+`extractComments(text)`, which follows the Turtle rules for IRIs and strings: a `#` inside
+`<…>`, `"…"` or `"""…"""` is not a comment.
+
+- **Document comment** — the comment lines before the first statement (prefixes and base may
+  sit between them). The header shows **About this file**, which opens it below the header in a
+  monospace font with its indentation kept. Frame lines such as `=====` are left out
+- **Section comments** — a comment block between statements belongs to the subjects that follow
+  it, up to the next one. The property panel shows the section of the selected node (its first
+  line, the rest folded), and the node table gets a **Section** column
+- A comment after a statement on the same line, or between the predicates of a statement, is
+  neither; comments never become nodes, edges or attributes
+
+## 4. Saved Layout
 
 With `canSave` the toolbar has a **Save** button (and Ctrl+S). It posts `requestSave` with a
-`KnowledgeLensLayout`: the layout algorithm, the edge style, the node positions, the property panel width, the hidden classes and
+`KnowledgeLensLayout`: the layout algorithm, the edge style, the node positions, the property panel width, whether About this file is open, the hidden classes and
 predicates, the chosen box lines and the language. The host stores it next to the Turtle file,
 for example `sz-4.ttl.lens.json`, and sends it back with `setTurtleData`. The Turtle file
 itself is never changed.
@@ -100,7 +115,7 @@ When every node has a saved position the layout algorithm does not run. Nodes th
 since the save are placed in a grid below the saved ones, so a hand-made arrangement survives
 a change of the file.
 
-## 4. Messages
+## 5. Messages
 
 | Direction | Message |
 | --------- | ------- |
@@ -115,7 +130,7 @@ a change of the file.
 A Turtle syntax error shows the message with the file name, line and column instead of an
 empty canvas. When the host sends the corrected text, the graph comes back.
 
-## 5. Demo
+## 6. Demo
 
 `npm run dev` serves the `sz-4.ttl` sample at `http://127.0.0.1:5173/demo/knowledge-lens.html`;
 `?light` starts in the light theme, and Save keeps the layout in the browser.

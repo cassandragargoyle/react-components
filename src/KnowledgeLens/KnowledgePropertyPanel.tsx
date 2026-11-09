@@ -9,6 +9,7 @@
 
 import React, { type JSX } from 'react';
 import { ClassSwatch } from './KnowledgeSidePanel';
+import type { TurtleSection } from './extractComments';
 import type {
     KnowledgeAttribute,
     KnowledgeClassInfo,
@@ -31,6 +32,27 @@ interface KnowledgePropertyPanelProps {
     onOpenExternal: (iri: string) => void;
     /** Panel width in pixels, set by the splitter */
     width: number;
+    /** Section comment of the file the selected node is written under */
+    section?: TurtleSection | null;
+}
+
+/** Section comment: the first line as a title, the rest collapsed */
+function SectionComment({ section }: { section: TurtleSection }): JSX.Element {
+    const [title, ...rest] = section.text.split('\n');
+    const body = rest.join('\n').trim();
+    return (
+        <div className="graph-property-section">
+            <div className="graph-property-section-title">Section</div>
+            {body ? (
+                <details className="knowledge-lens-section-comment">
+                    <summary>{title}</summary>
+                    <pre>{body}</pre>
+                </details>
+            ) : (
+                <div className="knowledge-lens-section-comment">{title}</div>
+            )}
+        </div>
+    );
 }
 
 /** Link to an IRI: selects the node when it is drawn, else asks the host to open it */
@@ -188,6 +210,7 @@ export function KnowledgePropertyPanel({
     onSelectNode,
     onOpenExternal,
     width,
+    section,
 }: KnowledgePropertyPanelProps): JSX.Element {
     const panelStyle: React.CSSProperties = { width, flex: `0 0 ${width}px` };
     if (edge && !node) {
@@ -247,6 +270,7 @@ export function KnowledgePropertyPanel({
                     </div>
                 )}
             </div>
+            {section && <SectionComment section={section} />}
             {node.attributes.length > 0 && (
                 <div className="graph-property-section">
                     <div className="graph-property-section-title">Attributes</div>

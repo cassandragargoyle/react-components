@@ -176,6 +176,8 @@ export interface KnowledgeLensLayout {
     edgeStyle?: KnowledgeEdgeStyle;
     /** Width of the property panel in pixels */
     propertyPanelWidth?: number;
+    /** Whether the "About this file" panel with the document comment is open */
+    aboutOpen?: boolean;
     /** Node IRI to position */
     positions?: Record<string, { x: number; y: number }>;
     /** Classes turned off in the left panel */
