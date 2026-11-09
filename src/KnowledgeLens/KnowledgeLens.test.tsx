@@ -13,7 +13,9 @@ import { resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { KnowledgeLens } from './KnowledgeLens';
-import { wrapTitle } from './KnowledgeViewport';
+import cytoscape from 'cytoscape';
+import { applyEdgeLabels, defaultEdgeStyle, edgeGeometry, wrapTitle } from './KnowledgeViewport';
+import { DEFAULT_PANEL_WIDTH, MIN_PANEL_WIDTH } from './PanelSplitter';
 import type { KnowledgeLensLayout } from './types';
 
 // jsdom has no canvas: run Cytoscape headless, with the real graph model underneath
@@ -144,6 +146,89 @@ describe('KnowledgeLens', () => {
         sendSample();
         await screen.findByRole('region', { name: 'Classes' });
         expect(screen.queryByRole('button', { name: 'Save' })).toBeNull();
+    });
+});
+
+describe('property panel splitter', () => {
+    it('resizes the panel with the arrow keys, keeps the limits and saves the width', async () => {
+        const api = { postMessage: vi.fn() };
+        render(<KnowledgeLens api={api} canSave />);
+        sendSample();
+        await screen.findByRole('region', { name: 'Classes' });
+        const splitter = screen.getByRole('separator', { name: 'Resize properties panel' });
+        const panel = screen.getByRole('complementary', { name: 'Properties' });
+        expect(splitter).toHaveAttribute('aria-valuenow', String(DEFAULT_PANEL_WIDTH));
+
+        fireEvent.keyDown(splitter, { key: 'ArrowLeft' });
+        fireEvent.keyDown(splitter, { key: 'ArrowLeft' });
+        expect(panel.style.width).toBe(`${DEFAULT_PANEL_WIDTH + 32}px`);
+
+        for (let i = 0; i < 20; i++) fireEvent.keyDown(splitter, { key: 'ArrowRight' });
+        expect(splitter).toHaveAttribute('aria-valuenow', String(MIN_PANEL_WIDTH));
+
+        fireEvent.doubleClick(splitter);
+        fireEvent.keyDown(splitter, { key: 'ArrowLeft' });
+        fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+        const call = api.postMessage.mock.calls.find(([m]) => (m as { type: string }).type === 'requestSave');
+        expect((call?.[0] as { layout: KnowledgeLensLayout }).layout.propertyPanelWidth).toBe(DEFAULT_PANEL_WIDTH + 16);
+    });
+
+    it('drags the panel wider when the splitter moves left', async () => {
+        render(<KnowledgeLens api={{ postMessage: vi.fn() }} />);
+        sendSample();
+        await screen.findByRole('region', { name: 'Classes' });
+        const splitter = screen.getByRole('separator');
+        fireEvent.mouseDown(splitter, { clientX: 500 });
+        fireEvent.mouseMove(window, { clientX: 400 });
+        fireEvent.mouseUp(window);
+        expect(splitter).toHaveAttribute('aria-valuenow', String(DEFAULT_PANEL_WIDTH + 100));
+    });
+
+    it('opens with the saved width', async () => {
+        render(<KnowledgeLens api={{ postMessage: vi.fn() }} />);
+        sendSample({ version: 1, propertyPanelWidth: 320 });
+        await screen.findByRole('region', { name: 'Classes' });
+        expect(screen.getByRole('separator')).toHaveAttribute('aria-valuenow', '320');
+    });
+});
+
+describe('edge style', () => {
+    it('is orthogonal for dagre and straight for the other layouts', () => {
+        expect(defaultEdgeStyle('dagre')).toBe('orthogonal');
+        expect(defaultEdgeStyle('cose')).toBe('straight');
+        expect(edgeGeometry('orthogonal')['curve-style']).toBe('taxi');
+        expect(edgeGeometry('curved')['curve-style']).toBe('bezier');
+    });
+
+    it('is chosen in the toolbar and saved with the layout', async () => {
+        const api = { postMessage: vi.fn() };
+        render(<KnowledgeLens api={api} canSave />);
+        sendSample();
+        await screen.findByRole('region', { name: 'Classes' });
+        const select = screen.getByLabelText('Edges:') as HTMLSelectElement;
+        expect(select.value).toBe('orthogonal');
+        fireEvent.change(select, { target: { value: 'curved' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+        const call = api.postMessage.mock.calls.find(([m]) => (m as { type: string }).type === 'requestSave');
+        expect((call?.[0] as { layout: KnowledgeLensLayout }).layout.edgeStyle).toBe('curved');
+    });
+
+    it('shows a joined label once with orthogonal edges', () => {
+        const cy = cytoscape({ headless: true });
+        cy.add([
+            { data: { id: 'a' } }, { data: { id: 'b' } }, { data: { id: 'z' } },
+            { data: { id: 'e1', source: 'a', target: 'z', predicate: 'p', label: 'broader' } },
+            { data: { id: 'e2', source: 'b', target: 'z', predicate: 'p', label: 'broader' } },
+        ]);
+        applyEdgeLabels(cy, 'orthogonal');
+        expect([cy.$id('e1').data('shownLabel'), cy.$id('e2').data('shownLabel')]).toEqual(['broader', '']);
+        applyEdgeLabels(cy, 'straight');
+        expect(cy.$id('e2').data('shownLabel')).toBe('broader');
+        // A hidden edge passes its label on to the next one
+        cy.$id('e1').addClass('kl-hidden');
+        applyEdgeLabels(cy, 'orthogonal');
+        expect(cy.$id('e2').data('shownLabel')).toBe('broader');
+        cy.destroy();
     });
 });
 

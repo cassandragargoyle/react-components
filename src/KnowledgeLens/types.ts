@@ -164,11 +164,18 @@ export interface ProjectionOptions {
 /** Layout algorithms offered in the toolbar */
 export type KnowledgeLayoutAlgorithm = 'dagre' | 'cose' | 'breadthfirst';
 
+/** How edges are drawn: right-angle bends, straight lines, or curves */
+export type KnowledgeEdgeStyle = 'orthogonal' | 'straight' | 'curved';
+
 /** View state saved next to the Turtle file, e.g. `sz-4.ttl.lens.json` */
 export interface KnowledgeLensLayout {
     version: 1;
     /** Layout algorithm last chosen */
     layout?: KnowledgeLayoutAlgorithm;
+    /** Edge style chosen in the toolbar; absent follows the layout (orthogonal for dagre) */
+    edgeStyle?: KnowledgeEdgeStyle;
+    /** Width of the property panel in pixels */
+    propertyPanelWidth?: number;
     /** Node IRI to position */
     positions?: Record<string, { x: number; y: number }>;
     /** Classes turned off in the left panel */

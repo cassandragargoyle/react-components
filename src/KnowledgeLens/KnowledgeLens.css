@@ -233,3 +233,30 @@
     font-size: 12px;
     color: var(--vscode-descriptionForeground, #858585);
 }
+
+/* Vertical splitter before the property panel, the same look as the table splitter */
+
+.knowledge-lens-splitter {
+    width: 5px;
+    flex: 0 0 5px;
+    cursor: ew-resize;
+    background: var(--vscode-panelSection-border, #585858);
+    position: relative;
+    z-index: 10;
+}
+
+.knowledge-lens-splitter::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -4px;
+    right: -4px;
+}
+
+.knowledge-lens-splitter:hover,
+.knowledge-lens-splitter:active,
+.knowledge-lens-splitter:focus-visible {
+    background: var(--vscode-focusBorder, #007fd4);
+    outline: none;
+}

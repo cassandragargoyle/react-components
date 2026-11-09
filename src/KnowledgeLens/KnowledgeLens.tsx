@@ -11,7 +11,8 @@ import React, { type JSX, useCallback, useEffect, useLayoutEffect, useMemo, useR
 import type { TableFilter } from '../NodeTablePanel';
 import graphCanvasStyles from '../GraphCanvas/GraphCanvas.css';
 import knowledgeLensStyles from './KnowledgeLens.css';
-import { KnowledgeViewport, type KnowledgeViewportHandle } from './KnowledgeViewport';
+import { defaultEdgeStyle, KnowledgeViewport, type KnowledgeViewportHandle } from './KnowledgeViewport';
+import { clampPanelWidth, DEFAULT_PANEL_WIDTH, PanelSplitter } from './PanelSplitter';
 import { KnowledgeToolbar } from './KnowledgeToolbar';
 import { ClassSwatch, KnowledgeSidePanel } from './KnowledgeSidePanel';
 import { KnowledgePropertyPanel } from './KnowledgePropertyPanel';
@@ -21,6 +22,7 @@ import { defaultSubtitleAttributes, projectGraph } from './projectGraph';
 import { createIriShortener } from './iri';
 import { classPalette, resolveKnowledgeTheme, type KnowledgeTheme } from './palette';
 import type {
+    KnowledgeEdgeStyle,
     KnowledgeLayoutAlgorithm,
     KnowledgeLensHostMessage,
     KnowledgeLensLayout,
@@ -93,6 +95,9 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
 
     // View state, restored from the layout file
     const [layout, setLayout] = useState<KnowledgeLayoutAlgorithm>('dagre');
+    // Null follows the layout: orthogonal for dagre, straight for the others
+    const [edgeStyleChoice, setEdgeStyleChoice] = useState<KnowledgeEdgeStyle | null>(null);
+    const [panelWidth, setPanelWidth] = useState(DEFAULT_PANEL_WIDTH);
     const [language, setLanguage] = useState('');
     const [hiddenClasses, setHiddenClasses] = useState<Set<string>>(new Set());
     const [hiddenPredicates, setHiddenPredicates] = useState<Set<string>>(new Set());
@@ -121,6 +126,8 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
                     if (key !== appliedLayoutRef.current) {
                         appliedLayoutRef.current = key;
                         setLayout(saved?.layout ?? 'dagre');
+                        setEdgeStyleChoice(saved?.edgeStyle ?? null);
+                        setPanelWidth(clampPanelWidth(saved?.propertyPanelWidth ?? DEFAULT_PANEL_WIDTH));
                         setLanguage(saved?.language ?? primaryLanguage(message.options?.language ?? (typeof navigator !== 'undefined' ? navigator.language : '')));
                         setHiddenClasses(new Set(saved?.hiddenClasses ?? []));
                         setHiddenPredicates(new Set(saved?.hiddenPredicates ?? []));
@@ -207,6 +214,8 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
         const saved: KnowledgeLensLayout = {
             version: 1,
             layout,
+            edgeStyle: edgeStyleChoice ?? undefined,
+            propertyPanelWidth: panelWidth,
             language: language || undefined,
             hiddenClasses: [...hiddenClasses],
             hiddenPredicates: [...hiddenPredicates],
@@ -217,7 +226,7 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
         setStoredPositions(saved.positions);
         port.postMessage({ type: 'requestSave', layout: saved });
         setDirty(false);
-    }, [canSave, layout, language, hiddenClasses, hiddenPredicates, subtitleChoice, port]);
+    }, [canSave, layout, edgeStyleChoice, panelWidth, language, hiddenClasses, hiddenPredicates, subtitleChoice, port]);
 
     const handleSelectionChange = useCallback((elements: KnowledgeSelectedElement[]) => {
         setSelected(elements);
@@ -272,6 +281,12 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
         window.addEventListener('mouseup', up);
     }, [tableHeight]);
 
+    const edgeStyle = edgeStyleChoice ?? defaultEdgeStyle(layout);
+    const handlePanelWidth = useCallback((width: number) => {
+        setPanelWidth(width);
+        setDirty(true);
+    }, []);
+
     const rootClass = `knowledge-lens${className ? ` ${className}` : ''}`;
 
     if (!doc || !parsed) {
@@ -312,6 +327,11 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
                 layout={layout}
                 onLayoutChange={(l) => {
                     setLayout(l);
+                    setDirty(true);
+                }}
+                edgeStyle={edgeStyle}
+                onEdgeStyleChange={(style) => {
+                    setEdgeStyleChoice(style);
                     setDirty(true);
                 }}
                 language={language}
@@ -378,6 +398,7 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
                             hiddenClasses={hiddenClasses}
                             hiddenPredicates={hiddenPredicates}
                             layout={layout}
+                            edgeStyle={edgeStyle}
                             storedPositions={storedPositions}
                             onSelectionChange={handleSelectionChange}
                             onPositionsChanged={markDirty}
@@ -413,7 +434,9 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
                         onCollapsedChange={setTableCollapsed}
                     />
                 </div>
+                <PanelSplitter width={panelWidth} onWidthChange={handlePanelWidth} label="properties panel" />
                 <KnowledgePropertyPanel
+                    width={panelWidth}
                     node={selectedNode ? nodesById.get(selectedNode.id) ?? null : null}
                     edge={selectedEdge ? graph.edges.find((e) => e.id === selectedEdge.id) ?? null : null}
                     nodesById={nodesById}

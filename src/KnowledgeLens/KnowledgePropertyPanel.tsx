@@ -29,6 +29,8 @@ interface KnowledgePropertyPanelProps {
     shortIri: (iri: string) => string;
     onSelectNode: (id: string) => void;
     onOpenExternal: (iri: string) => void;
+    /** Panel width in pixels, set by the splitter */
+    width: number;
 }
 
 /** Link to an IRI: selects the node when it is drawn, else asks the host to open it */
@@ -185,12 +187,14 @@ export function KnowledgePropertyPanel({
     shortIri,
     onSelectNode,
     onOpenExternal,
+    width,
 }: KnowledgePropertyPanelProps): JSX.Element {
+    const panelStyle: React.CSSProperties = { width, flex: `0 0 ${width}px` };
     if (edge && !node) {
         const source = nodesById.get(edge.source);
         const target = nodesById.get(edge.target);
         return (
-            <aside className="graph-property-panel knowledge-lens-properties" aria-label="Properties">
+            <aside className="graph-property-panel knowledge-lens-properties" aria-label="Properties" style={panelStyle}>
                 <div className="graph-property-header">{edge.label}</div>
                 <div className="graph-property-section">
                     <div className="knowledge-lens-attr">
@@ -212,7 +216,7 @@ export function KnowledgePropertyPanel({
 
     if (!node) {
         return (
-            <aside className="graph-property-panel knowledge-lens-properties" aria-label="Properties">
+            <aside className="graph-property-panel knowledge-lens-properties" aria-label="Properties" style={panelStyle}>
                 <div className="graph-property-panel-empty">Click a node or edge to view its triples</div>
             </aside>
         );
@@ -222,7 +226,7 @@ export function KnowledgePropertyPanel({
     const outgoing = edges.filter((e) => e.source === node.id);
     const incoming = edges.filter((e) => e.target === node.id);
     return (
-        <aside className="graph-property-panel knowledge-lens-properties" aria-label="Properties">
+        <aside className="graph-property-panel knowledge-lens-properties" aria-label="Properties" style={panelStyle}>
             <div className="graph-property-header">
                 {cls && <ClassSwatch fill={cls.style.fill} border={cls.style.border} dashed={node.flags.length > 0} />}
                 <span className="knowledge-lens-properties-title">{node.title}</span>

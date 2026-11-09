@@ -8,11 +8,13 @@
 // and the counts of the visible nodes and edges
 
 import React, { type JSX } from 'react';
-import type { KnowledgeLayoutAlgorithm } from './types';
+import type { KnowledgeEdgeStyle, KnowledgeLayoutAlgorithm } from './types';
 
 interface KnowledgeToolbarProps {
     layout: KnowledgeLayoutAlgorithm;
     onLayoutChange: (layout: KnowledgeLayoutAlgorithm) => void;
+    edgeStyle: KnowledgeEdgeStyle;
+    onEdgeStyleChange: (edgeStyle: KnowledgeEdgeStyle) => void;
     language: string;
     languages: string[];
     onLanguageChange: (language: string) => void;
@@ -29,6 +31,12 @@ interface KnowledgeToolbarProps {
     edgeCount: number;
 }
 
+const EDGE_STYLES: { value: KnowledgeEdgeStyle; label: string }[] = [
+    { value: 'orthogonal', label: 'Orthogonal' },
+    { value: 'straight', label: 'Straight' },
+    { value: 'curved', label: 'Curved' },
+];
+
 const LAYOUTS: { value: KnowledgeLayoutAlgorithm; label: string }[] = [
     { value: 'dagre', label: 'Dagre (hierarchical)' },
     { value: 'cose', label: 'CoSE (force-directed)' },
@@ -38,6 +46,8 @@ const LAYOUTS: { value: KnowledgeLayoutAlgorithm; label: string }[] = [
 export function KnowledgeToolbar({
     layout,
     onLayoutChange,
+    edgeStyle,
+    onEdgeStyleChange,
     language,
     languages,
     onLanguageChange,
@@ -79,6 +89,17 @@ export function KnowledgeToolbar({
                 >
                     {LAYOUTS.map((l) => (
                         <option key={l.value} value={l.value}>{l.label}</option>
+                    ))}
+                </select>
+                <label className="graph-toolbar-label" htmlFor="knowledge-lens-edges">Edges:</label>
+                <select
+                    id="knowledge-lens-edges"
+                    className="graph-toolbar-select"
+                    value={edgeStyle}
+                    onChange={(e) => onEdgeStyleChange(e.target.value as KnowledgeEdgeStyle)}
+                >
+                    {EDGE_STYLES.map((s) => (
+                        <option key={s.value} value={s.value}>{s.label}</option>
                     ))}
                 </select>
             </div>

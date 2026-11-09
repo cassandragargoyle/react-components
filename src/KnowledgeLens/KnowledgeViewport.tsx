@@ -14,6 +14,7 @@ import { nodeSubtitles } from './projectGraph';
 import type { KnowledgeTheme } from './palette';
 import type {
     ClassStyle,
+    KnowledgeEdgeStyle,
     KnowledgeGraph,
     KnowledgeLayoutAlgorithm,
     KnowledgeNode,
@@ -41,6 +42,7 @@ interface KnowledgeViewportProps {
     hiddenClasses: Set<string>;
     hiddenPredicates: Set<string>;
     layout: KnowledgeLayoutAlgorithm;
+    edgeStyle: KnowledgeEdgeStyle;
     /** Positions saved with the view; used for nodes the viewport has not placed yet */
     storedPositions?: Record<string, { x: number; y: number }>;
     onSelectionChange: (elements: KnowledgeSelectedElement[]) => void;
@@ -95,7 +97,51 @@ export function nodeElementData(node: KnowledgeNode, style: ClassStyle, subtitle
     };
 }
 
-function buildStylesheet(theme: KnowledgeTheme): cytoscape.StylesheetJsonBlock[] {
+/** Cytoscape edge geometry of an edge style */
+export function edgeGeometry(edgeStyle: KnowledgeEdgeStyle): Record<string, string | number> {
+    switch (edgeStyle) {
+        case 'orthogonal':
+            // Right-angle bends along the rank direction. The turn sits a fixed distance before
+            // the target, so edges into one node share the last horizontal segment and enter
+            // it together, at a right angle to its border
+            return {
+                'curve-style': 'taxi',
+                'taxi-direction': 'vertical',
+                'taxi-turn': '-24px',
+                'taxi-turn-min-distance': '8px',
+                'source-endpoint': 'outside-to-node',
+                'target-endpoint': 'outside-to-node',
+            };
+        case 'straight':
+            return { 'curve-style': 'straight' };
+        case 'curved':
+            return { 'curve-style': 'bezier' };
+    }
+}
+
+/** Default edge style of a layout: orthogonal follows the ranks of dagre only */
+export function defaultEdgeStyle(layout: KnowledgeLayoutAlgorithm): KnowledgeEdgeStyle {
+    return layout === 'dagre' ? 'orthogonal' : 'straight';
+}
+
+/**
+ * Show each label once where edges join: with orthogonal edges, visible edges of one
+ * predicate into one node share a segment, so only the first of them keeps its label
+ */
+export function applyEdgeLabels(cy: Core, edgeStyle: KnowledgeEdgeStyle): void {
+    const seen = new Set<string>();
+    cy.batch(() => {
+        cy.edges().forEach((e) => {
+            const key = `${e.data('target')}\u0000${e.data('predicate')}`;
+            const visible = !e.hasClass('kl-hidden') && !e.source().hasClass('kl-hidden') && !e.target().hasClass('kl-hidden');
+            const repeated = edgeStyle === 'orthogonal' && visible && seen.has(key);
+            if (visible) seen.add(key);
+            e.data('shownLabel', repeated ? '' : e.data('label'));
+        });
+    });
+}
+
+export function buildStylesheet(theme: KnowledgeTheme, edgeStyle: KnowledgeEdgeStyle = 'orthogonal'): cytoscape.StylesheetJsonBlock[] {
     return [
         {
             selector: 'node',
@@ -133,14 +179,14 @@ function buildStylesheet(theme: KnowledgeTheme): cytoscape.StylesheetJsonBlock[]
                 'target-arrow-color': theme.edgeLine,
                 'target-arrow-shape': 'triangle',
                 'arrow-scale': 0.9,
-                'curve-style': 'bezier',
-                'label': 'data(label)',
+                ...edgeGeometry(edgeStyle),
+                'label': 'data(shownLabel)',
                 'font-size': '10px',
                 'color': theme.edgeText,
                 'text-background-color': theme.background,
                 'text-background-opacity': 1,
                 'text-background-padding': '2px',
-            },
+            } as cytoscape.Css.Edge,
         },
         {
             selector: 'edge:selected',
@@ -176,6 +222,7 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
         hiddenClasses,
         hiddenPredicates,
         layout,
+        edgeStyle,
         storedPositions,
         onSelectionChange,
         onPositionsChanged,
@@ -194,10 +241,11 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
         if (!containerRef.current) return;
         const cy = cytoscape({
             container: containerRef.current,
-            style: buildStylesheet(theme),
+            style: buildStylesheet(theme, edgeStyle),
             minZoom: 0.1,
             maxZoom: 4,
-            wheelSensitivity: 0.3,
+            // Default speed: one wheel notch zooms noticeably; 0.3 felt sluggish (issue 144)
+            wheelSensitivity: 1,
         });
         cyRef.current = cy;
 
@@ -241,10 +289,13 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
         };
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Theme change: rebuild the stylesheet only
+    // Theme or edge style change: rebuild the stylesheet only; positions stay
     useEffect(() => {
-        cyRef.current?.style(buildStylesheet(theme));
-    }, [theme]);
+        const cy = cyRef.current;
+        if (!cy) return;
+        cy.style(buildStylesheet(theme, edgeStyle));
+        applyEdgeLabels(cy, edgeStyle);
+    }, [theme, edgeStyle]);
 
     /** Run a layout over the visible elements, then fit */
     const runLayout = useCallback((algorithm: KnowledgeLayoutAlgorithm, animate: boolean) => {
@@ -269,6 +320,7 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
                 for (const node of graph.nodes) cy.getElementById(node.id).data(dataOf(node));
                 for (const edge of graph.edges) cy.getElementById(edge.id).data('label', edge.label);
             });
+            applyEdgeLabels(cy, edgeStyle);
             return;
         }
         structureRef.current = structure;
@@ -297,6 +349,7 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
                 e.toggleClass('kl-hidden', hiddenPredicates.has(e.data('predicate')));
             });
         });
+        applyEdgeLabels(cy, edgeStyle);
         cy.resize();
 
         const unplaced = cy.nodes().filter((n) => !known[n.id()]);
@@ -330,7 +383,8 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
             });
             cy.$('.kl-hidden:selected').unselect();
         });
-    }, [hiddenClasses, hiddenPredicates]);
+        applyEdgeLabels(cy, edgeStyle);
+    }, [hiddenClasses, hiddenPredicates]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Layout chosen in the toolbar
     useEffect(() => {

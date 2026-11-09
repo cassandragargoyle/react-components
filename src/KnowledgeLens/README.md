@@ -37,12 +37,22 @@ The pure parts are exported too, for a host or a test that needs them without th
 
 | Panel | Content |
 | ----- | ------- |
-| Toolbar | Fit and zoom, layout (`dagre`, `cose`, `breadthfirst`), title language, find, Save, visible counts |
+| Toolbar | Fit and zoom, layout (`dagre`, `cose`, `breadthfirst`), edge style (orthogonal, straight, curved), title language, find, Save, visible counts |
 | Left panel | **Classes** with colour and count (the checkbox hides their nodes); **Predicates** drawn as edges (the checkbox hides their edges); **Attributes** shown as lines in the box; **Flags** |
 | Header | Title and source of the dataset or ontology described in the document, else the file name |
 | Viewport | Rounded boxes with the title and up to two lines; labelled edges; a legend at the bottom |
 | Node table | Shared `NodeTablePanel`: prefixed IRI, label, class, one column per chosen attribute |
-| Property panel | Every triple of the selected node grouped by predicate, literals with language and datatype, blank nodes nested, incoming and outgoing edges |
+| Property panel | Every triple of the selected node grouped by predicate, literals with language and datatype, blank nodes nested, incoming and outgoing edges; a splitter on its left sets its width |
+
+**Edges.** With `dagre` the edges are orthogonal by default: they leave a box vertically, turn
+at right angles and enter the next box vertically. Edges into one node turn at the same height
+just before it, so they join on one segment and their shared label is shown once. `cose` and
+`breadthfirst` draw straight edges by default; the toolbar switches any layout to orthogonal,
+straight or curved edges.
+
+**Splitter.** The splitter between the viewport and the property panel changes the panel width
+from 200 px up to half of the window: drag it, or focus it and use Left and Right (16 px), Home
+and End. A double click restores 260 px.
 
 In the property panel an IRI of a drawn node selects that node; any other IRI posts
 `openExternal`, and the host decides whether to open it. Ctrl+F focuses the find field,
@@ -81,7 +91,7 @@ Ctrl+A selects every visible node, Ctrl+S saves and Escape clears the selection.
 ## 3. Saved Layout
 
 With `canSave` the toolbar has a **Save** button (and Ctrl+S). It posts `requestSave` with a
-`KnowledgeLensLayout`: the layout algorithm, the node positions, the hidden classes and
+`KnowledgeLensLayout`: the layout algorithm, the edge style, the node positions, the property panel width, the hidden classes and
 predicates, the chosen box lines and the language. The host stores it next to the Turtle file,
 for example `sz-4.ttl.lens.json`, and sends it back with `setTurtleData`. The Turtle file
 itself is never changed.

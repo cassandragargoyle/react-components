@@ -10,13 +10,12 @@
 export { KnowledgeLens } from './KnowledgeLens';
 export type { KnowledgeLensProps, KnowledgeLensPort } from './KnowledgeLens';
 export { parseTurtle } from './parseTurtle';
-export { projectGraph, defaultSubtitleAttributes, nodeSubtitles } from './projectGraph';
-export { createIriShortener, humanize, localName } from './iri';
-export type { IriShortener } from './iri';
+export { projectGraph } from './projectGraph';
 export type {
     ClassStyle,
     KnowledgeAttribute,
     KnowledgeClassInfo,
+    KnowledgeEdgeStyle,
     KnowledgeEdge,
     KnowledgeFlagInfo,
     KnowledgeGraph,
