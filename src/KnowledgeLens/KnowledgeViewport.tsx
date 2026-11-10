@@ -149,10 +149,11 @@ export const ROUTE_NODE_LIMIT = 200;
 
 /**
  * Route the visible edges around the boxes they do not connect (orthogonal style only);
- * every other style, or a graph above the limit, keeps the stylesheet geometry
+ * every other style, or a graph above the limit, keeps the stylesheet geometry. `only`
+ * limits the work to some edges, e.g. those of a node being dragged
  */
-export function applyRoutes(cy: Core, edgeStyle: KnowledgeEdgeStyle): void {
-    const edges = cy.edges();
+export function applyRoutes(cy: Core, edgeStyle: KnowledgeEdgeStyle, only?: cytoscape.EdgeCollection): void {
+    const edges = only ?? cy.edges();
     if (edgeStyle !== 'orthogonal') {
         edges.removeStyle(ROUTE_PROPERTIES);
         return;
@@ -329,16 +330,12 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
         };
         wrapper?.addEventListener('wheel', handleWheel, { capture: true, passive: false });
 
-        // Edges follow a dragged node: rerouted once per frame while it moves
-        let frame = 0;
-        const reroute = () => {
-            if (frame) return;
-            frame = requestAnimationFrame(() => {
-                frame = 0;
-                if (!cy.destroyed()) applyRoutes(cy, edgeStyleRef.current);
-            });
-        };
-        cy.on('drag', 'node', reroute);
+        // Edges follow a dragged node. Rerouted in the drag event itself, which comes before
+        // Cytoscape draws the frame, so no frame shows the old bends; only the edges of the
+        // moving nodes, the rest is rerouted when the node is dropped
+        cy.on('drag', 'node', (evt: EventObject) => {
+            applyRoutes(cy, edgeStyleRef.current, (evt.target as NodeSingular).connectedEdges());
+        });
 
         // Selection events — coalesced, so selecting many elements at once reports once
         let pending = false;
@@ -379,7 +376,6 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
         return () => {
             ro.disconnect();
             wrapper?.removeEventListener('wheel', handleWheel, { capture: true });
-            if (frame) cancelAnimationFrame(frame);
             cy.destroy();
             cyRef.current = null;
         };

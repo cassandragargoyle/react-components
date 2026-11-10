@@ -321,6 +321,38 @@ describe('edge routing (QA round 1, D4)', () => {
         applyRoutes(cy, 'straight');
         expect(cy.edges().filter((e) => e.style('curve-style') === 'segments').length).toBe(0);
     });
+
+    it('reroutes the visible edges when a filter changes (QA round 2, O-R2-2)', async () => {
+        render(<KnowledgeLens api={{ postMessage: vi.fn() }} />);
+        sendSample();
+        const classes = await screen.findByRole('region', { name: 'Classes' });
+        const cy = cyOf();
+        await waitFor(() => expect(cy.edges().filter((e) => e.style('curve-style') === 'segments').length).toBe(43));
+        // A marker the router overwrites when it runs again
+        const edge = cy.edges().filter((e) => e.data('predicate').endsWith('broader'))[0];
+        edge.style('segment-distances', '999');
+        fireEvent.click(within(within(classes).getByText('LegalReference').closest('label')!).getByRole('checkbox'));
+        expect(edge.style('segment-distances')).not.toBe('999px');
+        expect(edge.style('curve-style')).toBe('segments');
+    });
+
+    it('reroutes the edges of a dragged node in the drag event, before the next frame (QA round 2, O-R2-1)', async () => {
+        render(<KnowledgeLens api={{ postMessage: vi.fn() }} />);
+        sendSample();
+        await screen.findByRole('region', { name: 'Classes' });
+        const cy = cyOf();
+        await waitFor(() => expect(cy.edges().filter((e) => e.style('curve-style') === 'segments').length).toBe(43));
+        const node = cy.getElementById('https://example.org/stavebni-zakon/par-4#zamer');
+        const edges = node.connectedEdges();
+        const before = edges.map((e) => `${e.style('source-endpoint')}|${e.style('target-endpoint')}|${e.style('segment-distances')}`);
+        const raf = vi.spyOn(window, 'requestAnimationFrame');
+        node.position({ x: node.position('x') + 300, y: node.position('y') + 500 });
+        node.emit('drag');
+        const after = edges.map((e) => `${e.style('source-endpoint')}|${e.style('target-endpoint')}|${e.style('segment-distances')}`);
+        expect(after.filter((v, i) => v !== before[i]).length).toBe(edges.length);
+        expect(raf).not.toHaveBeenCalled();
+        raf.mockRestore();
+    });
 });
 
 describe('wrapTitle', () => {
