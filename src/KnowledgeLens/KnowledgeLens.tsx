@@ -19,6 +19,7 @@ import { KnowledgePropertyPanel } from './KnowledgePropertyPanel';
 import { KnowledgeNodeTable } from './KnowledgeNodeTable';
 import { parseTurtle } from './parseTurtle';
 import { extractComments, type TurtleSection } from './extractComments';
+import { normalizeLayout } from './layoutFile';
 import { defaultSubtitleAttributes, projectGraph } from './projectGraph';
 import { createIriShortener } from './iri';
 import { classPalette, resolveKnowledgeTheme, type KnowledgeTheme } from './palette';
@@ -121,7 +122,8 @@ export function KnowledgeLens({ api, canSave = false, className, style }: Knowle
             if (!message || typeof message !== 'object') return;
             switch (message.type) {
                 case 'setTurtleData': {
-                    const saved = message.layout ?? null;
+                    // A saved layout is read defensively: unknown or wrong values fall back
+                    const saved = normalizeLayout(message.layout);
                     setDoc({ text: message.text, fileName: message.fileName, options: message.options ?? {}, layout: saved });
                     // A layout file is applied when it changes, so a reload keeps unsaved toggles
                     const key = JSON.stringify(saved);

@@ -14,7 +14,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { KnowledgeLens } from './KnowledgeLens';
 import cytoscape from 'cytoscape';
-import { applyEdgeLabels, defaultEdgeStyle, edgeGeometry, wrapTitle } from './KnowledgeViewport';
+import { applyEdgeLabels, applyRoutes, defaultEdgeStyle, edgeGeometry, wheelZoomFactor, wrapTitle } from './KnowledgeViewport';
 import { DEFAULT_PANEL_WIDTH, MIN_PANEL_WIDTH } from './PanelSplitter';
 import type { KnowledgeLensLayout } from './types';
 
@@ -22,7 +22,7 @@ import type { KnowledgeLensLayout } from './types';
 vi.mock('cytoscape', async (importOriginal) => {
     const actual = ((await importOriginal()) as { default: typeof import('cytoscape') }).default;
     const headless = Object.assign(
-        (options?: import('cytoscape').CytoscapeOptions) => actual({ ...options, headless: true }),
+        (options?: import('cytoscape').CytoscapeOptions) => actual({ ...options, headless: true, styleEnabled: true }),
         actual
     );
     return { default: headless };
@@ -266,6 +266,60 @@ describe('edge style', () => {
         applyEdgeLabels(cy, 'orthogonal');
         expect(cy.$id('e2').data('shownLabel')).toBe('broader');
         cy.destroy();
+    });
+});
+
+/** Cytoscape instance the viewport registered on its container */
+function cyOf(): import('cytoscape').Core {
+    const el = document.querySelector('.graph-viewport-container') as unknown as { _cyreg: { cy: import('cytoscape').Core } };
+    return el._cyreg.cy;
+}
+
+describe('wheel zoom (QA round 1, D1)', () => {
+    it('zooms about ×1.15 per mouse-wheel notch and at least 2× in ten notches', () => {
+        expect(wheelZoomFactor(-100)).toBeCloseTo(1.149, 2);
+        expect(wheelZoomFactor(100)).toBeCloseTo(1 / 1.149, 2);
+        expect(wheelZoomFactor(-100) ** 10).toBeGreaterThan(2);
+        // Firefox reports lines, a page is far more; both are limited
+        expect(wheelZoomFactor(-3, 1)).toBeCloseTo(wheelZoomFactor(-120), 6);
+        expect(wheelZoomFactor(-5, 2)).toBe(wheelZoomFactor(-600));
+        // A touchpad step is small
+        expect(wheelZoomFactor(-4)).toBeLessThan(1.01);
+    });
+
+    it('applies the factor on every wheel event over the canvas, with no warm-up', async () => {
+        render(<KnowledgeLens api={{ postMessage: vi.fn() }} />);
+        sendSample();
+        await screen.findByRole('region', { name: 'Classes' });
+        const cy = cyOf();
+        const container = document.querySelector('.graph-viewport-container')!;
+        const before = cy.zoom();
+        for (let i = 0; i < 3; i++) fireEvent.wheel(container, { deltaY: -100 });
+        expect(cy.zoom() / before).toBeCloseTo(wheelZoomFactor(-100) ** 3, 3);
+    });
+});
+
+describe('saved layout with unknown values (QA round 1, D2 and D3)', () => {
+    it('opens with defaults when the layout name, edge style and width are unknown', async () => {
+        render(<KnowledgeLens api={{ postMessage: vi.fn() }} />);
+        sendSample({ version: 1, layout: 'unknown', edgeStyle: 'evil', propertyPanelWidth: 'wide' } as unknown as KnowledgeLensLayout);
+        await screen.findByRole('region', { name: 'Classes' });
+        expect((screen.getByLabelText('Layout:') as HTMLSelectElement).value).toBe('dagre');
+        expect((screen.getByLabelText('Edges:') as HTMLSelectElement).value).toBe('orthogonal');
+        expect(screen.getByRole('separator')).toHaveAttribute('aria-valuenow', String(DEFAULT_PANEL_WIDTH));
+        expect(cyOf().nodes()).toHaveLength(25);
+    });
+});
+
+describe('edge routing (QA round 1, D4)', () => {
+    it('routes orthogonal edges as segments and drops the routes for other styles', async () => {
+        render(<KnowledgeLens api={{ postMessage: vi.fn() }} />);
+        sendSample();
+        await screen.findByRole('region', { name: 'Classes' });
+        const cy = cyOf();
+        await waitFor(() => expect(cy.edges().filter((e) => e.style('curve-style') === 'segments').length).toBe(43));
+        applyRoutes(cy, 'straight');
+        expect(cy.edges().filter((e) => e.style('curve-style') === 'segments').length).toBe(0);
     });
 });
 

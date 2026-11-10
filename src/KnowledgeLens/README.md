@@ -46,9 +46,16 @@ The pure parts are exported too, for a host or a test that needs them without th
 
 **Edges.** With `dagre` the edges are orthogonal by default: they leave a box vertically, turn
 at right angles and enter the next box vertically. Edges into one node turn at the same height
-just before it, so they join on one segment and their shared label is shown once. `cose` and
-`breadthfirst` draw straight edges by default; the toolbar switches any layout to orthogonal,
-straight or curved edges.
+just before it, so they join on one segment and their shared label is shown once. A routing
+step after the layout (`orthogonalRouter.ts`) takes each path around the boxes it does not
+connect, through free columns and levels between them; it runs again after a drag, a filter
+change and a change of the box text. Above 200 visible nodes the plain `taxi` shape is used,
+which may cross boxes. `cose` and `breadthfirst` draw straight edges by default; the toolbar
+switches any layout to orthogonal, straight or curved edges.
+
+**Wheel zoom.** One mouse-wheel notch zooms by about ×1.15 from the first notch, and touchpad
+steps zoom smoothly; the component handles the wheel itself rather than through Cytoscape,
+whose device guess slows a mouse wheel to ×1.03 per notch.
 
 **Splitter.** The splitter between the viewport and the property panel changes the panel width
 from 200 px up to half of the window: drag it, or focus it and use Left and Right (16 px), Home
@@ -114,6 +121,10 @@ itself is never changed.
 When every node has a saved position the layout algorithm does not run. Nodes that are new
 since the save are placed in a grid below the saved ones, so a hand-made arrangement survives
 a change of the file.
+
+The layout file is read defensively: a value the version does not know (a layout or edge style
+of a newer version) or of a wrong type (a hand edit) is dropped and its default applies, so a
+broken layout file never stops the view.
 
 ## 5. Messages
 

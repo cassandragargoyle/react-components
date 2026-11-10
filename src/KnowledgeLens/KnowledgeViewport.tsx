@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useImperativeHandle, useRef, forwardRef 
 import cytoscape, { Core, EventObject, NodeSingular } from 'cytoscape';
 import cytoscapeDagre from 'cytoscape-dagre';
 import { nodeSubtitles } from './projectGraph';
+import { routeOrthogonal, toSegments, type Box } from './orthogonalRouter';
 import type { KnowledgeTheme } from './palette';
 import type {
     ClassStyle,
@@ -141,6 +142,67 @@ export function applyEdgeLabels(cy: Core, edgeStyle: KnowledgeEdgeStyle): void {
     });
 }
 
+/** Bypass properties a routed edge carries; removed when the edge style is not orthogonal */
+const ROUTE_PROPERTIES = 'curve-style edge-distances source-endpoint target-endpoint segment-distances segment-weights';
+/** Most visible nodes routed around; above it orthogonal edges use the plain taxi shape */
+export const ROUTE_NODE_LIMIT = 200;
+
+/**
+ * Route the visible edges around the boxes they do not connect (orthogonal style only);
+ * every other style, or a graph above the limit, keeps the stylesheet geometry
+ */
+export function applyRoutes(cy: Core, edgeStyle: KnowledgeEdgeStyle): void {
+    const edges = cy.edges();
+    if (edgeStyle !== 'orthogonal') {
+        edges.removeStyle(ROUTE_PROPERTIES);
+        return;
+    }
+    const nodes = cy.nodes().filter((n) => !n.hasClass('kl-hidden'));
+    if (nodes.length > ROUTE_NODE_LIMIT) {
+        edges.removeStyle(ROUTE_PROPERTIES);
+        return;
+    }
+    const boxes = new Map<string, Box>();
+    nodes.forEach((n) => {
+        const p = n.position();
+        const w = n.outerWidth() / 2;
+        const h = n.outerHeight() / 2;
+        boxes.set(n.id(), { x1: p.x - w, y1: p.y - h, x2: p.x + w, y2: p.y + h });
+    });
+    const visible = edges.filter((e) => !e.hasClass('kl-hidden') && boxes.has(e.data('source')) && boxes.has(e.data('target')));
+    const routes = routeOrthogonal(boxes, visible.map((e) => ({ id: e.id(), source: e.data('source'), target: e.data('target') })));
+    cy.batch(() => {
+        visible.forEach((e) => {
+            const route = routes.get(e.id());
+            if (!route) {
+                e.removeStyle(ROUTE_PROPERTIES);
+                return;
+            }
+            const sp = e.source().position();
+            const tp = e.target().position();
+            const seg = toSegments(route, [sp.x, sp.y], [tp.x, tp.y]);
+            e.style({
+                'curve-style': 'segments',
+                'edge-distances': 'endpoints',
+                'source-endpoint': seg.sourceEndpoint,
+                'target-endpoint': seg.targetEndpoint,
+                'segment-weights': seg.weights.map((w) => w.toFixed(6)).join(' '),
+                'segment-distances': seg.distances.map((d) => d.toFixed(4)).join(' '),
+            });
+        });
+    });
+}
+
+/**
+ * Zoom factor of one wheel event: about ×1.15 for a mouse-wheel notch (100 px), smooth for
+ * the small steps of a touchpad. Cytoscape scales a notch down to ×1.03, which felt stuck
+ */
+export function wheelZoomFactor(deltaY: number, deltaMode = 0): number {
+    const pixels = deltaMode === 1 ? deltaY * 40 : deltaMode === 2 ? deltaY * 800 : deltaY;
+    const clamped = Math.max(-600, Math.min(600, pixels));
+    return Math.pow(2, -clamped / 500);
+}
+
 export function buildStylesheet(theme: KnowledgeTheme, edgeStyle: KnowledgeEdgeStyle = 'orthogonal'): cytoscape.StylesheetJsonBlock[] {
     return [
         {
@@ -206,6 +268,9 @@ export function layoutOptions(algorithm: KnowledgeLayoutAlgorithm, animate = tru
             return { name: 'cose', idealEdgeLength: () => 140, nodeOverlap: 20, nodeRepulsion: () => 12000, ...common };
         case 'breadthfirst':
             return { name: 'breadthfirst', spacingFactor: 1.2, directed: true, ...common };
+        default:
+            // An unknown name (a layout file of another version) falls back to dagre
+            return layoutOptions('dagre', animate);
     }
 }
 
@@ -230,6 +295,9 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
     ref
 ) {
     const containerRef = useRef<HTMLDivElement>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const edgeStyleRef = useRef(edgeStyle);
+    edgeStyleRef.current = edgeStyle;
     const cyRef = useRef<Core | null>(null);
     const structureRef = useRef('');
     const appliedLayoutRef = useRef(layout);
@@ -244,10 +312,33 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
             style: buildStylesheet(theme, edgeStyle),
             minZoom: 0.1,
             maxZoom: 4,
-            // Default speed: one wheel notch zooms noticeably; 0.3 felt sluggish (issue 144)
-            wheelSensitivity: 1,
         });
         cyRef.current = cy;
+
+        // Wheel zoom handled here, before Cytoscape sees the event (see wheelZoomFactor)
+        const wrapper = wrapperRef.current;
+        const handleWheel = (e: WheelEvent) => {
+            if (e.deltaY === 0) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const rect = containerRef.current!.getBoundingClientRect();
+            cy.zoom({
+                level: cy.zoom() * wheelZoomFactor(e.deltaY, e.deltaMode),
+                renderedPosition: { x: e.clientX - rect.left, y: e.clientY - rect.top },
+            });
+        };
+        wrapper?.addEventListener('wheel', handleWheel, { capture: true, passive: false });
+
+        // Edges follow a dragged node: rerouted once per frame while it moves
+        let frame = 0;
+        const reroute = () => {
+            if (frame) return;
+            frame = requestAnimationFrame(() => {
+                frame = 0;
+                if (!cy.destroyed()) applyRoutes(cy, edgeStyleRef.current);
+            });
+        };
+        cy.on('drag', 'node', reroute);
 
         // Selection events — coalesced, so selecting many elements at once reports once
         let pending = false;
@@ -265,7 +356,10 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
             });
         };
         cy.on('select unselect', handleSelect);
-        cy.on('dragfree', 'node', () => callbacks.current.onPositionsChanged());
+        cy.on('dragfree', 'node', () => {
+            applyRoutes(cy, edgeStyleRef.current);
+            callbacks.current.onPositionsChanged();
+        });
         cy.on('dbltap', 'node', (evt: EventObject) => {
             cy.animate({ center: { eles: evt.target as NodeSingular }, zoom: Math.max(cy.zoom(), 1.5), duration: 300 });
         });
@@ -284,6 +378,8 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
 
         return () => {
             ro.disconnect();
+            wrapper?.removeEventListener('wheel', handleWheel, { capture: true });
+            if (frame) cancelAnimationFrame(frame);
             cy.destroy();
             cyRef.current = null;
         };
@@ -295,6 +391,7 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
         if (!cy) return;
         cy.style(buildStylesheet(theme, edgeStyle));
         applyEdgeLabels(cy, edgeStyle);
+        applyRoutes(cy, edgeStyle);
     }, [theme, edgeStyle]);
 
     /** Run a layout over the visible elements, then fit */
@@ -302,8 +399,13 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
         const cy = cyRef.current;
         if (!cy || cy.nodes().length === 0) return;
         const visible = cy.elements().not('.kl-hidden');
+        // Plain geometry while nodes move; the routes are computed where they stop
+        cy.edges().removeStyle(ROUTE_PROPERTIES);
         const instance = visible.layout(layoutOptions(algorithm, animate));
-        instance.on('layoutstop', () => cy.fit(visible, 40));
+        instance.on('layoutstop', () => {
+            applyRoutes(cy, edgeStyleRef.current);
+            cy.fit(visible, 40);
+        });
         instance.run();
     }, []);
 
@@ -321,6 +423,8 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
                 for (const edge of graph.edges) cy.getElementById(edge.id).data('label', edge.label);
             });
             applyEdgeLabels(cy, edgeStyle);
+            // Box sizes may have changed with the text
+            applyRoutes(cy, edgeStyle);
             return;
         }
         structureRef.current = structure;
@@ -364,8 +468,10 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
                 avoidOverlap: true,
                 fit: false,
             }).run();
+            applyRoutes(cy, edgeStyle);
             cy.fit(undefined, 40);
         } else {
+            applyRoutes(cy, edgeStyle);
             cy.fit(undefined, 40);
         }
     }, [graph, subtitleAttributes]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -384,6 +490,8 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
             cy.$('.kl-hidden:selected').unselect();
         });
         applyEdgeLabels(cy, edgeStyle);
+        // Hidden boxes are no longer in the way
+        applyRoutes(cy, edgeStyle);
     }, [hiddenClasses, hiddenPredicates]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Layout chosen in the toolbar
@@ -438,7 +546,7 @@ export const KnowledgeViewport = forwardRef<KnowledgeViewportHandle, KnowledgeVi
     }), []);
 
     return (
-        <div className="graph-viewport">
+        <div ref={wrapperRef} className="graph-viewport">
             <div ref={containerRef} className="graph-viewport-container" />
         </div>
     );
