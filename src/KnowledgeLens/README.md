@@ -9,7 +9,7 @@ It does not draw one node and one edge for every triple: it **projects** the tri
 readable graph, so labels, descriptions, types and links to external vocabularies become the
 text and style of a node instead of more nodes. It came from Pilot, the `portunix-vscode`
 desktop app; see issue
-[144](https://github.com/cassandragargoyle/portunix-vscode/blob/main/docs/issues/144-knowledgelens-turtle-knowledge-graph-viewer.md).
+[144](https://github.com/cassandragargoyle/portunix-vscode/blob/main/docs/issues/done/144-knowledgelens-turtle-knowledge-graph-viewer.md).
 
 ![KnowledgeLens visual reference](./KnowledgeLens.svg)
 

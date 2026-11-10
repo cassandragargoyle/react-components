@@ -13,9 +13,10 @@ related:
 
 ## Metadata
 
-- **Status**: 📋 Open
+- **Status**: ✅ Implemented
 - **Type**: enhancement
 - **Created**: 2026-11-09
+- **Closed**: 2026-11-10
 - **Version**: 0.6.0
 - **Author**: Zdenek
 - **Target**: `src/KnowledgeLens/`, entry point `./knowledge-lens`
@@ -23,6 +24,7 @@ related:
 - **Related**:
   - `portunix-vscode` issue 144 — the full specification, the hosts (VS Code custom editor, Pilot preview and
     window) and the acceptance protocol `docs/testing/acceptance-144.md`, which records the tests of this issue
+    (round 3: ACCEPTED)
 
 ## Summary
 
@@ -63,6 +65,6 @@ this issue records the library half.
 
 ## Acceptance Criteria
 
-- [ ] `npm run typecheck`, `npm run build`, `npm test` and `npm run test:entries` pass in a clone of this repository
-- [ ] `./knowledge-lens` loads only `n3`, `cytoscape`, `cytoscape-dagre` and AG Grid
-- [ ] The acceptance criteria of `portunix-vscode` issue 144 pass (its protocol, round 2 and later)
+- [x] `npm run typecheck`, `npm run build`, `npm test` and `npm run test:entries` pass in a clone of this repository
+- [x] `./knowledge-lens` loads only `n3`, `cytoscape`, `cytoscape-dagre` and AG Grid
+- [x] The acceptance criteria of `portunix-vscode` issue 144 pass (its protocol, round 3 ACCEPTED)
