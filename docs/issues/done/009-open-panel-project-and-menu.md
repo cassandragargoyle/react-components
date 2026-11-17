@@ -3,7 +3,7 @@ title: INT-009 - OpenPanel, an optional project button, description, action orde
 description: Apply when working on the optional parts of OpenPanel — the project button, the description under the title, the order of the buttons, the "…" menu and the recent items of type project.
 category: specification
 ai_load: on-demand
-status: draft
+status: active
 created: 2026-11-17
 related:
   - src/OpenPanel/
@@ -14,15 +14,17 @@ related:
 
 ## Metadata
 
-- **Status**: 📋 Open
+- **Status**: ✅ Implemented
 - **Type**: enhancement
 - **Priority**: medium
 - **Created**: 2026-11-17
+- **Closed**: 2026-11-17
+- **Version**: 0.7.0
 - **Author**: Zdenek
 - **Target**: `src/OpenPanel/`
 - **GitHub**: [#9](https://github.com/cassandragargoyle/react-components/issues/9)
 - **Related**:
-  - [INT-002 — OpenPanel, a host-neutral launcher with a recent list](done/002-open-panel.md) — the component
+  - [INT-002 — OpenPanel, a host-neutral launcher with a recent list](002-open-panel.md) — the component
     this issue extends
   - `portunix-reco-studio` issue 99 — the customer recognition project (`*.cgproject.jsonc`) whose start screen
     needs these parts
@@ -76,14 +78,14 @@ nothing about project files, it renders what the host configures.
 
 ## Acceptance Criteria
 
-- [ ] Without the new props the rendered DOM is the same as in 0.6.0 (tested)
-- [ ] `onOpenProject` renders an Open Project button; `labels.openProject` changes its text
-- [ ] `actions` sets the order of the buttons; an action without its callback is not rendered
-- [ ] `labels.description` renders a paragraph under the title; an empty description renders nothing
-- [ ] `menuItems` renders the "…" button; the menu works with the mouse and with the keyboard as described,
+- [x] Without the new props the rendered DOM is the same as in 0.6.0 (tested)
+- [x] `onOpenProject` renders an Open Project button; `labels.openProject` changes its text
+- [x] `actions` sets the order of the buttons; an action without its callback is not rendered
+- [x] `labels.description` renders a paragraph under the title; an empty description renders nothing
+- [x] `menuItems` renders the "…" button; the menu works with the mouse and with the keyboard as described,
       skips disabled items and separators, and returns the focus to the button when it closes
-- [ ] A recent item of type `project` shows the project icon; folders and files are unchanged
-- [ ] `OpenPanelAction` and `OpenPanelMenuItem` are exported from `src/index.ts` and from the `./open-panel`
+- [x] A recent item of type `project` shows the project icon; folders and files are unchanged
+- [x] `OpenPanelAction` and `OpenPanelMenuItem` are exported from `src/index.ts` and from the `./open-panel`
       entry point
-- [ ] README of the component and `OpenPanel.svg` show the new parts; the version is 0.7.0
-- [ ] `npm run typecheck`, `npm run build` and `npm test` pass
+- [x] README of the component and `OpenPanel.svg` show the new parts; the version is 0.7.0
+- [x] `npm run typecheck`, `npm run build` and `npm test` pass
