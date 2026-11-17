@@ -1,4 +1,5 @@
 /*
+ *  SPDX-License-Identifier: MIT
  *  This file is part of CassandraGargoyle Community Project
  *  Licensed under the MIT License - see LICENSE file for details
  */
@@ -24,6 +25,7 @@
 }
 
 .open-panel-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -43,6 +45,93 @@
     font-weight: 400;
     color: var(--vscode-editor-foreground, #cccccc);
     margin: 0 0 24px 0;
+}
+
+/* Optional text under the title (INT-009); the title keeps its space below when it is missing */
+.open-panel-description {
+    margin: -12px 0 24px 0;
+    max-width: 440px;
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: center;
+    color: var(--vscode-descriptionForeground, #969696);
+}
+
+/* The "…" menu at the top right of the card (INT-009) */
+.open-panel-menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.open-panel-menu-button {
+    width: 30px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--vscode-editor-foreground, #cccccc);
+    font-size: 16px;
+    font-family: inherit;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.open-panel-menu-button:hover,
+.open-panel-menu-button[aria-expanded="true"] {
+    background: var(--vscode-toolbar-hoverBackground, rgba(90, 93, 94, 0.31));
+}
+
+.open-panel-menu-button:focus-visible {
+    outline: 2px solid var(--vscode-textLink-foreground, #3794ff);
+    outline-offset: 1px;
+}
+
+.open-panel-menu-list {
+    position: absolute;
+    top: 30px;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    min-width: 220px;
+    padding: 4px;
+    background: var(--vscode-menu-background, #252526);
+    border: 1px solid var(--vscode-menu-border, #454545);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.open-panel-menu-item {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--vscode-menu-foreground, #cccccc);
+    font-size: 13px;
+    font-family: inherit;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.open-panel-menu-item:hover:not(:disabled),
+.open-panel-menu-item:focus {
+    background: var(--vscode-menu-selectionBackground, #04395e);
+    color: var(--vscode-menu-selectionForeground, #ffffff);
+    outline: none;
+}
+
+.open-panel-menu-item:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.open-panel-menu-separator {
+    height: 1px;
+    margin: 4px 6px;
+    background: var(--vscode-menu-separatorBackground, #454545);
 }
 
 /* Action buttons */

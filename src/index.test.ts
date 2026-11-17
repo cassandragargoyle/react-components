@@ -77,7 +77,7 @@ describe('package entry point', () => {
 
     it('exports nothing beyond the declared surface', () => {
         expect(Object.keys(api).sort()).toEqual(
-            [...EXPECTED, 'DEFAULT_OPEN_PANEL_LABELS', 'DEFAULT_GIT_HISTORY_LABELS', 'CHANGE_WEIGHT_LIMITS', 'blockDocumentMessages'].sort(),
+            [...EXPECTED, 'DEFAULT_OPEN_PANEL_ACTIONS', 'DEFAULT_OPEN_PANEL_LABELS', 'DEFAULT_GIT_HISTORY_LABELS', 'CHANGE_WEIGHT_LIMITS', 'blockDocumentMessages'].sort(),
         );
     });
 });

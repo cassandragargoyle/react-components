@@ -1,4 +1,5 @@
 /*
+ *  SPDX-License-Identifier: MIT
  *  This file is part of CassandraGargoyle Community Project
  *  Licensed under the MIT License - see LICENSE file for details
  */
@@ -124,12 +125,14 @@ export type { MarkdownViewProps } from './MarkdownView';
 export { NodeTablePanel } from './NodeTablePanel';
 export type { TableFilter, NodeTableRow } from './NodeTablePanel';
 
-export { OpenPanel, DEFAULT_OPEN_PANEL_LABELS, shortenHomePath } from './OpenPanel';
+export { OpenPanel, DEFAULT_OPEN_PANEL_ACTIONS, DEFAULT_OPEN_PANEL_LABELS, shortenHomePath } from './OpenPanel';
 export type {
     OpenPanelProps,
     OpenPanelRecentItem,
     OpenPanelItemType,
     OpenPanelLabels,
+    OpenPanelAction,
+    OpenPanelMenuItem,
 } from './OpenPanel';
 
 export { ProgressPanel } from './Progress';

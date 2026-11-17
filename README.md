@@ -96,7 +96,7 @@ to import.
 | [`KnowledgeLens`](https://github.com/cassandragargoyle/react-components/tree/main/src/KnowledgeLens) | A read-only viewer of a Turtle (RDF) document as a knowledge graph: types as styles, literals as text, with filters and a saved layout |
 | [`MarkdownView`](https://github.com/cassandragargoyle/react-components/tree/main/src/MarkdownView) | A read-only GitHub-flavoured Markdown document; links and image paths are resolved by the host |
 | [`NodeTablePanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/NodeTablePanel) | A bottom table panel over AG Grid with an All/Selected filter and selection sync |
-| [`OpenPanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/OpenPanel) | A launcher card: Open File / Open Folder and a filterable list of recent items |
+| [`OpenPanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/OpenPanel) | A launcher card: Open File / Open Folder (and optionally Open Project, a description and a "…" menu) and a filterable list of recent items |
 | [`ProgressPanel`](https://github.com/cassandragargoyle/react-components/tree/main/src/Progress) | An async-progress panel: spinner, message, fields, a step checklist and errors |
 | [`RadialMenu`](https://github.com/cassandragargoyle/react-components/tree/main/src/RadialMenu) | A radial (pie) action menu with nested rings and keyboard navigation |
 | [`WorkflowCanvas`](https://github.com/cassandragargoyle/react-components/tree/main/src/WorkflowCanvas) | A workflow editor over React Flow with undo/redo, a node table and property panel |

@@ -1,12 +1,15 @@
 /*
+ *  SPDX-License-Identifier: MIT
  *  This file is part of CassandraGargoyle Community Project
  *  Licensed under the MIT License - see LICENSE file for details
  */
 
 // Open panel: a launcher card with Open File / Open Folder buttons and a filterable
-// list of recently opened items. Host-neutral — data comes in and actions go out through props
+// list of recently opened items. Host-neutral — data comes in and actions go out through props.
+// Optional and off by default (INT-009): a project button, the order of the buttons, a
+// description, a "…" menu and recent items of type project
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import openPanelStyles from './OpenPanel.css';
 
 // Inject styles once when bundled with the 'text' loader (single-file bundle).
@@ -25,7 +28,15 @@ if (
 }
 
 /** What a recent entry points at — drives the row icon */
-export type OpenPanelItemType = 'file' | 'folder';
+export type OpenPanelItemType = 'file' | 'folder' | 'project';
+
+/** A button of the card */
+export type OpenPanelAction = 'file' | 'folder' | 'project';
+
+/** An item of the "…" menu: an action of the host, or a separator */
+export type OpenPanelMenuItem =
+    | { id: string; label: string; onSelect: () => void; disabled?: boolean; separator?: false }
+    | { separator: true };
 
 /** One row of the recent list */
 export interface OpenPanelRecentItem {
@@ -43,8 +54,13 @@ export interface OpenPanelRecentItem {
 /** Every user-visible string, overridable for other products or languages */
 export interface OpenPanelLabels {
     title: string;
+    /** Text under the title; not rendered when empty */
+    description: string;
     openFile: string;
     openFolder: string;
+    openProject: string;
+    /** Accessible name and tooltip of the "…" menu button */
+    more: string;
     recent: string;
     filterPlaceholder: string;
     noMatches: string;
@@ -57,8 +73,11 @@ export interface OpenPanelLabels {
 
 export const DEFAULT_OPEN_PANEL_LABELS: OpenPanelLabels = {
     title: 'Open a File or Project',
+    description: '',
     openFile: 'Open File',
     openFolder: 'Open Folder',
+    openProject: 'Open Project',
+    more: 'More actions',
     recent: 'Recent',
     filterPlaceholder: 'Filter... (press /)',
     noMatches: 'No matching items',
@@ -76,6 +95,12 @@ export interface OpenPanelProps {
     onOpenFile?: () => void;
     /** Open Folder button; the button is hidden when omitted */
     onOpenFolder?: () => void;
+    /** Open Project button; the button is hidden when omitted */
+    onOpenProject?: () => void;
+    /** Order of the buttons; an action without its callback is not rendered */
+    actions?: readonly OpenPanelAction[];
+    /** Items of the "…" menu at the top right of the card; the button is hidden without items */
+    menuItems?: readonly OpenPanelMenuItem[];
     /** A click on an existing recent row */
     onOpenRecent?: (item: OpenPanelRecentItem) => void;
     /** Clear Recent button; the button is hidden when omitted */
@@ -136,10 +161,142 @@ const FileIcon = (
     </svg>
 );
 
+const ProjectIcon = (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M0 4L2 0H7L9 3H16V14H0V4Z"
+              stroke="currentColor" strokeWidth="1.3"
+              strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M8 6L11 9L8 12L5 9Z" fill="currentColor"/>
+    </svg>
+);
+
+const RECENT_ICONS: Record<OpenPanelItemType, React.ReactNode> = {
+    file: FileIcon,
+    folder: FolderIcon,
+    project: ProjectIcon,
+};
+
+/** The default order of the buttons: the order of the panel before INT-009 */
+export const DEFAULT_OPEN_PANEL_ACTIONS: readonly OpenPanelAction[] = ['file', 'folder', 'project'];
+
+/** The "…" button and its menu; keyboard as a WAI-ARIA menu button */
+function OpenPanelMenu({ items, label }: { items: readonly OpenPanelMenuItem[]; label: string }): React.ReactElement {
+    const [open, setOpen] = useState(false);
+    const [active, setActive] = useState(-1);
+    const buttonRef = useRef<HTMLButtonElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
+    const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
+    const enabled = items
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => !item.separator && !item.disabled)
+        .map(({ index }) => index);
+
+    const close = useCallback((focusButton: boolean) => {
+        setOpen(false);
+        setActive(-1);
+        if (focusButton) buttonRef.current?.focus();
+    }, []);
+    const openAt = (index: number) => {
+        setOpen(true);
+        setActive(index);
+    };
+
+    useEffect(() => {
+        if (open && active >= 0) itemRefs.current[active]?.focus();
+    }, [open, active]);
+
+    // A click outside closes the menu
+    useEffect(() => {
+        if (!open) return undefined;
+        const onPointer = (e: MouseEvent) => {
+            const target = e.target as Node;
+            if (!menuRef.current?.contains(target) && !buttonRef.current?.contains(target)) close(false);
+        };
+        document.addEventListener('mousedown', onPointer);
+        return () => document.removeEventListener('mousedown', onPointer);
+    }, [open, close]);
+
+    const move = (step: 1 | -1) => {
+        if (enabled.length === 0) return;
+        const at = enabled.indexOf(active);
+        setActive(enabled[(at + step + enabled.length) % enabled.length]);
+    };
+    const select = (item: OpenPanelMenuItem) => {
+        if (item.separator || item.disabled) return;
+        close(true);
+        item.onSelect();
+    };
+
+    return (
+        <div className="open-panel-menu">
+            <button
+                ref={buttonRef}
+                type="button"
+                className="open-panel-menu-button"
+                aria-label={label}
+                title={label}
+                aria-haspopup="menu"
+                aria-expanded={open}
+                onClick={() => (open ? close(false) : openAt(enabled[0] ?? -1))}
+                onKeyDown={(e) => {
+                    if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        openAt(enabled[0] ?? -1);
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        openAt(enabled[enabled.length - 1] ?? -1);
+                    }
+                }}
+            >
+                …
+            </button>
+            {open && (
+                <div
+                    ref={menuRef}
+                    className="open-panel-menu-list"
+                    role="menu"
+                    aria-label={label}
+                    onKeyDown={(e) => {
+                        if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
+                        else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
+                        else if (e.key === 'Home') { e.preventDefault(); setActive(enabled[0] ?? -1); }
+                        else if (e.key === 'End') { e.preventDefault(); setActive(enabled[enabled.length - 1] ?? -1); }
+                        else if (e.key === 'Escape' || e.key === 'Tab') { e.preventDefault(); close(true); }
+                    }}
+                >
+                    {items.map((item, index) => (item.separator ? (
+                        <div key={`separator-${index}`} className="open-panel-menu-separator" role="separator" />
+                    ) : (
+                        <button
+                            key={item.id}
+                            ref={(el) => { itemRefs.current[index] = el; }}
+                            type="button"
+                            role="menuitem"
+                            className="open-panel-menu-item"
+                            disabled={item.disabled}
+                            aria-disabled={item.disabled || undefined}
+                            tabIndex={index === active ? 0 : -1}
+                            onClick={() => select(item)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(item); }
+                            }}
+                        >
+                            {item.label}
+                        </button>
+                    )))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 export function OpenPanel({
     recentItems,
     onOpenFile,
     onOpenFolder,
+    onOpenProject,
+    actions = DEFAULT_OPEN_PANEL_ACTIONS,
+    menuItems,
     onOpenRecent,
     onClearRecent,
     loading = false,
@@ -153,6 +310,14 @@ export function OpenPanel({
     const [filter, setFilter] = useState('');
     const filterRef = useRef<HTMLInputElement>(null);
     const text = { ...DEFAULT_OPEN_PANEL_LABELS, ...labels };
+    const callbacks: Record<OpenPanelAction, { onClick?: () => void; label: string }> = {
+        file: { onClick: onOpenFile, label: text.openFile },
+        folder: { onClick: onOpenFolder, label: text.openFolder },
+        project: { onClick: onOpenProject, label: text.openProject },
+    };
+    // Each listed action once, and only when the host passes its callback
+    const buttons = [...new Set(actions)].filter((action) => callbacks[action].onClick);
+    const hasMenu = !!menuItems && menuItems.some((item) => !item.separator);
     const showFilter = recentItems.length > filterThreshold;
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -182,21 +347,23 @@ export function OpenPanel({
             tabIndex={0}
         >
             <div className="open-panel-card">
+                {hasMenu && <OpenPanelMenu items={menuItems!} label={text.more} />}
                 {icon !== null && <div className="open-panel-icon">{icon}</div>}
                 <h1 className="open-panel-title">{text.title}</h1>
+                {text.description && <p className="open-panel-description">{text.description}</p>}
 
-                {(onOpenFile || onOpenFolder) && (
+                {buttons.length > 0 && (
                     <div className="open-panel-actions">
-                        {onOpenFile && (
-                            <button type="button" className="open-panel-btn" onClick={onOpenFile}>
-                                {text.openFile}
+                        {buttons.map((action) => (
+                            <button
+                                key={action}
+                                type="button"
+                                className="open-panel-btn"
+                                onClick={callbacks[action].onClick}
+                            >
+                                {callbacks[action].label}
                             </button>
-                        )}
-                        {onOpenFolder && (
-                            <button type="button" className="open-panel-btn" onClick={onOpenFolder}>
-                                {text.openFolder}
-                            </button>
-                        )}
+                        ))}
                     </div>
                 )}
 
@@ -230,7 +397,7 @@ export function OpenPanel({
                                         title={missing ? `${item.path} (${text.notFound.toLowerCase()})` : item.path}
                                     >
                                         <span className="open-panel-recent-icon">
-                                            {item.type === 'folder' ? FolderIcon : FileIcon}
+                                            {RECENT_ICONS[item.type] ?? FileIcon}
                                         </span>
                                         <span className="open-panel-recent-name">{item.name}</span>
                                         <span className="open-panel-recent-path">{formatPath(item.path)}</span>
