@@ -125,7 +125,7 @@ react-components/
 ├── scripts/            # check-entry-points.mjs, run by npm run test:entries
 ├── vite.config.ts      # Library build: an entry per package.json export, plus the .d.ts tree
 ├── vitest.config.ts    # jsdom test environment
-└── .github/workflows/  # Publish to npmjs.com on a v* tag
+└── .github/workflows/  # Publish to npmjs.com and GitHub Packages on a v* tag
 ```
 
 Components arrive here from `portunix-vscode`; the migration and the admission bar are
@@ -135,7 +135,9 @@ recorded in that repository's **ADR-012** and issue **125**.
 
 Bump `version` in `package.json`, commit, and push a matching `vX.Y.Z` tag. The publish
 workflow checks, tests and publishes to npmjs.com through npm Trusted Publishing, with
-provenance; no npm token is stored anywhere.
+provenance; no npm token is stored anywhere. A second job publishes the same version to
+GitHub Packages with the built-in `GITHUB_TOKEN`, so it shows in the Packages panel of the
+repository. Install from npmjs.com; GitHub Packages needs a token even for reads.
 
 ## Contributing
 

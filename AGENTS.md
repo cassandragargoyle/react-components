@@ -143,7 +143,10 @@ Bump `version` in `package.json`, commit, and push a matching `vX.Y.Z` tag; the 
 workflow refuses a tag that does not match `package.json`. It publishes to npmjs.com through
 npm Trusted Publishing — the trusted publisher (this repository, `publish.yml`) is set in the
 package settings on npmjs.com — so no npm token exists in the repository or its secrets.
-Versions 0.1.0 and 0.1.1 were also published to GitHub Packages; nothing new goes there.
+A second job publishes the same version to GitHub Packages (`npm.pkg.github.com`) with the
+built-in `GITHUB_TOKEN`, so it shows in the Packages panel of the repository; it does not
+depend on the npmjs.com job. A manual run (`workflow_dispatch`) can publish to one registry
+only (`registry`: `npmjs` or `github`). Consumers install from npmjs.com.
 
 ## Testing
 

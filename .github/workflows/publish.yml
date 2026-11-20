@@ -1,4 +1,4 @@
-# Publish the @cassandragargoyle/react-components package to npmjs.com
+# Publish the @cassandragargoyle/react-components package to npmjs.com and to GitHub Packages
 # Triggered by a v* tag or manual dispatch; the pattern follows portunix-vscode ADR-011/012
 
 name: Publish
@@ -13,6 +13,14 @@ on:
         description: 'Build and pack without publishing'
         type: boolean
         default: false
+      registry:
+        description: 'Where to publish'
+        type: choice
+        options:
+          - both
+          - npmjs
+          - github
+        default: both
 
 # npm Trusted Publishing: the job proves who it is with a GitHub OIDC token (id-token: write)
 # and npm exchanges it for a short-lived publish credential. No npm token is stored in the
@@ -25,6 +33,7 @@ permissions:
 
 jobs:
   publish:
+    if: github.event_name != 'workflow_dispatch' || inputs.registry != 'github'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -88,4 +97,77 @@ jobs:
 
       - name: Publish
         if: steps.published.outputs.exists == 'false' && !inputs.dry_run
+        run: npm publish
+
+  # GitHub Packages, so the version shows in the Packages panel of the repository. A job of its
+  # own: a failure on npmjs.com does not stop it. The built-in GITHUB_TOKEN publishes
+  # (packages: write); no personal token. package.json points publishConfig to npmjs.com, so
+  # the job switches it in its checkout only
+  publish-github:
+    if: github.event_name != 'workflow_dispatch' || inputs.registry != 'npmjs'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@cassandragargoyle'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Read package version
+        id: pkg
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Verify tag matches package version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$TAG_VERSION" != "${{ steps.pkg.outputs.version }}" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version ${{ steps.pkg.outputs.version }}"
+            exit 1
+          fi
+
+      # GitHub Packages needs a token also for reads
+      - name: Check if version already published
+        id: published
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if npm view "@cassandragargoyle/react-components@${{ steps.pkg.outputs.version }}" version --registry https://npm.pkg.github.com >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Version ${{ steps.pkg.outputs.version }} already on GitHub Packages — skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Point the publish registry to GitHub Packages
+        run: npm pkg set publishConfig.registry=https://npm.pkg.github.com
+
+      # prepublishOnly builds and checks the entry points
+      - name: Publish (dry run)
+        if: steps.published.outputs.exists == 'false' && inputs.dry_run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish --dry-run
+
+      - name: Publish
+        if: steps.published.outputs.exists == 'false' && !inputs.dry_run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm publish
