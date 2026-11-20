@@ -9,7 +9,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MarkdownView, slugify } from './MarkdownView';
+import { MarkdownView, findHeading, slugify } from './MarkdownView';
 
 describe('MarkdownView', () => {
     it('renders headings, emphasis and lists', () => {
@@ -99,6 +99,38 @@ describe('MarkdownView', () => {
         expect(onLinkClick).not.toHaveBeenCalled();
         expect(scrollIntoView).toHaveBeenCalledOnce();
         expect(scrollIntoView.mock.contexts[0]).toBe(screen.getByRole('heading', { name: 'Open questions' }));
+    });
+
+    it('an upper case anchor reaches the lower case heading id, as on GitHub', () => {
+        const scrollIntoView = vi.fn();
+        Element.prototype.scrollIntoView = scrollIntoView;
+        render(<MarkdownView source={'[jump](#Open-Questions)\n\n## Open questions\n'} />);
+        fireEvent.click(screen.getByRole('link', { name: 'jump' }));
+        expect(scrollIntoView.mock.contexts[0]).toBe(screen.getByRole('heading', { name: 'Open questions' }));
+    });
+
+    it('a malformed anchor does nothing and throws no error', () => {
+        const scrollIntoView = vi.fn();
+        Element.prototype.scrollIntoView = scrollIntoView;
+        const errors: unknown[] = [];
+        const onError = (event: ErrorEvent) => errors.push(event.error);
+        window.addEventListener('error', onError);
+        render(<MarkdownView source={'[broken](#%E0)\n\n## Heading\n'} />);
+        expect(() => fireEvent.click(screen.getByRole('link', { name: 'broken' }))).not.toThrow();
+        window.removeEventListener('error', onError);
+        expect(errors).toEqual([]);
+        expect(scrollIntoView).not.toHaveBeenCalled();
+    });
+
+    it('findHeading: the exact id first, then the id in lower case, else nothing', () => {
+        const root = document.createElement('div');
+        root.innerHTML = '<h2 id="install">a</h2><h2 id="Setup">b</h2><h2 id="instalace-a-spuštění">c</h2>';
+        expect(findHeading(root, 'install')?.textContent).toBe('a');
+        expect(findHeading(root, 'Install')?.textContent).toBe('a');
+        expect(findHeading(root, 'Setup')?.textContent).toBe('b');
+        expect(findHeading(root, 'instalace-a-spuštění')?.textContent).toBe('c');
+        expect(findHeading(root, 'missing')).toBeNull();
+        expect(findHeading(root, '%E0')).toBeNull();
     });
 
     it('gives headings GitHub-style ids, numbering repeats', () => {

@@ -93,7 +93,10 @@ Klik na odkaz nikdy nepřepne okno na jinou stránku. Komponenta zastaví prohl�
 sama:
 
 - Odkaz na **nadpis téhož dokumentu** (`#install`) posune zobrazení k nadpisu. Hostitele se
-  neptá. Když žádný nadpis takové jméno nemá, nestane se nic
+  neptá. Když žádný nadpis nemá přesně takové jméno, zkusí se jméno malými písmeny, stejně
+  jako na GitHubu (`#Install` dojde k `install`). Když žádný nadpis takové jméno nemá, nestane
+  se nic. `findHeading` je toto pravidlo, exportované pro hostitele, který otevře jiný dokument
+  u nadpisu
 - **Každý jiný ponechaný odkaz** jde k hostiteli přes `onLinkClick`, s adresou přesně tak, jak
   je napsaná v textu (`../guide/setup.md#part`). Hostitel rozhodne: otevřít soubor, spustit
   webový prohlížeč, nebo nic
@@ -166,11 +169,11 @@ Kontrola adres proběhne před `resolveImage` a odstraní `data:` i každé sch�
 seznamu. `linkSchemes` nepomůže, protože platí jen pro odkazy. Hostitel proto v `resolveImage`
 dostane **prázdnou cestu** a musí si s ní poradit (Reco Studio prázdnou cestu nechá prázdnou).
 
-### Odkaz na nadpis s vadným kódem `%` vyhodí chybu
+### Odkaz na nadpis s vadným kódem `%` zůstane, jak je napsaný
 
-Odkaz `#%E0` obsahuje kód `%`, který není platný znak. Při kliknutí ho komponenta dekóduje
-přes `decodeURIComponent` a ta vyhodí `URIError: URI malformed`. Čtenář nic nepozná, ale
-v konzoli okna se objeví chyba. Odkaz `#100%` je bezpečný: react-markdown ho zapíše jako
+Odkaz `#%E0` obsahuje kód `%`, který není platný znak, a nedá se dekódovat. Komponenta ho
+nechá, jak je napsaný, místo aby vyhodila chybu; žádný nadpis takové jméno nemá, takže se
+nestane nic a konzole zůstane čistá. Odkaz `#100%` je bezpečný: react-markdown ho zapíše jako
 `#100%25`.
 
 ### HTML v řádku si nechá slova

@@ -54,7 +54,7 @@ the unused peers, this is what makes them truly optional:
 | `/graph-canvas` | `GraphCanvas` | `cytoscape`, `cytoscape-dagre`, `ag-grid-community`, `ag-grid-react` |
 | `/graph-lens-3d` | `GraphLens3D` | `3d-force-graph`, `ag-grid-community`, `ag-grid-react` |
 | `/knowledge-lens` | `KnowledgeLens`, `parseTurtle`, `projectGraph` | `n3`, `cytoscape`, `cytoscape-dagre`, `ag-grid-community`, `ag-grid-react` |
-| `/markdown-view` | `MarkdownView`, `slugify` | `react-markdown`, `remark-gfm` |
+| `/markdown-view` | `MarkdownView`, `slugify`, `findHeading` | `react-markdown`, `remark-gfm` |
 | `/node-table-panel` | `NodeTablePanel` | `ag-grid-community`, `ag-grid-react` |
 | `/open-panel` | `OpenPanel` and its helpers | — |
 | `/progress` | `ProgressPanel`, `CometLoader` | — |

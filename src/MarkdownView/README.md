@@ -39,7 +39,10 @@ host that uses this component.
 | `className` | `string` | — | Added to the root `.markdown-view` element |
 
 `slugify` is exported too: the GitHub-style heading slug the view uses for heading ids, for a
-host that builds a table of contents or links into a heading.
+host that builds a table of contents or links into a heading. `findHeading(root, id)` finds the
+heading an anchor names, by the same rule as a click on an `#anchor` link: the exact id, else
+the id in lower case (`#Install` reaches `install`, as on GitHub). A host that opens a document
+at a heading of a link from another document uses it to scroll there.
 
 ## Behavior
 

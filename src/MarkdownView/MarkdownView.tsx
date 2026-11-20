@@ -81,6 +81,26 @@ export function slugify(text: string): string {
         .replace(/\s/g, '-');
 }
 
+/**
+ * The heading an anchor names, inside `root`: the exact id, else the id in lower case. Heading
+ * ids are lower case slugs, and GitHub also takes `#Install` for `install`. The id is decoded
+ * already; a host that scrolls to an anchor of a link from another document uses the same rule
+ */
+export function findHeading(root: ParentNode, id: string): Element | null {
+    const find = (value: string) => root.querySelector(`[id="${CSS.escape(value)}"]`);
+    return find(id) ?? find(id.toLowerCase());
+}
+
+/** The id of an `#anchor` href; a malformed `%` code stays as written instead of throwing */
+function anchorId(href: string): string {
+    const raw = href.slice(1);
+    try {
+        return decodeURIComponent(raw);
+    } catch {
+        return raw;
+    }
+}
+
 // Rehype plugin: gives every heading a GitHub-style id, so `#anchor` links resolve.
 // A repeated slug gets `-1`, `-2`, … like on GitHub
 function rehypeHeadingIds() {
@@ -144,8 +164,7 @@ export function MarkdownView({ source, onLinkClick, linkSchemes, resolveImage, r
             if (href === null) return;
             event.preventDefault();
             if (href.startsWith('#')) {
-                const id = decodeURIComponent(href.slice(1));
-                rootRef.current.querySelector(`[id="${CSS.escape(id)}"]`)?.scrollIntoView({ block: 'start' });
+                findHeading(rootRef.current, anchorId(href))?.scrollIntoView({ block: 'start' });
                 return;
             }
             if (href) onLinkClick?.(href);

@@ -51,6 +51,7 @@ const EXPECTED = [
     'projectGraph',
     'MarkdownView',
     'slugify',
+    'findHeading',
     'NodeTablePanel',
     'OpenPanel',
     'shortenHomePath',

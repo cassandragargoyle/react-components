@@ -94,7 +94,10 @@ A click on a link never makes the window jump to another page. The component sto
 browser and decides itself:
 
 - A link to a **heading of the same document** (`#install`) scrolls the view to the heading.
-  The host is not asked. When no heading has that name, nothing happens
+  The host is not asked. When no heading has exactly that name, the name in small letters is
+  tried, as on GitHub (`#Install` reaches `install`). When no heading has that name, nothing
+  happens. `findHeading` is this rule, exported for a host that opens another document at a
+  heading
 - **Every other kept link** goes to the host through `onLinkClick`, with the address exactly as
   written in the text (`../guide/setup.md#part`). The host decides: open a file, start the web
   browser, or nothing
@@ -165,11 +168,11 @@ The address check runs before `resolveImage`, and it removes `data:` and every s
 not on the list. `linkSchemes` does not help, because it is only for links. So the host gets an
 **empty path** in `resolveImage` and must cope with it (Reco Studio keeps the empty path).
 
-### A heading link with a broken `%` code throws an error
+### A heading link with a broken `%` code is kept as written
 
-A link `#%E0` has a `%` code that is not a valid character. On a click, the component decodes
-it with `decodeURIComponent`, which throws `URIError: URI malformed`. Nothing happens for the
-reader, but the error appears in the console of the window. A link `#100%` is safe:
+A link `#%E0` has a `%` code that is not a valid character, so it cannot be decoded. The
+component keeps it as written instead of throwing an error; no heading has that name, so
+nothing happens and the console stays clean. A link `#100%` is safe:
 react-markdown writes it as `#100%25`.
 
 ### HTML in a line keeps its words

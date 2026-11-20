@@ -119,7 +119,7 @@ export type {
     KnowledgeGraph,
 } from './KnowledgeLens';
 
-export { MarkdownView, slugify } from './MarkdownView';
+export { MarkdownView, findHeading, slugify } from './MarkdownView';
 export type { MarkdownViewProps } from './MarkdownView';
 
 export { NodeTablePanel } from './NodeTablePanel';
