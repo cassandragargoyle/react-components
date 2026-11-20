@@ -95,8 +95,11 @@ jobs:
         if: steps.published.outputs.exists == 'false' && inputs.dry_run
         run: npm publish --dry-run
 
+      # Verbose: npm logs the OIDC exchange of Trusted Publishing, so a refused publish says why
       - name: Publish
         if: steps.published.outputs.exists == 'false' && !inputs.dry_run
+        env:
+          NPM_CONFIG_LOGLEVEL: verbose
         run: npm publish
 
   # GitHub Packages, so the version shows in the Packages panel of the repository. A job of its
