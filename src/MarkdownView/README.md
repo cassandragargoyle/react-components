@@ -35,6 +35,7 @@ host that uses this component.
 | ---- | ---- | ------- | ----------- |
 | `source` | `string` | — | The Markdown text |
 | `onLinkClick` | `(href) => void` | — | A click on any link except an in-document `#anchor`; without it a link does nothing |
+| `linkSchemes` | `string[]` | — | Extra URL schemes a link may keep, without the colon (for example `['file']`); see Links below |
 | `resolveImage` | `(src) => string` | — | Maps an image `src` as written to a URL the host can load; without it the `src` is used as is |
 | `renderCode` | `(code, language) => ReactNode \| undefined` | — | Renders a fenced code block; `undefined` keeps the default `<pre>` |
 | `className` | `string` | — | Added to the root `.markdown-view` element |
@@ -46,11 +47,14 @@ host that builds a table of contents or links into a heading.
 
 - **Dialect** — CommonMark plus GitHub extensions (`remark-gfm`): tables, task lists,
   strikethrough and autolinks. Task list checkboxes are shown, never editable.
-- **Raw HTML** — embedded HTML is **skipped**, not rendered, so the view needs no sanitizer.
-  A `javascript:` link target is dropped by `react-markdown`.
+- **Raw HTML** — embedded HTML is **skipped**: not rendered and not shown as text, so the
+  view needs no sanitizer. A `javascript:` link target is dropped by `react-markdown`.
 - **Links** — the view never navigates. An `#anchor` link scrolls to the heading with that
   id; every other link calls `onLinkClick` with its `href` exactly as written, relative or
-  absolute, and the host decides.
+  absolute, and the host decides. A link target keeps only the schemes `http`, `https`,
+  `irc`, `ircs`, `mailto` and `xmpp`; any other scheme becomes an empty `href`, which does
+  nothing. `linkSchemes` adds schemes for links (not for images), for example `file` in a
+  desktop host; `javascript`, `vbscript` and `data` stay dropped even when listed.
 - **Heading ids** — every heading gets a GitHub-style id (`## Open questions` →
   `open-questions`, a repeat gets `-1`, `-2`), so links written for GitHub work here.
 - **Code** — fenced blocks render as plain `<pre><code>` with the fence language as a

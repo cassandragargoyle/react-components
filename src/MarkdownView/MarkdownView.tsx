@@ -6,8 +6,8 @@
 // Markdown view: renders a GitHub-flavoured Markdown string as a read-only document
 // Host-neutral — links and image URLs go out through props, raw HTML is never rendered
 
-import React, { useCallback, useRef } from 'react';
-import Markdown, { type Components } from 'react-markdown';
+import React, { useCallback, useMemo, useRef } from 'react';
+import Markdown, { defaultUrlTransform, type Components, type UrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import markdownViewStyles from './MarkdownView.css';
 
@@ -34,6 +34,13 @@ export interface MarkdownViewProps {
      * navigates by itself, so a link without this handler does nothing
      */
     onLinkClick?: (href: string) => void;
+    /**
+     * Extra URL schemes a link `href` may keep, without the colon (for example `['file']`).
+     * By default only http, https, irc, ircs, mailto and xmpp are kept; any other target
+     * becomes an empty href, so the click never reaches `onLinkClick`. Image sources are
+     * not affected
+     */
+    linkSchemes?: readonly string[];
     /** Map an image `src` as written in the document to a URL the host can load */
     resolveImage?: (src: string) => string;
     /**
@@ -100,6 +107,20 @@ function codeLanguage(code: HastNode): string | undefined {
     return match ? match.slice('language-'.length) : undefined;
 }
 
+/**
+ * The URL rule of react-markdown, plus the extra schemes of the host for link targets.
+ * javascript:, vbscript: and data: stay dropped even when the host lists them
+ */
+const UNSAFE_SCHEMES = new Set(['javascript', 'vbscript', 'data']);
+function linkUrlTransform(schemes: readonly string[]): UrlTransform {
+    const allowed = new Set(schemes.map((scheme) => scheme.toLowerCase()).filter((scheme) => !UNSAFE_SCHEMES.has(scheme)));
+    return (url, key) => {
+        const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(url)?.[1].toLowerCase();
+        if (key === 'href' && scheme !== undefined && allowed.has(scheme)) return url;
+        return defaultUrlTransform(url);
+    };
+}
+
 const REMARK_PLUGINS = [remarkGfm];
 const REHYPE_PLUGINS = [rehypeHeadingIds];
 
@@ -108,8 +129,10 @@ const REHYPE_PLUGINS = [rehypeHeadingIds];
  * It reads no file and calls no host API: the host passes the text in and decides what a
  * link or an image path means. Embedded HTML is skipped, so the view needs no sanitizer
  */
-export function MarkdownView({ source, onLinkClick, resolveImage, renderCode, className }: MarkdownViewProps): React.ReactElement {
+export function MarkdownView({ source, onLinkClick, linkSchemes, resolveImage, renderCode, className }: MarkdownViewProps): React.ReactElement {
     const rootRef = useRef<HTMLDivElement>(null);
+    const schemesKey = (linkSchemes ?? []).join(',');
+    const urlTransform = useMemo(() => linkUrlTransform(schemesKey ? schemesKey.split(',') : []), [schemesKey]);
 
     // One handler for every link: an `#anchor` scrolls within the view, anything else goes
     // to the host. The default is always prevented, so the host window never navigates
@@ -152,7 +175,13 @@ export function MarkdownView({ source, onLinkClick, resolveImage, renderCode, cl
     return (
         <div ref={rootRef} className={`markdown-view${className ? ` ${className}` : ''}`} onClick={handleClick}>
             <div className="markdown-view-body">
-                <Markdown remarkPlugins={REMARK_PLUGINS} rehypePlugins={REHYPE_PLUGINS} components={components}>
+                <Markdown
+                    remarkPlugins={REMARK_PLUGINS}
+                    rehypePlugins={REHYPE_PLUGINS}
+                    components={components}
+                    urlTransform={urlTransform}
+                    skipHtml
+                >
                     {source}
                 </Markdown>
             </div>

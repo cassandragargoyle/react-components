@@ -46,11 +46,37 @@ describe('MarkdownView', () => {
         expect(container.querySelector('script')).toBeNull();
         expect(container.querySelector('b')).toBeNull();
         expect(container).toHaveTextContent('after');
+        // Not shown as escaped text either
+        expect(container).not.toHaveTextContent('<script>');
+        expect(container).not.toHaveTextContent('alert(1)');
+        expect(container).not.toHaveTextContent('<b>');
     });
 
     it('drops a javascript: link target', () => {
         render(<MarkdownView source={'[bad](javascript:alert(1))'} />);
         expect(screen.getByText('bad').closest('a')).toHaveAttribute('href', '');
+    });
+
+    it('keeps a file: link only when the host lists the scheme', () => {
+        const source = '[here](file:///tmp/a.md)';
+        const { unmount } = render(<MarkdownView source={source} />);
+        expect(screen.getByText('here').closest('a')).toHaveAttribute('href', '');
+        unmount();
+        const onLinkClick = vi.fn();
+        render(<MarkdownView source={source} linkSchemes={['FILE']} onLinkClick={onLinkClick} />);
+        fireEvent.click(screen.getByRole('link', { name: 'here' }));
+        expect(onLinkClick).toHaveBeenCalledWith('file:///tmp/a.md');
+    });
+
+    it('drops javascript: and data: links even when the host lists them', () => {
+        render(<MarkdownView source={'[a](javascript:alert(1)) [b](data:text/html,x)'} linkSchemes={['javascript', 'data']} />);
+        expect(screen.getByText('a').closest('a')).toHaveAttribute('href', '');
+        expect(screen.getByText('b').closest('a')).toHaveAttribute('href', '');
+    });
+
+    it('does not keep a listed scheme in an image source', () => {
+        const { container } = render(<MarkdownView source={'![pic](file:///tmp/a.png)'} linkSchemes={['file']} />);
+        expect(container.querySelector('img')?.getAttribute('src') ?? '').toBe('');
     });
 
     it('hands a link to the host and never navigates by itself', () => {
