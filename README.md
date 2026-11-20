@@ -57,7 +57,7 @@ the unused peers, this is what makes them truly optional:
 | `/markdown-view` | `MarkdownView`, `slugify` | `react-markdown`, `remark-gfm` |
 | `/node-table-panel` | `NodeTablePanel` | `ag-grid-community`, `ag-grid-react` |
 | `/open-panel` | `OpenPanel` and its helpers | — |
-| `/progress` | `ProgressPanel` | — |
+| `/progress` | `ProgressPanel`, `CometLoader` | — |
 | `/radial-menu` | `RadialMenu`, `useRadialMenu` | — |
 | `/workflow-canvas` | `WorkflowCanvas` | `@xyflow/react`, `ag-grid-community`, `ag-grid-react` |
 
@@ -90,6 +90,7 @@ to import.
 | [`BlockDocument`](https://github.com/cassandragargoyle/react-components/tree/main/src/BlockDocument) | A document of blocks — chapters, paragraphs, images, videos — shown as one page and edited in place |
 | [`Carousel`](https://github.com/cassandragargoyle/react-components/tree/main/src/Carousel) | A three-card fan carousel around a centred hero card |
 | [`CodeEditor`](https://github.com/cassandragargoyle/react-components/tree/main/src/CodeEditor) | A Monaco code editor, lazy-loaded on first use, with a plain-text fallback |
+| [`CometLoader`](https://github.com/cassandragargoyle/react-components/tree/main/src/Progress/CometLoader.md) | A busy indicator: a comet on a changing orbit that keeps moving while a long task blocks the page |
 | [`GitHistory`](https://github.com/cassandragargoyle/react-components/tree/main/src/GitHistory) | A file or folder history in the style of Git Extensions: commit graph, refs, avatars, and Commit/Diff/Files tabs, fed by a host data source |
 | [`GraphCanvas`](https://github.com/cassandragargoyle/react-components/tree/main/src/GraphCanvas) | A 2D node-edge graph viewer and editor over Cytoscape, with a node table and property panel |
 | [`GraphLens3D`](https://github.com/cassandragargoyle/react-components/tree/main/src/GraphLens3D) | A 3D force-directed graph explorer with search, filters and a detail panel |

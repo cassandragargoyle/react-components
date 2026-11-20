@@ -1,0 +1,118 @@
+/*
+ *  This file is part of CassandraGargoyle Community Project
+ *  Licensed under the MIT License - see LICENSE file for details
+ */
+
+/* CometLoader: a comet on a rosette path around an invisible centre. Only transform
+   animations, which the compositor runs on its own thread, so the comet keeps moving
+   while a long task blocks the page. Levels from outside in: breathe (the shape of the
+   orbit), arm (the main circle, eased so the speed changes), epicycle (a fast small circle
+   on the end of the arm), dot (its size pulses) */
+
+.comet-loader {
+    --comet-loader-color: var(--vscode-progressBar-background, #0078d4);
+    --comet-loader-glow: var(--vscode-textLink-foreground, #4daafc);
+    --comet-loader-core: var(--vscode-descriptionForeground, #8b8b8b);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    height: 100%;
+    color: var(--vscode-descriptionForeground, #8b8b8b);
+}
+
+.comet-loader-stage {
+    position: relative;
+    flex: none;
+}
+
+/* The path is drawn for a 120 px stage; other sizes scale this box */
+.comet-loader-scale {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 120px;
+    height: 120px;
+    transform-origin: 0 0;
+}
+
+.comet-loader-core {
+    position: absolute;
+    left: 58px;
+    top: 58px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--comet-loader-core);
+    opacity: 0.35;
+}
+
+.comet-loader-breathe {
+    position: absolute;
+    left: 60px;
+    top: 60px;
+    width: 0;
+    height: 0;
+    animation: comet-loader-breathe 3.1s ease-in-out infinite alternate;
+}
+
+.comet-loader-arm,
+.comet-loader-epicycle,
+.comet-loader-turn {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+}
+
+.comet-loader-arm {
+    animation: comet-loader-spin 2.3s cubic-bezier(0.62, 0.02, 0.36, 0.98) infinite;
+}
+
+.comet-loader-epicycle {
+    transform: translateX(30px);
+}
+
+.comet-loader-turn {
+    animation: comet-loader-spin-back 0.77s linear infinite;
+}
+
+.comet-loader-dot {
+    position: absolute;
+    left: 12px;
+    top: 0;
+    border-radius: 50%;
+    background: var(--comet-loader-color);
+    box-shadow: 0 0 8px var(--comet-loader-glow);
+    animation: comet-loader-pulse 1.3s ease-in-out infinite alternate;
+}
+
+@keyframes comet-loader-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes comet-loader-spin-back {
+    to { transform: rotate(-360deg); }
+}
+
+@keyframes comet-loader-breathe {
+    0% { transform: scale(1.15, 0.6) rotate(0deg); }
+    50% { transform: scale(0.8, 1.05) rotate(20deg); }
+    100% { transform: scale(1, 0.85) rotate(-25deg); }
+}
+
+@keyframes comet-loader-pulse {
+    from { transform: scale(0.55); }
+    to { transform: scale(1.35); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .comet-loader-breathe,
+    .comet-loader-arm,
+    .comet-loader-turn,
+    .comet-loader-dot {
+        animation-duration: 12s;
+    }
+}

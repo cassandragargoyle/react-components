@@ -143,6 +143,8 @@ export type {
     ProgressField,
     ProgressSpinnerVariant,
 } from './Progress';
+export { CometLoader } from './Progress';
+export type { CometLoaderProps } from './Progress';
 
 export { RadialMenu, useRadialMenu } from './RadialMenu';
 export type {

@@ -55,6 +55,7 @@ const EXPECTED = [
     'OpenPanel',
     'shortenHomePath',
     'ProgressPanel',
+    'CometLoader',
     'RadialMenu',
     'useRadialMenu',
     'WorkflowCanvas',
