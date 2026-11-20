@@ -6,9 +6,7 @@ the VS Code theme.
 
 The view is host-neutral. It renders a **string**, not a file: the host reads the text and
 passes it in, and decides what a link or a relative image path means. That makes it usable
-for a `.md` file in a preview pane as well as for a chat message or a README card. It was
-written for Pilot, the `portunix-vscode` desktop app (#124), where a thin wrapper binds the
-links to the file pane and the operating system browser.
+for a `.md` file in a preview pane as well as for a chat message or a README card.
 
 ## Usage
 
@@ -75,6 +73,8 @@ outline.
 - `MarkdownView.tsx` — the component, its props and the heading slug
 - `MarkdownView.css` — scoped stylesheet
 - `MarkdownView.test.tsx` — unit tests
+- `MarkdownView.md`, `MarkdownView.cs.md` — plain-language description of the component with
+  figures, for readers without programming knowledge (English, Czech)
 - `index.ts` — public exports
 
 ---
